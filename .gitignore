@@ -1,0 +1,17 @@
+# Dependencies
+/vendor/
+
+# Environment
+.env
+.env.testing
+
+
+# PHPUnit
+.phpunit.result.cache
+.phpunit.cache/
+
+# Logs & cache
+*.log
+/logs/
+/cache/
+
