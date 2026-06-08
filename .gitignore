@@ -15,3 +15,8 @@
 /logs/
 /cache/
 
+
+
+/public/assets/images/posters/
+/app/
+*.log
