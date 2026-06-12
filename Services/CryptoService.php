@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Helpers;
+namespace App\Services;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
@@ -28,3 +28,4 @@ class CryptoHelper
     return Crypto::decrypt($dato, self::obtenerClave());
   }
 }
+

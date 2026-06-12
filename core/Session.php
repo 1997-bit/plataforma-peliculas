@@ -79,14 +79,11 @@ class Session
 
   public static function generarCsrf(): string
   {
-    $token = bin2hex(random_bytes(32));
-    $_SESSION['_csrf_token'] = $token;
-    return $token;
+    return (new \App\Services\CsrfManager())->generar();
   }
 
   public static function validarCsrf(string $token): bool
   {
-        $guardado = $_SESSION['_csrf_token'] ?? '';
-        return hash_equals($guardado, $token);
-    }
+    return (new \App\Services\CsrfManager())->validar($token);
+  }
 }
