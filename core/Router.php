@@ -33,7 +33,8 @@ class Router
 
     if (is_array($manejador)) {
       [$clase, $accion] = $manejador;
-      (new $clase())->$accion();
+      $instancia = is_object($clase) ? $clase : new $clase();
+      $instancia->$accion();
     } else {
       $manejador();
     }

@@ -1,6 +1,4 @@
 <?php
-// Solo llega aqui si AuthMiddleware::verificarAutenticacion() paso
-$username = \App\Core\Session::obtener('username');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -11,7 +9,7 @@ $username = \App\Core\Session::obtener('username');
 <body>
     <h1>Hola, <?= htmlspecialchars($username, ENT_QUOTES, 'UTF-8') ?></h1>
     <form method="POST" action="/logout">
-        <input type="hidden" name="_csrf" value="<?= \App\Core\Session::generarCsrf() ?>">
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
         <button type="submit">Cerrar sesion</button>
     </form>
 </body>

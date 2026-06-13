@@ -6,7 +6,7 @@ namespace App\Services;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 
-class CryptoHelper
+class CryptoServicio
 {
   private static ?Key $clave = null;
 
@@ -28,4 +28,3 @@ class CryptoHelper
     return Crypto::decrypt($dato, self::obtenerClave());
   }
 }
-

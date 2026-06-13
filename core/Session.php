@@ -79,11 +79,11 @@ class Session
 
   public static function generarCsrf(): string
   {
-    return (new \App\Services\CsrfManager())->generar();
+    return (new \App\Services\ManejadorCsrf())->generarTokenCsrf();
   }
 
   public static function validarCsrf(string $token): bool
   {
-    return (new \App\Services\CsrfManager())->validar($token);
+    return (new \App\Services\ManejadorCsrf())->validarTokenCsrf($token);
   }
 }

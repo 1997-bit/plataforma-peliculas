@@ -6,7 +6,13 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 define('ROOT', dirname(__DIR__));
 
 use App\Core\Session;
-use App\Services\RememberMeService;
+use App\Core\Database;
+use App\Models\TokenRepo;
+use App\Models\UserRepo;
+use App\Services\Auth\RestaurarSesion;
+use App\Services\CookieManejador;
+use App\Services\CryptoServicio;
+use App\Services\SessionManager;
 
 $dotenv = Dotenv\Dotenv::createImmutable(ROOT);
 $dotenv->load();
@@ -23,6 +29,22 @@ require_once __DIR__ . '/security.php';
 
 Session::iniciar();
 
+if (random_int(1, 100) === 1) {
+    try {
+        Database::obtenerInstancia()->exec('DELETE FROM remember_tokens WHERE expires_at < NOW()');
+    } catch (\Throwable) {}
+}
+
 if (!Session::existe('user_id')) {
-  RememberMeService::intentarRestaurar();
+    $pdo = Database::obtenerInstancia();
+    $crypto = new CryptoServicio();
+    $cookie = new CookieManejador();
+
+    (new RestaurarSesion(
+        new TokenRepo($pdo, $crypto, $cookie),
+        new UserRepo($pdo, $crypto),
+        new SessionManager(),
+        $cookie,
+        $crypto,
+    ))->restaurarSesion();
 }

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-class Cookie
+class CookieManejador
 {
   private static function opcionesBase(int $expira): array
   {
@@ -39,4 +39,3 @@ class Cookie
     unset($_COOKIE[$nombre]);
   }
 }
-
