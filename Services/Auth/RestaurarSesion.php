@@ -54,15 +54,4 @@ class RestaurarSesion
     $this->tokens->rotar(hash('sha256', $token), $user->id);
     return true;
   }
-  // 5. Restaurar sesión
-  $this->session->regenerar();
-  $this->session->establecer('user_id', $user->id);
-  $this->session->establecer('user_role', $user->role);
-  $this->session->establecer('username', $user->username);
-
-  // 6. Rotar token
-  $this->tokens->rotar(hash('sha256', $token), $user->id);
-
-  return true;
-}
 }
