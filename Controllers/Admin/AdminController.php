@@ -20,12 +20,12 @@ class AdminController
   public function mostrarFormularioAgregar(): void
   {
     AuthMiddleware::requerirRol('admin');
-    require ROOT . '/views/admin/agregar.php';
+    // require ROOT . '/views/admin/agregar.php';
   }
 
   public function mostrarEstadisticas(): void
   {
     AuthMiddleware::requerirRol('admin');
-    require ROOT . '/views/admin/estadisticas.php';
+    // require ROOT . '/views/admin/estadisticas.php';
   }
 }

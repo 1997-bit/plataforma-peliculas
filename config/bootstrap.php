@@ -14,6 +14,8 @@ use App\Services\CookieManejador;
 use App\Services\CryptoServicio;
 use App\Services\SessionManager;
 
+header_remove('X-Powered-By');
+
 $dotenv = Dotenv\Dotenv::createImmutable(ROOT);
 $dotenv->load();
 $dotenv->required(['DB_HOST', 'DB_NAME', 'DB_USER', 'APP_KEY', 'APP_HMAC_KEY'])->notEmpty();
