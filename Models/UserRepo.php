@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -10,20 +11,23 @@ use Ramsey\Uuid\Uuid;
 
 class UserRepo
 {
-  public function __construct(
-    private PDO $pdo,
-    private CryptoServicio $crypto,
-  ) {}
+    public function __construct(
+        private PDO $pdo,
+        private CryptoServicio $crypto,
+    ) {
+    }
 
-  public function buscarPorCorreo(string $email): ?User
-  {
-    $stmt = $this->pdo->prepare(
-      'SELECT id, email, password_hash, username, role, is_active
+    public function buscarPorCorreo(string $email): ?User
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, email, password_hash, username, role, is_active
       FROM users WHERE email_hash = :hash LIMIT 1'
         );
-          $row = $stmt->fetch(PDO::FETCH_ASSOC);
-          if (!is_array($row)) return null;
-          return $this->hidratar($row);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!is_array($row)) {
+            return null;
+        }
+        return $this->hidratar($row);
     }
 
     public function buscarPorId(string $id): ?User
@@ -34,7 +38,9 @@ class UserRepo
         );
         $stmt->execute([':id' => UuidHelper::uuidABinario($id)]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!is_array($row)) return null;
+        if (!is_array($row)) {
+            return null;
+        }
         return $this->hidratar($row);
     }
 
@@ -47,7 +53,7 @@ class UserRepo
         );
         $stmt->execute([
             ':id' => UuidHelper::uuidABinario($uuid),
-            ':email'=> $this->crypto->cifrar($user->email),
+            ':email' => $this->crypto->cifrar($user->email),
             ':email_hash' => $this->hmacEmail($user->email),
             ':password_hash' => $user->passwordHash,
             ':username' => $this->crypto->cifrar($user->username),
@@ -79,6 +85,6 @@ class UserRepo
 
     private function hmacEmail(string $email): string
     {
-      return hash_hmac('sha256', strtolower(trim($email)), (string)($_ENV['APP_HMAC_KEY'] ?? ''));
+        return hash_hmac('sha256', strtolower(trim($email)), (string)($_ENV['APP_HMAC_KEY'] ?? ''));
     }
 }

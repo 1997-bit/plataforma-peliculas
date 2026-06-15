@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
@@ -34,7 +35,8 @@ Session::iniciar();
 if (random_int(1, 100) === 1) {
     try {
         Database::obtenerInstancia()->exec('DELETE FROM remember_tokens WHERE expires_at < NOW()');
-    } catch (\Throwable) {}
+    } catch (\Throwable) {
+    }
 }
 
 if (!Session::existe('user_id')) {

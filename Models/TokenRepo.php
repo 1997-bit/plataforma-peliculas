@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -10,22 +11,23 @@ use PDO;
 
 class TokenRepo
 {
-  private const NOMBRE_COOKIE = 'remember_token';
-  private const DIAS_VIDA = 30;
+    private const NOMBRE_COOKIE = 'remember_token';
+    private const DIAS_VIDA = 30;
 
-  public function __construct(
-    private PDO $pdo,
-    private CryptoServicio $crypto,
-    private CookieManejador $cookie,
-  ) {}
+    public function __construct(
+        private PDO $pdo,
+        private CryptoServicio $crypto,
+        private CookieManejador $cookie,
+    ) {
+    }
 
-  public function crear(string $uuidUsuario): void
-  {
-    $token = bin2hex(random_bytes(32));
-    $expiraEn = date('Y-m-d H:i:s', time() + (self::DIAS_VIDA * 24 * 3600));
+    public function crear(string $uuidUsuario): void
+    {
+        $token = bin2hex(random_bytes(32));
+        $expiraEn = date('Y-m-d H:i:s', time() + (self::DIAS_VIDA * 24 * 3600));
 
-    $stmt = $this->pdo->prepare(
-      'INSERT INTO remember_tokens (user_id, token_hash, expires_at)
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO remember_tokens (user_id, token_hash, expires_at)
       VALUES (:user_id, :token_hash, :expires_at)'
         );
         $stmt->execute([

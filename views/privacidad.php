@@ -19,7 +19,8 @@
 		<link rel="stylesheet" href="/assets/css/legal.css" />
 	</head>
 	<body>
-		<?php $navClass = 'nav'; require ROOT . '/views/partials/nav.php'; ?>
+		<?php $navClass = 'nav';
+		require ROOT . '/views/partials/nav.php'; ?>
 
 		<main class="legal-contenido">
 			<div class="legal-header">

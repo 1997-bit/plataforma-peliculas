@@ -20,7 +20,8 @@
 		<link rel="stylesheet" href="/assets/css/landing.css" />
 	</head>
 	<body>
-		<?php $navClass = 'nav'; require ROOT . '/views/partials/nav.php'; ?>
+		<?php $navClass = 'nav';
+		require ROOT . '/views/partials/nav.php'; ?>
 
 		<main>
 			<section class="hero" aria-label="Presentación">

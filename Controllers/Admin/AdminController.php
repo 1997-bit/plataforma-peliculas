@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Controllers\Admin;
@@ -11,21 +12,21 @@ use App\Middleware\AuthMiddleware;
  */
 class AdminController
 {
-  public function mostrarPanel(): void
-  {
-    AuthMiddleware::requerirRol('admin');
-    require ROOT . '/views/admin/index.php';
-  }
+    public function mostrarPanel(): void
+    {
+        AuthMiddleware::requerirRol('admin');
+        require ROOT . '/views/admin/index.php';
+    }
 
-  public function mostrarFormularioAgregar(): void
-  {
-    AuthMiddleware::requerirRol('admin');
-    // require ROOT . '/views/admin/agregar.php';
-  }
+    public function mostrarFormularioAgregar(): void
+    {
+        AuthMiddleware::requerirRol('admin');
+        // require ROOT . '/views/admin/agregar.php';
+    }
 
-  public function mostrarEstadisticas(): void
-  {
-    AuthMiddleware::requerirRol('admin');
-    // require ROOT . '/views/admin/estadisticas.php';
-  }
+    public function mostrarEstadisticas(): void
+    {
+        AuthMiddleware::requerirRol('admin');
+        // require ROOT . '/views/admin/estadisticas.php';
+    }
 }

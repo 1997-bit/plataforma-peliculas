@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -8,14 +9,15 @@ use PDO;
 
 class IntentosLoginRepo
 {
-  public function __construct(
-    private PDO $pdo,
-  ) {}
+    public function __construct(
+        private PDO $pdo,
+    ) {
+    }
 
-  public function registrarIntento(string $ip, string $email, bool $exito): void
-  {
-    $stmt = $this->pdo->prepare(
-      'INSERT INTO login_attempts (ip, email, success)
+    public function registrarIntento(string $ip, string $email, bool $exito): void
+    {
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO login_attempts (ip, email, success)
       VALUES (:ip, :email, :success)'
         );
         $stmt->execute([
@@ -35,7 +37,7 @@ class IntentosLoginRepo
         $stmt->execute([':ip' => $ip, ':desde' => $desde]);
         return (int) $stmt->fetchColumn();
     }
-    
+
     /** @param array<string, mixed> $ctx */
     public function registrarEvento(string $tipo, string $ip, ?string $uuid, array $ctx = []): void
     {
@@ -52,4 +54,3 @@ class IntentosLoginRepo
         ]);
     }
 }
-
