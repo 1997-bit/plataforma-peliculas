@@ -17,6 +17,9 @@
 
 
 
-/public/assets/images/posters/
+/public/assets/images/posters/*.jpg
+/public/assets/images/posters/*.jpeg
+/public/assets/images/posters/*.png
 /app/
 *.log
+.php-cs-fixer.cache
