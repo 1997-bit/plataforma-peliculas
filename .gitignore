@@ -22,3 +22,4 @@
 /public/assets/images/posters/*.png
 /app/
 *.log
+.php-cs-fixer.cache
