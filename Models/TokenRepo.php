@@ -37,6 +37,7 @@ class TokenRepo
         $this->cookie->establecer(self::NOMBRE_COOKIE, $this->crypto->cifrar($token), self::DIAS_VIDA);
     }
 
+    /** @return array<string, mixed>|null */
     public function buscarPorToken(string $token): ?array
     {
         $stmt = $this->pdo->prepare(
@@ -44,7 +45,8 @@ class TokenRepo
              WHERE token_hash = :token_hash AND expires_at > NOW() LIMIT 1'
         );
         $stmt->execute([':token_hash' => hash('sha256', $token)]);
-        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return is_array($row) ? $row : null;
     }
 
     public function rotar(string $hashViejo, string $uuidUsuario): void

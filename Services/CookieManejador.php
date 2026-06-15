@@ -5,6 +5,7 @@ namespace App\Services;
 
 class CookieManejador
 {
+  /** @return array<string, mixed> */
   private static function opcionesBase(int $expira): array
   {
     return [
@@ -25,7 +26,7 @@ class CookieManejador
 
   public static function obtener(string $nombre, string $defecto = ''): string
   {
-    return $_COOKIE[$nombre] ?? $defecto;
+    return (string)($_COOKIE[$nombre] ?? $defecto);
   }
 
   public static function existe(string $nombre): bool

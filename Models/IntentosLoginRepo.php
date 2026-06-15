@@ -28,14 +28,15 @@ class IntentosLoginRepo
     public function contarFallidosRecientes(string $ip, int $ventanaSegundos = 900): int
     {
         $desde = date('Y-m-d H:i:s', time() - $ventanaSegundos);
-        $stmt  = $this->pdo->prepare(
+        $stmt = $this->pdo->prepare(
             'SELECT COUNT(*) FROM login_attempts
              WHERE ip = :ip AND success = 0 AND attempted_at >= :desde'
         );
         $stmt->execute([':ip' => $ip, ':desde' => $desde]);
         return (int) $stmt->fetchColumn();
     }
-
+    
+    /** @param array<string, mixed> $ctx */
     public function registrarEvento(string $tipo, string $ip, ?string $uuid, array $ctx = []): void
     {
         $binId = $uuid ? UuidHelper::uuidABinario($uuid) : null;

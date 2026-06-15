@@ -11,6 +11,7 @@ class Respuesta
     exit;
   }
 
+  /** @param array<string, mixed> $data */
   public function mostrarVista(string $view, array $data = []): void
   {
     extract($data, EXTR_SKIP);

@@ -14,7 +14,7 @@ class ManejadorCsrf
 
   public function validarTokenCsrf(string $token): bool
   {
-    $guardado = $_SESSION['_csrf_token'] ?? '';
+    $guardado = (string)($_SESSION['_csrf_token'] ?? '');
     return hash_equals($guardado, $token);
   }
 }

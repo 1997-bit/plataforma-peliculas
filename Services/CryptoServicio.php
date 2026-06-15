@@ -13,7 +13,7 @@ class CryptoServicio
   private static function obtenerClave(): Key
   {
     if (self::$clave === null) {
-      self::$clave = Key::loadFromAsciiSafeString($_ENV['APP_KEY']);
+      self::$clave = Key::loadFromAsciiSafeString((string)($_ENV['APP_KEY'] ?? ''));
     }
     return self::$clave;
   }

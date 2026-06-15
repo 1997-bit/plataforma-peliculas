@@ -25,17 +25,17 @@ class RegistroController
 
   public function procesarRegistro(): void
   {
-    if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
+    if (!Session::validarCsrf((string)($_POST['_csrf'] ?? ''))) {
       $this->redirigir('/register');
       return;
     }
 
-    $antixss  = new AntiXSS();
-    $email = $antixss->xss_clean(trim($_POST['email'] ?? ''));
-    $password = trim($_POST['password'] ?? '');
-    $confirm = trim($_POST['password_confirm'] ?? '');
-    $username = $antixss->xss_clean(trim($_POST['username'] ?? ''));
-    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $antixss = new AntiXSS();
+    $email = $antixss->xss_clean(trim((string)($_POST['email'] ?? '')));
+    $password = trim((string)($_POST['password'] ?? ''));
+    $confirm = trim((string)($_POST['password_confirm'] ?? ''));
+    $username = $antixss->xss_clean(trim((string)($_POST['username'] ?? '')));
+    $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
 
     $resultado = $this->registrarUsuario->registrar($email, $password, $confirm, $username, $ip);
 

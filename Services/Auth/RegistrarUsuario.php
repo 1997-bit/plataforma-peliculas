@@ -48,6 +48,7 @@ class RegistrarUsuario
     return new ResultadoRegistro(success: true, redirectUrl: '/home');
   }
 
+  /** @return array<int, string> */
   private function validarDatos(string $email, string $password, string $confirm, string $username): array
   {
     $errores = [];
