@@ -1,0 +1,72 @@
+.footer {
+	padding-block-start: clamp(3rem, 6vw, 5rem);
+	padding-inline: clamp(1rem, 5vw, 4rem);
+	border-top: 1px solid oklch(50% 0 0 / 0.15);
+	font-size: var(--text-sm);
+}
+
+.footer-grid {
+	display: grid;
+	grid-template-columns: 2fr 1fr 1fr auto;
+	gap: 2rem;
+	padding-block-end: 3rem;
+}
+
+.footer-logo {
+	font-size: var(--text-lg);
+	font-weight: 700;
+	display: block;
+	margin-block-end: 0.5rem;
+}
+
+.footer-marca p {
+	font-size: var(--text-sm);
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+	margin: 0;
+}
+
+.footer-col-titulo {
+	font-size: var(--text-sm);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	margin-block-end: 1rem;
+	margin-block-start: 0;
+}
+
+.footer-col ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.footer-col a {
+	font-size: var(--text-sm);
+	color: oklch(from var(--texto) calc(l - 0.2) c h);
+	text-decoration: none;
+}
+
+.footer-col a:hover {
+	color: var(--texto);
+}
+
+.footer-social a {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.5rem;
+	color: oklch(from var(--texto) calc(l - 0.2) c h);
+}
+
+.footer-social a:hover {
+	color: var(--texto);
+}
+
+.footer-bottom {
+	border-top: 1px solid oklch(50% 0 0 / 0.1);
+	padding-block: 1.5rem;
+	font-size: var(--text-xs);
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+}

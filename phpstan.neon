@@ -1,0 +1,8 @@
+parameters:
+    level: 5
+    paths:
+        - Controllers
+        - Models
+        - Services
+    bootstrapFiles:
+        - config/bootstrap.php
