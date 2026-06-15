@@ -12,11 +12,13 @@ $router = new Router();
 $loginController = new LoginController($procesarLogin, $cerrarSesion);
 $registroController = new RegistroController($registrarUsuario);
 $router->registrarGet('/', fn() => require ROOT . '/views/landing.php');
+$router->registrarGet('/privacidad', fn() => require ROOT . '/views/privacidad.php');
 $router->registrarGet('/login', [$loginController, 'mostrarFormulario']);
 $router->registrarPost('/login', [$loginController, 'login']);
 $router->registrarPost('/logout', [$loginController, 'logout']);
 $router->registrarGet('/register', [$registroController, 'mostrarFormulario']);
 $router->registrarPost('/register',[$registroController, 'procesarRegistro']);
+
 
 // Rutas protegidas (requieren sesion activa)
 $router->registrarGet('/home', function () {
