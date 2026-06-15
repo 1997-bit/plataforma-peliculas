@@ -35,10 +35,7 @@
 				/>
 				<div class="hero-contenido">
 					<h1>Qué ver,<br />Resuelto.</h1>
-					<p>
-						Recomendaciones de películas y 
-						series hechas para ti
-					</p>
+					<p>Recomendaciones de películas y series hechas para ti</p>
 					<a href="/register" class="btn-primario">Empieza gratis</a>
 				</div>
 			</section>
@@ -55,6 +52,18 @@
 							decoding="async"
 						/>
 					</li>
+
+					<li class="poster-card">
+						<img
+							src="/assets/images/posters/DOMINGOYLANIEBLA.webp"
+							alt="Domingo y la Niebla"
+							width="300"
+							height="450"
+							loading="lazy"
+							decoding="async"
+						/>
+					</li>
+
 					<li class="poster-card">
 						<img
 							src="/assets/images/posters/PREDATOR.webp"
@@ -77,8 +86,8 @@
 					</li>
 					<li class="poster-card">
 						<img
-							src="/assets/images/posters/DANDADAN.webp"
-							alt="Dandadan"
+							src="/assets/images/posters/ELBRUJO.webp"
+							alt="El Brujo"
 							width="300"
 							height="450"
 							loading="lazy"
@@ -99,6 +108,17 @@
 						<img
 							src="/assets/images/posters/THE-WARRIORS.webp"
 							alt="The Warriors"
+							width="300"
+							height="450"
+							loading="lazy"
+							decoding="async"
+						/>
+					</li>
+
+					<li class="poster-card">
+						<img
+							src="/assets/images/posters/VOCACION.webp"
+							alt="Vocación"
 							width="300"
 							height="450"
 							loading="lazy"
