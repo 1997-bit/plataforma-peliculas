@@ -1,0 +1,36 @@
+.nav {
+	position: fixed;
+	top: 0;
+	inset-inline: 0;
+	z-index: 100;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-block: 1rem;
+	padding-inline: clamp(1rem, 5vw, 4rem);
+	background: linear-gradient(to bottom, oklch(0% 0 0 / 0.6), transparent);
+}
+
+.nav-logo {
+	font-size: var(--text-lg);
+	font-weight: 700;
+	color: oklch(95% 0 0);
+	letter-spacing: -0.02em;
+}
+
+.nav a {
+	color: oklch(85% 0 0);
+	text-decoration: none;
+	font-size: var(--text-sm);
+}
+
+.btn-nav {
+	margin-inline-start: 1.5rem;
+	padding: 0.4rem 1rem;
+	border: 1px solid oklch(85% 0 0 / 0.4);
+	border-radius: 4px;
+}
+
+.btn-nav:hover {
+	background: oklch(100% 0 0 / 0.1);
+}
