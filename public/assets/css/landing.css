@@ -1,4 +1,9 @@
 /* NAV */
+
+@view-transition {
+	navigation: auto;
+}
+
 .nav {
 	position: fixed;
 	top: 0;
