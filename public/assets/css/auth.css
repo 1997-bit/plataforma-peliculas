@@ -18,26 +18,6 @@
 	background: var(--bg);
 }
 
-/* auth.css
-   estilos para login y register
-   mismos tokens que landing.css y base.css */
-
-/* transicion nativa entre paginas, fade automatico del navegador */
-@view-transition {
-	navigation: auto;
-}
-
-.auth-pagina {
-	min-height: 100svh;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: clamp(1rem, 5vw, 3rem);
-	position: relative;
-	overflow: hidden;
-	background: var(--bg);
-}
-
 /* la misma foto y el mismo mask que usa landing.css, sin blur */
 .auth-pagina::before {
 	content: "";
@@ -88,6 +68,9 @@
 }
 
 .auth-error {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
 	margin: 0 0 1.5rem;
 	padding: 0.75rem 1rem;
 	border-radius: 6px;
@@ -114,6 +97,42 @@
 	font-weight: 500;
 }
 
+/* campo con icono. izq para email, izq y der para password */
+.auth-campo-con-icono {
+	position: relative;
+}
+
+.auth-campo-con-icono input {
+	width: 100%;
+}
+
+.auth-icono-izq {
+	position: absolute;
+	left: 0.75rem;
+	top: 50%;
+	transform: translateY(-50%);
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+	pointer-events: none;
+}
+
+/* el icono del ojo es un boton, alterna mostrar y ocultar password */
+.auth-toggle-ojo {
+	position: absolute;
+	right: 0.75rem;
+	top: 50%;
+	transform: translateY(-50%);
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+	display: flex;
+}
+
+.auth-toggle-ojo:hover {
+	color: var(--texto);
+}
+
 .auth-campo input[type="text"],
 .auth-campo input[type="email"],
 .auth-campo input[type="password"] {
@@ -125,6 +144,15 @@
 	border: 1px solid oklch(50% 0 0 / 0.25);
 	border-radius: 6px;
 	transition: border-color 0.2s;
+}
+
+/* estas van despues del padding base, asi gana el padding con espacio para el icono */
+.auth-campo-con-icono.tiene-icono-izq input {
+	padding-left: 2.5rem;
+}
+
+.auth-campo-con-icono.tiene-icono-der input {
+	padding-right: 2.5rem;
 }
 
 .auth-campo input:focus {

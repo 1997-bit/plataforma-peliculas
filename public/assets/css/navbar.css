@@ -34,3 +34,9 @@
 .btn-nav:hover {
 	background: oklch(100% 0 0 / 0.1);
 }
+
+.btn-nav-con-icono {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
