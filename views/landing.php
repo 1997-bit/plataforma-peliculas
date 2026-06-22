@@ -44,9 +44,9 @@
 				</div>
 			</section>
 
-			<section class="posters-seccion" aria-label="Películas destacadas">
-				<ul class="posters-grid" role="list">
-					<li class="poster-card">
+			<section class="galeria-posters" aria-label="Películas destacadas">
+				<ul class="galeria-posters-grid" role="list">
+					<li class="tarjeta-poster">
 						<img
 							src="/assets/images/posters/BIG-LEBOWSKI.webp"
 							alt="The Big Lebowski"
@@ -57,7 +57,7 @@
 						/>
 					</li>
 
-					<li class="poster-card">
+					<li class="tarjeta-poster">
 						<img
 							src="/assets/images/posters/DOMINGOYLANIEBLA.webp"
 							alt="Domingo y la Niebla"
@@ -68,7 +68,7 @@
 						/>
 					</li>
 
-					<li class="poster-card">
+					<li class="tarjeta-poster">
 						<img
 							src="/assets/images/posters/PREDATOR.webp"
 							alt="Predator"
@@ -78,7 +78,7 @@
 							decoding="async"
 						/>
 					</li>
-					<li class="poster-card">
+					<li class="tarjeta-poster">
 						<img
 							src="/assets/images/posters/DISCLOSUREDAY.webp"
 							alt="Disclosure Day"
@@ -88,7 +88,7 @@
 							decoding="async"
 						/>
 					</li>
-					<li class="poster-card">
+					<li class="tarjeta-poster">
 						<img
 							src="/assets/images/posters/ELBRUJO.webp"
 							alt="El Brujo"
@@ -98,7 +98,7 @@
 							decoding="async"
 						/>
 					</li>
-					<li class="poster-card">
+					<li class="tarjeta-poster">
 						<img
 							src="/assets/images/posters/EVANGELION.webp"
 							alt="Evangelion"
@@ -108,7 +108,7 @@
 							decoding="async"
 						/>
 					</li>
-					<li class="poster-card">
+					<li class="tarjeta-poster">
 						<img
 							src="/assets/images/posters/THE-WARRIORS.webp"
 							alt="The Warriors"
@@ -119,7 +119,7 @@
 						/>
 					</li>
 
-					<li class="poster-card">
+					<li class="tarjeta-poster">
 						<img
 							src="/assets/images/posters/VOCACION.webp"
 							alt="Vocación"
@@ -132,9 +132,9 @@
 				</ul>
 			</section>
 
-			<section class="trusted-seccion" aria-label="Usado por">
-				<p class="trusted-label">Usado por</p>
-				<ul class="trusted-grid" role="list">
+			<section class="confianza-seccion" aria-label="Usado por">
+				<p class="confianza-etiqueta">Usado por</p>
+				<ul class="confianza-grid" role="list">
 					<li>
 						<a
 							href="https://www.analog-kidz.com"

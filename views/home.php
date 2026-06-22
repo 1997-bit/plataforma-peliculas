@@ -21,9 +21,9 @@ $tema = $_COOKIE['tema'] ?? null;
 
     <main class="home">
         <section class="shelf">
-            <h2 class="shelf__heading">Películas populares</h2>
-            <div class="shelf__viewport">
-                <div class="shelf__row" role="list" data-carousel>
+            <h2 class="shelf-titulo">Películas populares</h2>
+            <div class="shelf-viewport">
+                <div class="shelf-fila" role="list" data-carousel>
                     <?php foreach ($movies as $item): ?>
                         <?php
                             $title  = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
@@ -33,12 +33,12 @@ $tema = $_COOKIE['tema'] ?? null;
                                 : '/assets/images/placeholder.webp';
                         ?>
                         <article class="card" role="listitem">
-                            <div class="card__poster-wrap">
-                                <img class="card__poster" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
+                            <div class="card-poster-marco">
+                                <img class="card-poster" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
                             </div>
-                            <div class="card__info">
-                                <p class="card__title"><?= $title ?></p>
-                                <p class="card__year"><?= $year ?></p>
+                            <div class="card-info">
+                                <p class="card-titulo"><?= $title ?></p>
+                                <p class="card-anio"><?= $year ?></p>
                             </div>
                         </article>
                     <?php endforeach; ?>

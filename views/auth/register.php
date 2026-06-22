@@ -12,7 +12,6 @@
 		<main class="auth-pagina">
 			<div class="auth-card">
 				<h1 class="auth-titulo">Crear cuenta</h1>
-				<p class="auth-subtitulo">Empieza gratis, sin tarjeta</p>
 
 				<?php if ($error): ?>
 				<p class="auth-error">

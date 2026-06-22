@@ -1,18 +1,13 @@
 /* home.css
-   layout de hero, shelf y card */
+   layout de la pagina home, shelf y card */
 
-/* tokens locales */
 :root {
-  --card-w: 160px;
-  --card-radius: 10px;
+  --card-ancho: 160px;
+  --card-radio: 10px;
   --shelf-gap: 1rem;
-  --hero-h: 520px;
-  --overlay: rgba(0, 0, 0, 0.55);
   --badge-bg: rgba(255, 255, 255, 0.15);
-  --rating-bg: rgba(0, 0, 0, 0.65);
 }
 
-/* contenedor principal */
 .home {
   display: flex;
   flex-direction: column;
@@ -20,84 +15,18 @@
   padding-block: 2rem;
 }
 
-/* seccion hero */
-.hero {
-  position: relative;
-  height: var(--hero-h);
-  background-image: var(--hero-bg);
-  background-size: cover;
-  background-position: center top;
-  border-radius: var(--card-radius);
-  overflow: hidden;
-  margin-inline: var(--page-px, 1.5rem);
-}
-
-/* gradiente encima de la imagen */
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 0.80) 0%,
-    rgba(0, 0, 0, 0.40) 50%,
-    transparent 100%
-  );
-}
-
-.hero__content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  height: 100%;
-  padding: 2.5rem;
-  max-width: 560px;
-}
-
-.hero__badge {
-  display: inline-block;
-  width: fit-content;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  background: var(--badge-bg);
-  backdrop-filter: blur(6px);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #fff;
-  margin-bottom: 0.75rem;
-}
-
-.hero__title {
-  font-size: clamp(1.6rem, 4vw, 2.8rem);
-  font-weight: 800;
-  line-height: 1.15;
-  color: #fff;
-  margin: 0 0 0.75rem;
-}
-
-.hero__overview {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.82);
-  margin: 0;
-}
-
 /* seccion shelf, el carousel */
 .shelf {
   padding-inline: var(--page-px, 1.5rem);
 }
 
-.shelf__heading {
+.shelf-titulo {
   font-size: 1.15rem;
   font-weight: 700;
   margin: 0 0 1rem;
 }
 
-.shelf__viewport {
+.shelf-viewport {
   overflow: hidden;
   /* fade en los bordes para avisar que hay mas contenido al arrastrar */
   mask-image: linear-gradient(
@@ -109,7 +38,7 @@
   );
 }
 
-.shelf__row {
+.shelf-fila {
   display: flex;
   gap: var(--shelf-gap);
   overflow-x: auto;
@@ -120,11 +49,11 @@
   user-select: none;
 }
 
-.shelf__row:active {
+.shelf-fila:active {
   cursor: grabbing;
 }
 
-.shelf__row::-webkit-scrollbar {
+.shelf-fila::-webkit-scrollbar {
   display: none;
 }
 
@@ -135,20 +64,20 @@
   gap: 0.5rem;
   cursor: pointer;
   scroll-snap-align: start;
-  flex-shrink: 0;           /* for horizontal scroll */
-  width: var(--card-w);
+  flex-shrink: 0;
+  width: var(--card-ancho);
 }
 
 /* el poster siempre mantiene proporcion 2 a 3 */
-.card__poster-wrap {
+.card-poster-marco {
   position: relative;
   aspect-ratio: 2 / 3;
-  border-radius: var(--card-radius);
+  border-radius: var(--card-radio);
   overflow: hidden;
   background: rgba(128, 128, 128, 0.15);
 }
 
-.card__poster {
+.card-poster {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -156,44 +85,29 @@
   transition: transform 0.3s ease;
 }
 
-.card:hover .card__poster,
-.card:focus-visible .card__poster {
+.card:hover .card-poster,
+.card:focus-visible .card-poster {
   transform: scale(1.04);
 }
 
-/* badges encima del poster */
-.card__type {
-  position: absolute;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  line-height: 1.4;
-  top: 0.5rem;
-  left: 0.5rem;
-  background: var(--badge-bg);
-  backdrop-filter: blur(4px);
-  color: #fff;
-}
-
 /* texto debajo del poster */
-.card__info {
+.card-info {
   padding-inline: 0.15rem;
 }
 
-.card__title {
+.card-titulo {
   margin: 0;
   font-size: 0.85rem;
   font-weight: 600;
   line-height: 1.3;
-/* corta el texto a 2 lineas */
+  /* corta el texto a 2 lineas */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.card__year {
+.card-anio {
   margin: 0.2rem 0 0;
   font-size: 0.75rem;
   font-weight: 300;
@@ -203,13 +117,12 @@
 /* ajustes para pantalla grande */
 @media (min-width: 601px) {
   :root {
-    --card-w: 180px;
+    --card-ancho: 180px;
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --card-w: 200px;
-    --hero-h: 620px;
+    --card-ancho: 200px;
   }
 }
