@@ -1,6 +1,7 @@
 /**
- * carousel.js — loop infinito por clonación, drag/swipe nativo (scroll-snap).
- * Sin flechas, sin autoplay. Funciona con cualquier número de .card hijos
+ * carousel.js
+ * loop infinito clonando items, drag y swipe nativo con scroll snap.
+ * sin flechas, sin autoplay. funciona con cualquier numero de .card
  * dentro de [data-carousel].
  */
 (function () {
@@ -20,7 +21,7 @@
     const before = cloneSet();
     const after = cloneSet();
 
-    before.forEach((node) => row.appendChild(node)); // temp, reorder below
+    before.forEach((node) => row.appendChild(node)); // paso temporal, se reordena abajo
     row.innerHTML = '';
     before.forEach((node) => row.appendChild(node));
     originals.forEach((node) => row.appendChild(node));
@@ -30,7 +31,7 @@
       const first = originals[0];
       const gap = parseFloat(getComputedStyle(row).gap || '0');
       return originals.reduce((sum, _, i) => {
-        const card = row.children[originals.length + i]; // real set offset
+        const card = row.children[originals.length + i]; // offset del set real
         return sum + card.getBoundingClientRect().width + gap;
       }, 0);
     };
