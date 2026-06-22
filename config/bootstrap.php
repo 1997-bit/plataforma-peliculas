@@ -39,7 +39,7 @@ if (random_int(1, 100) === 1) {
     }
 }
 
-if (!Session::existe('user_id')) {
+if (!Session::existe('user_id') && CookieManejador::existe('remember_token')) {
     $pdo = Database::obtenerInstancia();
     $crypto = new CryptoServicio();
     $cookie = new CookieManejador();

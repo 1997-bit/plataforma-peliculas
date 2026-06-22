@@ -1,23 +1,54 @@
 <?php
+/** @var string $username */
+/** @var string $csrf */
+/** @var array  $movies */
+
 $tema = $_COOKIE['tema'] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="es" <?= $tema ? 'data-tema="' . htmlspecialchars($tema, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
 <head>
     <meta charset="UTF-8">
-    <title>Home</title>
-    <link rel="stylesheet" href="/assets/css/base.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio — CineApp</title>
+    <link rel="stylesheet" href="/assets/css/navbar.css" />
+    <link rel="stylesheet" href="/assets/css/footer.css" />
+    <link rel="stylesheet" href="/assets/css/base.css"/>
+    <link rel="stylesheet" href="/assets/css/home.css"/>
 </head>
 <body>
-    <h1>Hola, <?= htmlspecialchars($username, ENT_QUOTES, 'UTF-8') ?></h1>
+    <?php require ROOT . '/views/partials/nav.php'; ?>
 
-    <form method="POST" action="/logout">
-        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-        <button type="submit">Cerrar sesión</button>
-    </form>
+    <main class="home">
+        <section class="shelf">
+            <h2 class="shelf__heading">Películas populares</h2>
+            <div class="shelf__viewport">
+                <div class="shelf__row" role="list" data-carousel>
+                    <?php foreach ($movies as $item): ?>
+                        <?php
+                            $title  = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                            $year   = substr($item['release_date'] ?? '', 0, 4);
+                            $poster = $item['poster_path']
+                                ? 'https://image.tmdb.org/t/p/w342' . $item['poster_path']
+                                : '/assets/images/placeholder.webp';
+                        ?>
+                        <article class="card" role="listitem">
+                            <div class="card__poster-wrap">
+                                <img class="card__poster" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
+                            </div>
+                            <div class="card__info">
+                                <p class="card__title"><?= $title ?></p>
+                                <p class="card__year"><?= $year ?></p>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </section>
+    </main>
 
-    <button id="btn-tema">Toggle</button>
+    <script src="/assets/js/carousel.js" defer></script>
 
-    <script src="/assets/js/tema.js"></script>
+    <?php require ROOT . '/views/partials/footer.php'; ?>
 </body>
 </html>

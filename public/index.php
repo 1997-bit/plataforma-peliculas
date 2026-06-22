@@ -8,6 +8,7 @@ use App\Core\Router;
 use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\RegistroController;
 use App\Middleware\AuthMiddleware;
+use App\Controllers\Home\HomeController;
 
 $router = new Router();
 
@@ -23,11 +24,10 @@ $router->registrarPost('/register', [$registroController, 'procesarRegistro']);
 
 
 // Rutas protegidas (requieren sesion activa)
-$router->registrarGet('/home', function () {
+$homeController = new HomeController();
+$router->registrarGet('/home', function () use ($homeController) {
     AuthMiddleware::verificarAutenticacion();
-    $username = \App\Core\Session::obtener('username');
-    $csrf = \App\Core\Session::generarCsrf();
-    require ROOT . '/views/home.php';
+    $homeController->index();
 });
 
 $router->registrarGet('/onboarding/step1', function () {
@@ -51,4 +51,15 @@ $router->registrarGet('/admin', function () {
     require ROOT . '/views/admin/index.php';
 });
 
-$router->despachar();
+try {
+    $router->despachar();
+} catch (\Throwable $e) {
+    error_log('Unhandled exception: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    http_response_code(500);
+
+    if (($_ENV['APP_DEBUG'] ?? 'false') === 'true') {
+        throw $e;
+    }
+
+    require ROOT . '/views/errors/500.php';
+}
