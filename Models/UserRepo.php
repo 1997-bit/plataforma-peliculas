@@ -17,19 +17,19 @@ class UserRepo
     ) {
     }
 
-public function buscarPorCorreo(string $email): ?User
-{
-    $stmt = $this->pdo->prepare(
-        'SELECT id, email, password_hash, username, role, is_active
+    public function buscarPorCorreo(string $email): ?User
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, email, password_hash, username, role, is_active
   FROM users WHERE email_hash = :hash LIMIT 1'
-    );
-    $stmt->execute([':hash' => $this->hmacEmail($email)]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!is_array($row)) {
-        return null;
+        );
+        $stmt->execute([':hash' => $this->hmacEmail($email)]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!is_array($row)) {
+            return null;
+        }
+        return $this->hidratar($row);
     }
-    return $this->hidratar($row);
-}
 
     public function buscarPorId(string $id): ?User
     {
