@@ -9,27 +9,31 @@ use App\Helpers\GenerosTmdb;
 
 final class CatalogoController
 {
-    private const TMDB_BASE = 'https://api.themoviedb.org/3';
-    private const CACHE_DIR = ROOT . '/storage/tmdb_cache';
-    private const CACHE_TTL = 3600; // 1 hora
+<?php
 
-    private string $apiKey;
+declare(strict_types=1);
 
-    public function __construct()
+namespace App\Controllers\Catalogo;
+
+use App\Core\Session;
+use App\Helpers\GenerosTmdb;
+use App\Helpers\TmdbTipo;
+use App\Services\TmdbClient;
+
+final class CatalogoController
+{
+    public function __construct(private TmdbClient $tmdb)
     {
-        $this->apiKey = (string) ($_ENV['TMDB_API_KEY'] ?? '');
     }
 
     public function index(): void
     {
-        $tipo = $_GET['tipo'] ?? 'movie';
-        $tipo = in_array($tipo, ['movie', 'series'], true) ? $tipo : 'movie';
-
+        $tipo = TmdbTipo::normalizar($_GET['tipo'] ?? null);
         $generoId = isset($_GET['genero']) && $_GET['genero'] !== '' ? (int) $_GET['genero'] : null;
         $busqueda = isset($_GET['q']) ? trim((string) $_GET['q']) : '';
-        $page = max(1, min(500, (int) ($_GET['page'] ?? 1)));
+        $page = TmdbTipo::pagina($_GET['page'] ?? null);
 
-        $recursoTmdb = $tipo === 'series' ? 'tv' : 'movie';
+        $recursoTmdb = TmdbTipo::aRecursoTmdb($tipo);
 
         if ($busqueda !== '') {
             $resultado = $this->buscar($recursoTmdb, $busqueda, $page);
@@ -82,7 +86,7 @@ final class CatalogoController
             $params['with_genres'] = (string) $generoId;
         }
 
-        return $this->fetch("/discover/{$recurso}", $params);
+        return $this->tmdb->fetch("/discover/{$recurso}", $params);
     }
 
     /**
@@ -97,73 +101,6 @@ final class CatalogoController
             'page' => (string) $page,
         ];
 
-        return $this->fetch("/search/{$recurso}", $params);
-    }
-
-    /**
-     * @param array<string,string> $params
-     * @return array<string,mixed>
-     */
-    private function fetch(string $endpoint, array $params): array
-    {
-        $query = '?' . http_build_query($params);
-        $cacheKey = md5($endpoint . $query);
-        $cacheFile = self::CACHE_DIR . '/' . $cacheKey . '.json';
-
-        $cached = $this->leerCache($cacheFile);
-        if ($cached !== null) {
-            return $cached;
-        }
-
-        $ch = curl_init(self::TMDB_BASE . $endpoint . $query);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 8,
-            CURLOPT_HTTPHEADER => [
-                'Accept: application/json',
-                'Authorization: Bearer ' . $this->apiKey,
-            ],
-            CURLOPT_SSL_VERIFYPEER => true,
-        ]);
-        $result = curl_exec($ch);
-        curl_close($ch);
-
-        if (!$result) {
-            return $this->leerCache($cacheFile, ignorarTtl: true) ?? ['results' => []];
-        }
-
-        $decoded = json_decode($result, true);
-        $data = is_array($decoded) ? $decoded : ['results' => []];
-        $this->escribirCache($cacheFile, $data);
-
-        return $data;
-    }
-
-    private function leerCache(string $path, bool $ignorarTtl = false): ?array
-    {
-        if (!is_file($path)) {
-            return null;
-        }
-
-        if (!$ignorarTtl && (time() - filemtime($path)) > self::CACHE_TTL) {
-            return null;
-        }
-
-        $contenido = file_get_contents($path);
-        if ($contenido === false) {
-            return null;
-        }
-
-        $decoded = json_decode($contenido, true);
-        return is_array($decoded) ? $decoded : null;
-    }
-
-    /** @param array<string,mixed> $data */
-    private function escribirCache(string $path, array $data): void
-    {
-        if (!is_dir(self::CACHE_DIR)) {
-            mkdir(self::CACHE_DIR, 0775, true);
-        }
-        file_put_contents($path, json_encode($data));
+        return $this->tmdb->fetch("/search/{$recurso}", $params);
     }
 }

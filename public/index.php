@@ -29,7 +29,7 @@ $router->registrarGet('/register', [$registroController, 'mostrarFormulario']);
 $router->registrarPost('/register', [$registroController, 'procesarRegistro']);
 
 // Rutas protegidas (requieren sesion activa)
-$homeController = new HomeController($contenidoRepo);
+$homeController = new HomeController($contenidoRepo, $tmdbClient);
 $router->registrarGet('/home', function () use ($homeController) {
     AuthMiddleware::verificarAutenticacion();
     $homeController->index();
@@ -45,7 +45,7 @@ $router->registrarGet('/onboarding/step2', function () {
     require ROOT . '/views/onboarding/step2.php';
 });
 
-$catalogoController = new CatalogoController();
+$catalogoController = new CatalogoController($tmdbClient);
 $router->registrarGet('/catalogo', function () use ($catalogoController) {
     AuthMiddleware::verificarAutenticacion();
     $catalogoController->index();
@@ -55,7 +55,7 @@ $router->registrarPost('/catalogo/vista', function () use ($catalogoController) 
     $catalogoController->registrarVista();
 });
 
-$contenidoController = new ContenidoController($contenidoRepo);
+$contenidoController = new ContenidoController($contenidoRepo, $tmdbClient);
 $router->registrarGet('/contenido', function () use ($contenidoController) {
     AuthMiddleware::verificarAutenticacion();
     $contenidoController->index();
@@ -65,7 +65,7 @@ $router->registrarPost('/contenido/calificar', function () use ($contenidoContro
     $contenidoController->calificar();
 });
 
-$recomendacionController = new RecomendacionController($usuarioRepo);
+$recomendacionController = new RecomendacionController($usuarioRepo, $tmdbClient);
 $router->registrarGet('/recomendaciones', function () use ($recomendacionController) {
     AuthMiddleware::verificarAutenticacion();
     $recomendacionController->index();

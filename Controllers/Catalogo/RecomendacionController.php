@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controllers\Catalogo;
 
 use App\Core\Session;
+use App\Helpers\TmdbTipo;
 use App\Models\UserRepo;
+use App\Services\TmdbClient;
 
 /**
  * Recomendaciones basicas: toma los generos favoritos guardados en
@@ -15,19 +17,14 @@ use App\Models\UserRepo;
  * Es deliberadamente simple: no hay scoring, no hay collaborative
  * filtering, no hay peso por historial. Es el primer corte funcional;
  * si despues se quiere mezclar con view_history/ratings, este es el
- * punto de entrada a extender (ver TODO abajo).
+ * punto de entrada a extender.
  */
 final class RecomendacionController
 {
-    private const TMDB_BASE = 'https://api.themoviedb.org/3';
-    private const CACHE_DIR = ROOT . '/storage/tmdb_cache';
-    private const CACHE_TTL = 3600;
-
-    private string $apiKey;
-
-    public function __construct(private UserRepo $userRepo)
-    {
-        $this->apiKey = (string) ($_ENV['TMDB_API_KEY'] ?? '');
+    public function __construct(
+        private UserRepo $userRepo,
+        private TmdbClient $tmdb,
+    ) {
     }
 
     public function index(): void
@@ -42,8 +39,8 @@ final class RecomendacionController
         }
 
         $generosFavoritos = $usuario->preferences['generos'] ?? [];
-        $tipo = ($_GET['tipo'] ?? 'movie') === 'series' ? 'series' : 'movie';
-        $page = max(1, min(500, (int) ($_GET['page'] ?? 1)));
+        $tipo = TmdbTipo::normalizar($_GET['tipo'] ?? null);
+        $page = TmdbTipo::pagina($_GET['page'] ?? null);
 
         $sinGenerosElegidos = $generosFavoritos === [];
 
@@ -53,7 +50,7 @@ final class RecomendacionController
             $items = [];
             $totalPaginas = 1;
         } else {
-            $recurso = $tipo === 'series' ? 'tv' : 'movie';
+            $recurso = TmdbTipo::aRecursoTmdb($tipo);
             $resultado = $this->descubrirPorGeneros($recurso, $generosFavoritos, $page);
             $items = $resultado['results'] ?? [];
             $totalPaginas = (int) ($resultado['total_pages'] ?? 1);
@@ -87,77 +84,6 @@ final class RecomendacionController
             $params['certification.lte'] = 'R';
         }
 
-        return $this->fetch("/discover/{$recurso}", $params);
-    }
-
-    /**
-     * @param array<string,string> $params
-     * @return array<string,mixed>
-     */
-    private function fetch(string $endpoint, array $params): array
-    {
-        $query = '?' . http_build_query($params);
-        $cacheKey = md5($endpoint . $query);
-        $cacheFile = self::CACHE_DIR . '/' . $cacheKey . '.json';
-
-        $cached = $this->leerCache($cacheFile);
-        if ($cached !== null) {
-            return $cached;
-        }
-
-        $ch = curl_init(self::TMDB_BASE . $endpoint . $query);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 8,
-            CURLOPT_HTTPHEADER => [
-                'Accept: application/json',
-                'Authorization: Bearer ' . $this->apiKey,
-            ],
-            CURLOPT_SSL_VERIFYPEER => true,
-        ]);
-        $result = curl_exec($ch);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-
-        if (!$result) {
-            if ($curlError !== '') {
-                error_log('TMDB recomendaciones curl error: ' . $curlError);
-            }
-            return $this->leerCache($cacheFile, ignorarTtl: true) ?? ['results' => []];
-        }
-
-        $decoded = json_decode($result, true);
-        $data = is_array($decoded) ? $decoded : ['results' => []];
-        $this->escribirCache($cacheFile, $data);
-
-        return $data;
-    }
-
-    private function leerCache(string $path, bool $ignorarTtl = false): ?array
-    {
-        if (!is_file($path)) {
-            return null;
-        }
-
-        if (!$ignorarTtl && (time() - filemtime($path)) > self::CACHE_TTL) {
-            return null;
-        }
-
-        $contenido = file_get_contents($path);
-        if ($contenido === false) {
-            return null;
-        }
-
-        $decoded = json_decode($contenido, true);
-        return is_array($decoded) ? $decoded : null;
-    }
-
-    /** @param array<string,mixed> $data */
-    private function escribirCache(string $path, array $data): void
-    {
-        if (!is_dir(self::CACHE_DIR)) {
-            mkdir(self::CACHE_DIR, 0775, true);
-        }
-        file_put_contents($path, json_encode($data));
+        return $this->tmdb->fetch("/discover/{$recurso}", $params);
     }
 }
