@@ -40,3 +40,137 @@
 	align-items: center;
 	gap: 0.4rem;
 }
+
+/* boton que abre el dropdown de cuenta (perfil/configuracion/logout) */
+.nav-cuenta-boton {
+	anchor-name: --nav-cuenta;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	margin-inline-start: 1.5rem;
+	font: inherit;
+	font-size: var(--text-sm);
+	color: oklch(85% 0 0);
+	background: transparent;
+	border: none;
+	cursor: pointer;
+}
+
+.nav-cuenta-flecha {
+	transition: transform 0.15s ease;
+}
+
+.nav-cuenta-boton:open,
+.nav-cuenta-boton[aria-expanded="true"] {
+	color: oklch(100% 0 0);
+}
+
+/* dropdown anclado al boton de cuenta, sin JS de posicionamiento.
+   position-area es mas robusto que calcular anchor() a mano: ubica el
+   dropdown en la celda "abajo-derecha" de la grilla implicita del boton */
+.nav-dropdown {
+	position: fixed;
+	position-anchor: --nav-cuenta;
+	position-area: bottom span-left;
+	margin: 0;
+	margin-top: 0.5rem;
+	min-width: 180px;
+	padding: 0.4rem;
+	list-style: none;
+	border: none;
+	border-radius: 8px;
+	background: oklch(18% 0.03 231);
+	box-shadow: 0 12px 32px oklch(0% 0 0 / 35%);
+	position-try-fallbacks: flip-block;
+}
+
+/* fallback para navegadores sin soporte de anchor positioning: el
+   dropdown se posiciona fijo arriba a la derecha (debajo del navbar),
+   en vez de caer al comportamiento default del popover (centrado) */
+@supports not (position-area: bottom span-left) {
+	.nav-dropdown {
+		top: 4rem;
+		right: clamp(1rem, 5vw, 4rem);
+	}
+}
+
+.nav-dropdown-item {
+	display: block;
+	width: 100%;
+	padding: 0.55rem 0.75rem;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	color: oklch(95% 0 0);
+	font: inherit;
+	font-size: var(--text-sm);
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.nav-dropdown-item:hover {
+	background: oklch(100% 0 0 / 0.08);
+}
+
+.nav-dropdown-item-peligro {
+	color: oklch(70% 0.18 25);
+}
+
+.nav-dropdown-separador {
+	height: 1px;
+	margin: 0.4rem 0.2rem;
+	background: oklch(100% 0 0 / 0.12);
+}
+
+/* dialog nativo de confirmacion (logout, etc), abierto via Invoker
+   Commands (commandfor/command en el button), sin JS */
+.dialogo-confirmar {
+	border: none;
+	border-radius: 10px;
+	padding: 1.5rem;
+	max-width: 320px;
+	background: oklch(18% 0.03 231);
+	color: oklch(95% 0 0);
+	box-shadow: 0 20px 50px oklch(0% 0 0 / 35%);
+}
+
+.dialogo-confirmar::backdrop {
+	background: oklch(0% 0 0 / 55%);
+}
+
+.dialogo-confirmar-texto {
+	margin: 0 0 1.25rem;
+	font-size: var(--text-base);
+}
+
+.dialogo-confirmar-acciones {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.6rem;
+}
+
+.dialogo-confirmar-cancelar,
+.dialogo-confirmar-aceptar {
+	font: inherit;
+	font-size: var(--text-sm);
+	padding: 0.5rem 1rem;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.dialogo-confirmar-cancelar {
+	background: transparent;
+	border: 1px solid oklch(85% 0 0 / 0.35);
+	color: oklch(95% 0 0);
+}
+
+.dialogo-confirmar-aceptar {
+	background: oklch(58% 0.22 25);
+	border: none;
+	color: white;
+}
+
+.dialogo-confirmar-aceptar:hover {
+	background: oklch(50% 0.22 25);
+}

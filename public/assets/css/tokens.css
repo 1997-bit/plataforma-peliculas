@@ -1,0 +1,47 @@
+/* tokens.css */
+/* variables compartidas que usan los componentes (componentes.css) y el
+   layout de cada pagina. cargar siempre despues de base.css y antes de
+   cualquier otro archivo que use estas variables. */
+
+:root {
+	/* escala de poster: 4 tamaños con nombre semantico, no arbitrarios.
+	   cada uno cubre un caso real que ya existia en el proyecto:
+	   xs  -> lista compacta (historial, calificaciones en /profile)
+	   sm  -> feed vertical (recomendaciones)
+	   md  -> grid de catalogo y shelf de home
+	   lg  -> header de detalle de pelicula/serie */
+	--poster-w-xs: 42px;
+	--poster-w-sm: 88px;
+	--poster-w-md: 160px;
+	--poster-w-lg: 130px;
+
+	--poster-radio-sm: 4px;
+	--poster-radio-md: 8px;
+	--poster-radio-lg: 10px;
+
+	/* proporcion de poster de pelicula/serie, estandar TMDB y la industria */
+	--poster-ratio: 2 / 3;
+
+	/* espaciado comun entre secciones/tarjetas */
+	--espacio-xs: 0.4rem;
+	--espacio-sm: 0.6rem;
+	--espacio-md: 1rem;
+	--espacio-lg: 1.5rem;
+	--espacio-xl: 2rem;
+}
+
+/* tablet: md y lg crecen, xs y sm se quedan igual (no necesitan crecer) */
+@media (min-width: 601px) {
+	:root {
+		--poster-w-md: 180px;
+		--poster-w-lg: 170px;
+	}
+}
+
+/* desktop */
+@media (min-width: 1024px) {
+	:root {
+		--poster-w-md: 200px;
+		--poster-w-lg: 210px;
+	}
+}

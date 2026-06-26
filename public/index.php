@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/config/bootstrap.php';
 require_once dirname(__DIR__) . '/config/container.php';
+
 use App\Core\Router;
 use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\RegistroController;
 use App\Middleware\AuthMiddleware;
 use App\Controllers\Home\HomeController;
+use App\Controllers\Catalogo\CatalogoController;
+use App\Controllers\Catalogo\ContenidoController;
+use App\Controllers\Catalogo\RecomendacionController;
+use App\Controllers\User\UserController;
+use App\Controllers\User\SettingsController;
 
 $router = new Router();
 
@@ -22,9 +28,8 @@ $router->registrarPost('/logout', [$loginController, 'logout']);
 $router->registrarGet('/register', [$registroController, 'mostrarFormulario']);
 $router->registrarPost('/register', [$registroController, 'procesarRegistro']);
 
-
 // Rutas protegidas (requieren sesion activa)
-$homeController = new HomeController();
+$homeController = new HomeController($contenidoRepo);
 $router->registrarGet('/home', function () use ($homeController) {
     AuthMiddleware::verificarAutenticacion();
     $homeController->index();
@@ -40,9 +45,54 @@ $router->registrarGet('/onboarding/step2', function () {
     require ROOT . '/views/onboarding/step2.php';
 });
 
-$router->registrarGet('/profile', function () {
+$catalogoController = new CatalogoController();
+$router->registrarGet('/catalogo', function () use ($catalogoController) {
     AuthMiddleware::verificarAutenticacion();
-    require ROOT . '/views/profile/index.php';
+    $catalogoController->index();
+});
+$router->registrarPost('/catalogo/vista', function () use ($catalogoController) {
+    AuthMiddleware::verificarAutenticacion();
+    $catalogoController->registrarVista();
+});
+
+$contenidoController = new ContenidoController($contenidoRepo);
+$router->registrarGet('/contenido', function () use ($contenidoController) {
+    AuthMiddleware::verificarAutenticacion();
+    $contenidoController->index();
+});
+$router->registrarPost('/contenido/calificar', function () use ($contenidoController) {
+    AuthMiddleware::verificarAutenticacion();
+    $contenidoController->calificar();
+});
+
+$recomendacionController = new RecomendacionController($usuarioRepo);
+$router->registrarGet('/recomendaciones', function () use ($recomendacionController) {
+    AuthMiddleware::verificarAutenticacion();
+    $recomendacionController->index();
+});
+
+$userController = new UserController($perfilService, $contenidoRepo);
+$router->registrarGet('/profile', function () use ($userController) {
+    AuthMiddleware::verificarAutenticacion();
+    $userController->index();
+});
+
+$settingsController = new SettingsController($perfilService);
+$router->registrarGet('/settings', function () use ($settingsController) {
+    AuthMiddleware::verificarAutenticacion();
+    $settingsController->index();
+});
+$router->registrarPost('/settings', function () use ($settingsController) {
+    AuthMiddleware::verificarAutenticacion();
+    $settingsController->actualizar();
+});
+$router->registrarGet('/settings/exportar', function () use ($settingsController) {
+    AuthMiddleware::verificarAutenticacion();
+    $settingsController->exportar();
+});
+$router->registrarPost('/settings/importar', function () use ($settingsController) {
+    AuthMiddleware::verificarAutenticacion();
+    $settingsController->importar();
 });
 
 // Rutas de admin (requieren rol admin)

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Home;
 
 use App\Core\Session;
+use App\Models\ContenidoRepo;
 
 class HomeController
 {
@@ -13,7 +14,7 @@ class HomeController
     private const CACHE_TTL = 3600; // 1 hora
     private string $apiKey;
 
-    public function __construct()
+    public function __construct(private ContenidoRepo $contenidoRepo)
     {
         $this->apiKey = (string) ($_ENV['TMDB_API_KEY'] ?? '');
     }
@@ -24,6 +25,9 @@ class HomeController
         $csrf = Session::generarCsrf();
         $page = max(1, min(10, (int) ($_GET['page'] ?? 1)));
         $movies = $this->fetch('/discover/movie', $page);
+
+        $idUsuario = (string) Session::obtener('user_id');
+        $vistoReciente = $this->contenidoRepo->historialReciente($idUsuario, 10);
 
         require ROOT . '/views/home.php';
     }

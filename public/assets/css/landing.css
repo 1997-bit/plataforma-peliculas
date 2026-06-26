@@ -69,7 +69,10 @@
 	background: oklch(85% 0 0);
 }
 
-/* galeria de posters */
+/* galeria de posters de la landing. NO usa poster-marco/poster-img del
+   sistema de componentes: aqui el ancho lo da el grid (auto-fit), no un
+   tamaño fijo, asi que el componente compartido (que impone su propio
+   width) no aplica bien a este caso */
 .galeria-posters {
 	padding-block: clamp(3rem, 8vw, 6rem);
 	padding-inline: clamp(1rem, 5vw, 4rem);

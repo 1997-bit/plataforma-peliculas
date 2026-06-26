@@ -17,24 +17,24 @@ class UserRepo
     ) {
     }
 
-    public function buscarPorCorreo(string $email): ?User
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT id, email, password_hash, username, role, is_active
+public function buscarPorCorreo(string $email): ?User
+{
+    $stmt = $this->pdo->prepare(
+        'SELECT id, email, password_hash, username, role, is_active, preferences
   FROM users WHERE email_hash = :hash LIMIT 1'
-        );
-        $stmt->execute([':hash' => $this->hmacEmail($email)]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!is_array($row)) {
-            return null;
-        }
-        return $this->hidratar($row);
+    );
+    $stmt->execute([':hash' => $this->hmacEmail($email)]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!is_array($row)) {
+        return null;
     }
+    return $this->hidratar($row);
+}
 
     public function buscarPorId(string $id): ?User
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, email, password_hash, username, role, is_active
+            'SELECT id, email, password_hash, username, role, is_active, preferences
              FROM users WHERE id = :id LIMIT 1'
         );
         $stmt->execute([':id' => UuidHelper::uuidABinario($id)]);
@@ -43,6 +43,23 @@ class UserRepo
             return null;
         }
         return $this->hidratar($row);
+    }
+
+    /**
+     * Actualiza username (cifrado) y preferences (JSON nativo MySQL) de un usuario.
+     *
+     * @param array{generos?: list<int>, tema?: string} $preferences
+     */
+    public function actualizarPerfil(string $id, string $username, array $preferences): void
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE users SET username = :username, preferences = :preferences WHERE id = :id'
+        );
+        $stmt->execute([
+            ':id' => UuidHelper::uuidABinario($id),
+            ':username' => $this->crypto->cifrar($username),
+            ':preferences' => json_encode($preferences, JSON_THROW_ON_ERROR),
+        ]);
     }
 
     public function guardar(User $user): string
@@ -74,6 +91,12 @@ class UserRepo
     /** @param array<string, mixed> $row */
     private function hidratar(array $row): User
     {
+        $preferences = [];
+        if (!empty($row['preferences'])) {
+            $decoded = json_decode((string) $row['preferences'], true);
+            $preferences = is_array($decoded) ? $decoded : [];
+        }
+
         return new User(
             id: UuidHelper::binarioAUuid($row['id']),
             email: $this->crypto->descifrar($row['email']),
@@ -81,6 +104,7 @@ class UserRepo
             role: $row['role'],
             isActive: (bool) $row['is_active'],
             passwordHash: $row['password_hash'],
+            preferences: $preferences,
         );
     }
 

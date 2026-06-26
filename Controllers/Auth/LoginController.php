@@ -64,8 +64,8 @@ class LoginController
         }
 
         $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
-        $userId = Session::obtener('user_id') !== null ? (string)Session::obtener('user_id') : null;
-        $this->cerrarSesion->cerrarSesion($ip, $userId);
+        $idUsuario = Session::obtener('user_id') !== null ? (string)Session::obtener('user_id') : null;
+        $this->cerrarSesion->cerrarSesion($ip, $idUsuario);
         $this->redirigir('/');
     }
 

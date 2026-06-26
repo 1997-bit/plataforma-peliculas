@@ -1,0 +1,280 @@
+/* detalle.css */
+/* vista de detalle de contenido: hero con backdrop, poster, info, calificacion, cast.
+   requiere tokens.css + componentes.css cargados antes. */
+
+:root {
+	--detalle-hero-h: 200px;
+	--detalle-poster-offset: 70px;
+}
+
+.detalle {
+	display: flex;
+	flex-direction: column;
+}
+
+.detalle-hero {
+	position: relative;
+	height: var(--detalle-hero-h);
+	background-color: oklch(18% 0.03 231);
+	background-size: cover;
+	background-position: center top;
+}
+
+.detalle-hero-sombra {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		to bottom,
+		oklch(10% 0 0 / 20%) 0%,
+		var(--bg) 95%
+	);
+}
+
+/* el contenido no debe centrar verticalmente el poster, o el navegador
+   puede anular el efecto del margin-top negativo segun el alto de los
+   hermanos. align-items:flex-start fuerza que el poster arranque desde
+   arriba de su caja, donde el margin negativo si lo monta sobre el hero */
+.detalle-contenido {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1.25rem;
+	padding: 0 var(--page-px, 1.5rem) 3rem;
+}
+
+/* offset propio de esta pagina (monta el poster sobre el hero); el
+   tamaño/proporcion del poster en si vienen de poster-marco--lg */
+.detalle-poster-marco {
+	box-shadow: 0 10px 30px oklch(0% 0 0 / 35%);
+	margin-top: calc(var(--detalle-poster-offset) * -1);
+	position: relative;
+	z-index: 2;
+}
+
+.detalle-info {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	width: 100%;
+	text-align: center;
+}
+
+.detalle-titulo {
+	margin: 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: baseline;
+	gap: 0.5rem;
+}
+
+.detalle-anio {
+	font-size: var(--text-lg);
+	font-weight: 400;
+	opacity: 0.6;
+}
+
+.detalle-generos {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.detalle-sinopsis {
+	font-size: var(--text-base);
+	line-height: 1.6;
+	max-width: 65ch;
+	margin-inline: auto;
+}
+
+.detalle-subtitulo {
+	font-size: var(--text-lg);
+	font-weight: 600;
+	margin: 0 0 0.6rem;
+}
+
+.detalle-calificacion {
+	padding: 1rem 1.25rem;
+	border-radius: 12px;
+	background: oklch(60% 0 0 / 8%);
+	width: 100%;
+	max-width: 480px;
+	margin-inline: auto;
+}
+
+.detalle-estrellas {
+	display: flex;
+	justify-content: center;
+	gap: 0.25rem;
+}
+
+.detalle-estrella {
+	position: relative;
+	width: 1.8rem;
+	height: 1.8rem;
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	transition: transform 0.1s ease;
+}
+
+.detalle-estrella:hover {
+	transform: scale(1.12);
+}
+
+.detalle-estrella-icono {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	fill: currentColor;
+}
+
+.detalle-estrella-icono-relleno {
+	opacity: 0;
+}
+
+.detalle-estrella-icono-contorno {
+	opacity: 1;
+}
+
+.detalle-estrella {
+	color: oklch(60% 0 0 / 45%);
+}
+
+.detalle-estrella-activa {
+	color: oklch(75% 0.18 80);
+}
+
+.detalle-estrella-activa .detalle-estrella-icono-relleno {
+	opacity: 1;
+}
+
+.detalle-estrella-activa .detalle-estrella-icono-contorno {
+	opacity: 0;
+}
+
+.detalle-calificacion-mensaje {
+	min-height: 1.2em;
+	font-size: var(--text-xs);
+	opacity: 0.7;
+	margin: 0.4rem 0 0;
+}
+
+/* fila de estrellas del promedio de la comunidad, no clickeables */
+.detalle-promedio {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.6rem;
+	font-size: var(--text-sm);
+	margin: 0.4rem 0 0;
+}
+
+.detalle-promedio-texto {
+	opacity: 0.8;
+}
+
+.detalle-estrellas-promedio {
+	display: flex;
+	gap: 0.15rem;
+}
+
+.detalle-estrella-promedio-item {
+	position: relative;
+	display: inline-block;
+	width: 1.1rem;
+	height: 1.1rem;
+}
+
+.detalle-estrella-promedio-item .detalle-estrella-icono-contorno {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	fill: oklch(60% 0 0 / 35%);
+}
+
+.detalle-estrella-icono-relleno-parcial {
+	position: absolute;
+	inset: 0;
+	height: 100%;
+	overflow: hidden;
+	display: block;
+}
+
+.detalle-estrella-icono-relleno-parcial svg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1.1rem;
+	height: 1.1rem;
+	fill: oklch(75% 0.18 80);
+}
+
+.detalle-cast {
+	width: 100%;
+}
+
+.detalle-cast-grid {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+@media (min-width: 601px) {
+	:root {
+		--detalle-hero-h: 280px;
+		--detalle-poster-offset: 80px;
+	}
+
+	.detalle-contenido {
+		flex-direction: row;
+		align-items: flex-start;
+		gap: 2rem;
+	}
+
+	.detalle-info {
+		text-align: left;
+	}
+
+	.detalle-titulo,
+	.detalle-generos {
+		justify-content: flex-start;
+	}
+
+	.detalle-sinopsis {
+		margin-inline: 0;
+	}
+
+	.detalle-calificacion {
+		margin-inline: 0;
+		max-width: 480px;
+	}
+
+	.detalle-estrellas {
+		justify-content: flex-start;
+	}
+
+	.detalle-cast-grid {
+		justify-content: flex-start;
+	}
+}
+
+@media (min-width: 1024px) {
+	:root {
+		--detalle-hero-h: 380px;
+		--detalle-poster-offset: 100px;
+	}
+
+	.detalle-contenido {
+		padding-inline: 3rem;
+	}
+
+	.detalle-sinopsis {
+		font-size: var(--text-lg);
+	}
+}

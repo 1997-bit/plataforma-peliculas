@@ -20,10 +20,10 @@ class CerrarSesion
     ) {
     }
 
-    public function cerrarSesion(string $ip, ?string $userId): void
+    public function cerrarSesion(string $ip, ?string $idUsuario): void
     {
         // 1. Log
-        $this->intentos->registrarEvento('LOGOUT', $ip, $userId, []);
+        $this->intentos->registrarEvento('LOGOUT', $ip, $idUsuario, []);
 
         // 2. Limpiar remember token si existe
         if ($this->cookie->existe('remember_token')) {

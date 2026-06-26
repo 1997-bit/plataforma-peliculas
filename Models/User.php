@@ -15,6 +15,8 @@ class User
         public readonly string $role,
         public readonly bool $isActive,
         public readonly string $passwordHash,
+        /** @var array{generos?: list<int>, tema?: string} */
+        public readonly array $preferences = [],
     ) {
     }
 
@@ -22,7 +24,7 @@ class User
     {
         return $this->role === 'admin';
     }
-    public function puedeLogin(): bool
+    public function puedeIniciarSesion(): bool
     {
         return $this->isActive;
     }

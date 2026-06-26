@@ -1,0 +1,86 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\User;
+
+use App\Models\User;
+use App\Models\UserRepo;
+use voku\helper\AntiXSS;
+
+/**
+ * Logica de negocio del perfil, sin nada de HTTP.
+ *
+ * Deliberadamente separado del Controller para que mas adelante un endpoint
+ * REST de exportacion (u otro canal) pueda reusar obtenerPerfil()/actualizarPerfil()
+ * sin duplicar validacion ni reglas de negocio.
+ */
+final class PerfilService
+{
+    private const GENEROS_MAX = 10;
+
+    public function __construct(private UserRepo $usuarios)
+    {
+    }
+
+    public function obtenerPerfil(string $idUsuario): ?User
+    {
+        return $this->usuarios->buscarPorId($idUsuario);
+    }
+
+    /**
+     * @param list<int|string> $generosCrudos ids de genero tal cual vienen del formulario
+     * @return ResultadoPerfil
+     */
+    public function actualizarPerfil(string $idUsuario, string $usernameCrudo, array $generosCrudos): ResultadoPerfil
+    {
+        $errores = [];
+
+        $username = $this->sanitizarTexto($usernameCrudo);
+        if (strlen($username) < 2 || strlen($username) > 50) {
+            $errores[] = 'El nombre debe tener entre 2 y 50 caracteres.';
+        }
+
+        $generos = $this->normalizarGeneros($generosCrudos);
+        if (count($generos) > self::GENEROS_MAX) {
+            $errores[] = 'Puedes elegir como máximo ' . self::GENEROS_MAX . ' géneros.';
+        }
+
+        if ($errores !== []) {
+            return new ResultadoPerfil(success: false, errores: $errores);
+        }
+
+        $usuarioActual = $this->usuarios->buscarPorId($idUsuario);
+        if ($usuarioActual === null) {
+            return new ResultadoPerfil(success: false, errores: ['Usuario no encontrado.']);
+        }
+
+        // preferences es JSON libre; conservamos otras claves que ya existieran (ej. tema)
+        // y solo pisamos "generos" para no perder configuracion ajena a este formulario.
+        $preferences = $usuarioActual->preferences;
+        $preferences['generos'] = $generos;
+
+        $this->usuarios->actualizarPerfil($idUsuario, $username, $preferences);
+
+        return new ResultadoPerfil(success: true, username: $username, preferences: $preferences);
+    }
+
+    private function sanitizarTexto(string $valor): string
+    {
+        $limpio = (new AntiXSS())->xss_clean(trim($valor));
+        return strip_tags($limpio);
+    }
+
+    /**
+     * @param list<int|string> $generosCrudos
+     * @return list<int>
+     */
+    private function normalizarGeneros(array $generosCrudos): array
+    {
+        $ids = array_map(static fn (int|string $g): int => (int) $g, $generosCrudos);
+        $ids = array_filter($ids, static fn (int $id): bool => $id > 0);
+        $ids = array_values(array_unique($ids));
+
+        return $ids;
+    }
+}

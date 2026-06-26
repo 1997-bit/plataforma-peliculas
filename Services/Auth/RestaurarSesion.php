@@ -48,7 +48,7 @@ class RestaurarSesion
         }
 
         $user = $this->usuarios->buscarPorId(UuidHelper::binarioAUuid($fila['user_id']));
-        if (!$user || !$user->puedeLogin()) {
+        if (!$user || !$user->puedeIniciarSesion()) {
             return $this->fallar();
         }
 

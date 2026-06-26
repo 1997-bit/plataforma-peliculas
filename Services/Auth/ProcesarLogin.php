@@ -37,7 +37,7 @@ class ProcesarLogin
         // 3. Verificar password en tiempo constante (CWE-208)
         $hashVerificar = $user ? $user->passwordHash : User::DUMMY_HASH;
         $passwordOk = password_verify($password, $hashVerificar);
-        $credencialesValidas = $user !== null && $user->puedeLogin() && $passwordOk;
+        $credencialesValidas = $user !== null && $user->puedeIniciarSesion() && $passwordOk;
 
         // 4. Registrar intento
         $this->intentos->registrarIntento($ip, $email, $credencialesValidas);
