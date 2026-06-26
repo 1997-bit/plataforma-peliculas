@@ -6,29 +6,18 @@ namespace App\Models;
 
 use App\Helpers\UuidHelper;
 use PDO;
-use Ramsey\Uuid\Uuid;
 
 /**
  * Puente entre el catalogo en-vivo (TMDB) y la persistencia local necesaria
-<?php
-
-declare(strict_types=1);
-
-namespace App\Models;
-
-use App\Helpers\UuidHelper;
-use PDO;
-use Ramsey\Uuid\Uuid;
-
-/**
- * Puente entre el catalogo en-vivo (TMDB) y la persistencia local necesaria
- * para view_history/ratings (que requieren un content_id propio, no el tmdb_id).
+ * para historial_vistas/ratings (que requieren un content_id propio, no el tmdb_id).
  *
  * Estrategia "lazy seed": la primera vez que alguien abre el detalle de un
- * tmdb_id, se hace upsert en content. No depende del seeder ni del admin.
+ * tmdb_id, se hace upsert en contenido. No depende del seeder ni del admin.
  */
 final class ContenidoRepo
 {
+    private const VISTA_THROTTLE_SEGUNDOS = 60;
+
     public function __construct(private PDO $pdo)
     {
     }
@@ -47,29 +36,29 @@ final class ContenidoRepo
     ): string {
         $tipoDb = $tipo === 'tv' ? 'series' : 'movie';
 
-        $busca = $this->pdo->prepare('SELECT id FROM content WHERE tmdb_id = :tmdb_id');
+        $busca = $this->pdo->prepare('SELECT id FROM contenido WHERE tmdb_id = :tmdb_id');
         $busca->execute([':tmdb_id' => $tmdbId]);
         $idExistente = $busca->fetchColumn();
 
-        $idBinario = $idExistente !== false ? $idExistente : Uuid::uuid7()->getBytes();
+        $idBinario = $idExistente !== false ? $idExistente : UuidHelper::v7();
 
         $stmt = $this->pdo->prepare(
-            'INSERT INTO content (id, tmdb_id, type, title, description, poster_path, release_year)
-             VALUES (:id, :tmdb_id, :type, :title, :description, :poster_path, :release_year)
+            'INSERT INTO contenido (id, tmdb_id, type, titulo, descripcion, poster_path, anio_lanzamiento)
+             VALUES (:id, :tmdb_id, :type, :titulo, :descripcion, :poster_path, :anio_lanzamiento)
              ON DUPLICATE KEY UPDATE
-                title = VALUES(title),
-                description = VALUES(description),
+                titulo = VALUES(titulo),
+                descripcion = VALUES(descripcion),
                 poster_path = VALUES(poster_path),
-                release_year = VALUES(release_year)'
+                anio_lanzamiento = VALUES(anio_lanzamiento)'
         );
         $stmt->execute([
             ':id' => $idBinario,
             ':tmdb_id' => $tmdbId,
             ':type' => $tipoDb,
-            ':title' => $titulo,
-            ':description' => $descripcion,
+            ':titulo' => $titulo,
+            ':descripcion' => $descripcion,
             ':poster_path' => $posterPath,
-            ':release_year' => $anio,
+            ':anio_lanzamiento' => $anio,
         ]);
 
         $this->sincronizarGeneros($idBinario, $generoIdsTmdb);
@@ -83,7 +72,7 @@ final class ContenidoRepo
     public function buscarPorTmdbId(int $tmdbId): ?array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, rating_avg, rating_count FROM content WHERE tmdb_id = :tmdb_id AND is_active = 1'
+            'SELECT id, rating_avg, rating_count FROM contenido WHERE tmdb_id = :tmdb_id AND is_active = 1'
         );
         $stmt->execute([':tmdb_id' => $tmdbId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -99,15 +88,63 @@ final class ContenidoRepo
         ];
     }
 
+    /**
+     * Verifica que un content_id (UUID string) exista realmente antes de
+     * usarlo en ratings/historial_vistas. Evita PDOException por FK con un
+     * UUID bien formado pero inexistente.
+     */
+    public function existeContenido(string $contentId): bool
+    {
+        try {
+            $bin = UuidHelper::uuidABinario($contentId);
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
+
+        $stmt = $this->pdo->prepare('SELECT 1 FROM contenido WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $bin]);
+
+        return $stmt->fetchColumn() !== false;
+    }
+
     public function registrarVista(string $idUsuario, string $contentId): void
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO view_history (user_id, content_id) VALUES (:user_id, :content_id)'
+            'INSERT INTO historial_vistas (user_id, content_id) VALUES (:user_id, :content_id)'
         );
         $stmt->execute([
             ':user_id' => UuidHelper::uuidABinario($idUsuario),
             ':content_id' => UuidHelper::uuidABinario($contentId),
         ]);
+    }
+
+    /**
+     * Igual que registrarVista, pero evita insertar una nueva fila si el
+     * mismo usuario ya vio el mismo contenido en los últimos N segundos
+     * (recarga de página, doble click, etc.). Sin esto, historial_vistas
+     * se infla y distorsiona "géneros más vistos" en el panel de admin.
+     */
+    public function registrarVistaConThrottle(string $idUsuario, string $contentId): void
+    {
+        $idUsuarioBin = UuidHelper::uuidABinario($idUsuario);
+        $contentIdBin = UuidHelper::uuidABinario($contentId);
+
+        $stmt = $this->pdo->prepare(
+            'SELECT viewed_at FROM historial_vistas
+             WHERE user_id = :user_id AND content_id = :content_id
+             ORDER BY viewed_at DESC LIMIT 1'
+        );
+        $stmt->execute([':user_id' => $idUsuarioBin, ':content_id' => $contentIdBin]);
+        $ultimaVista = $stmt->fetchColumn();
+
+        if ($ultimaVista !== false && (time() - strtotime((string) $ultimaVista)) < self::VISTA_THROTTLE_SEGUNDOS) {
+            return;
+        }
+
+        $insertar = $this->pdo->prepare(
+            'INSERT INTO historial_vistas (user_id, content_id) VALUES (:user_id, :content_id)'
+        );
+        $insertar->execute([':user_id' => $idUsuarioBin, ':content_id' => $contentIdBin]);
     }
 
     /**
@@ -123,11 +160,11 @@ final class ContenidoRepo
     public function historialReciente(string $idUsuario, int $limite = 10): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT c.tmdb_id, c.type, c.title, c.poster_path, MAX(vh.viewed_at) AS viewed_at
-             FROM view_history vh
-             INNER JOIN content c ON c.id = vh.content_id
+            'SELECT c.tmdb_id, c.type, c.titulo AS title, c.poster_path, MAX(vh.viewed_at) AS viewed_at
+             FROM historial_vistas vh
+             INNER JOIN contenido c ON c.id = vh.content_id
              WHERE vh.user_id = :user_id
-             GROUP BY vh.content_id, c.tmdb_id, c.type, c.title, c.poster_path
+             GROUP BY vh.content_id, c.tmdb_id, c.type, c.titulo, c.poster_path
              ORDER BY viewed_at DESC
              LIMIT :limite'
         );
@@ -160,7 +197,7 @@ final class ContenidoRepo
             ]);
 
             $recalculo = $this->pdo->prepare(
-                'UPDATE content SET
+                'UPDATE contenido SET
                     rating_avg = (SELECT COALESCE(AVG(score), 0) FROM ratings WHERE content_id = :content_id_1),
                     rating_count = (SELECT COUNT(*) FROM ratings WHERE content_id = :content_id_2)
                  WHERE id = :content_id_3'
@@ -201,9 +238,9 @@ final class ContenidoRepo
     public function calificacionesDeUsuario(string $idUsuario, int $limite = 50): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT c.tmdb_id, c.type, c.title, c.poster_path, r.score, r.created_at
+            'SELECT c.tmdb_id, c.type, c.titulo AS title, c.poster_path, r.score, r.created_at
              FROM ratings r
-             INNER JOIN content c ON c.id = r.content_id
+             INNER JOIN contenido c ON c.id = r.content_id
              WHERE r.user_id = :user_id
              ORDER BY r.created_at DESC
              LIMIT :limite'
@@ -223,16 +260,16 @@ final class ContenidoRepo
         }
 
         $upsertGenero = $this->pdo->prepare(
-            'INSERT INTO genres (name, tmdb_id) VALUES (:name, :tmdb_id)
+            'INSERT INTO generos (nombre, tmdb_id) VALUES (:nombre, :tmdb_id)
              ON DUPLICATE KEY UPDATE tmdb_id = VALUES(tmdb_id)'
         );
-        $buscaGenero = $this->pdo->prepare('SELECT id FROM genres WHERE tmdb_id = :tmdb_id');
+        $buscaGenero = $this->pdo->prepare('SELECT id FROM generos WHERE tmdb_id = :tmdb_id');
 
-        $borrar = $this->pdo->prepare('DELETE FROM content_genres WHERE content_id = :content_id');
+        $borrar = $this->pdo->prepare('DELETE FROM contenido_generos WHERE content_id = :content_id');
         $borrar->execute([':content_id' => $contentIdBin]);
 
         $insertar = $this->pdo->prepare(
-            'INSERT IGNORE INTO content_genres (content_id, genre_id) VALUES (:content_id, :genre_id)'
+            'INSERT IGNORE INTO contenido_generos (content_id, genre_id) VALUES (:content_id, :genre_id)'
         );
 
         foreach ($generoIdsTmdb as $tmdbGenreId) {
@@ -241,7 +278,7 @@ final class ContenidoRepo
                 continue;
             }
 
-            $upsertGenero->execute([':name' => $nombre, ':tmdb_id' => $tmdbGenreId]);
+            $upsertGenero->execute([':nombre' => $nombre, ':tmdb_id' => $tmdbGenreId]);
             $buscaGenero->execute([':tmdb_id' => $tmdbGenreId]);
             $genreIdInterno = $buscaGenero->fetchColumn();
 
