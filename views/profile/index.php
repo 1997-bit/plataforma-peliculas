@@ -1,4 +1,7 @@
 <?php
+
+use App\Helpers\TmdbImagen;
+
 /** @var \App\Models\User $usuario */
 /** @var list<array{tmdb_id:int,type:string,title:string,poster_path:?string,viewed_at:string}> $historial */
 /** @var list<array{tmdb_id:int,type:string,title:string,poster_path:?string,score:int,created_at:string}> $calificaciones */
@@ -72,9 +75,7 @@ $calificaciones = $calificaciones ?? [];
                         <?php
                             $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                             $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
-                            $poster = $item['poster_path']
-                                ? 'https://image.tmdb.org/t/p/w92' . $item['poster_path']
-                                : '/assets/images/placeholder.webp';
+                            $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'xs');
                             $fecha = $item['viewed_at'] ? date('d/m/Y', strtotime((string) $item['viewed_at'])) : '';
                         ?>
                         <li class="perfil-item">
@@ -102,9 +103,7 @@ $calificaciones = $calificaciones ?? [];
                         <?php
                             $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                             $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
-                            $poster = $item['poster_path']
-                                ? 'https://image.tmdb.org/t/p/w92' . $item['poster_path']
-                                : '/assets/images/placeholder.webp';
+                            $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'xs');
                             $estrellas = (int) round(((int) $item['score']) / 2);
                         ?>
                         <li class="perfil-item">

@@ -1,4 +1,7 @@
 <?php
+
+use App\Helpers\TmdbImagen;
+
 /** @var string $username */
 /** @var string $csrf */
 /** @var array  $movies */
@@ -32,9 +35,7 @@ $tema = $_COOKIE['tema'] ?? null;
                         <?php
                             $title  = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                             $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
-                            $poster = $item['poster_path']
-                                ? 'https://image.tmdb.org/t/p/w342' . $item['poster_path']
-                                : '/assets/images/placeholder.webp';
+                            $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
                         ?>
                         <article class="card" role="listitem">
                             <a href="/contenido?id=<?= urlencode((string) $item['tmdb_id']) ?>&tipo=<?= $tipoUrl ?>" class="card-link">
@@ -60,9 +61,7 @@ $tema = $_COOKIE['tema'] ?? null;
                         <?php
                             $title  = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                         $year   = substr($item['release_date'] ?? '', 0, 4);
-                        $poster = $item['poster_path']
-                            ? 'https://image.tmdb.org/t/p/w342' . $item['poster_path']
-                            : '/assets/images/placeholder.webp';
+                        $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
                         ?>
                         <article class="card" role="listitem">
                             <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=movie" class="card-link">

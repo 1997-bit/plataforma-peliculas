@@ -1,4 +1,7 @@
 <?php
+
+use App\Helpers\TmdbImagen;
+
 /** @var string $csrf */
 /** @var list<array<string,mixed>> $items */
 /** @var int $totalPaginas */
@@ -64,9 +67,7 @@ $paginaActual = max(1, (int) ($_GET['page'] ?? 1));
                     <?php
                         $tmdbId = $item['id'] ?? null;
                         $titulo = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                        $poster = !empty($item['poster_path'])
-                            ? 'https://image.tmdb.org/t/p/w342' . $item['poster_path']
-                            : '/assets/images/placeholder.webp';
+                        $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
                     ?>
                     <article class="card catalogo-card" role="listitem">
                         <a href="/contenido?id=<?= urlencode((string) $tmdbId) ?>&tipo=<?= htmlspecialchars($tipoActual, ENT_QUOTES, 'UTF-8') ?>" class="catalogo-card-link">

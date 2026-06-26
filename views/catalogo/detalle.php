@@ -1,4 +1,7 @@
 <?php
+
+use App\Helpers\TmdbImagen;
+
 /** @var array<string,mixed> $detalle */
 /** @var string $contentId */
 /** @var array{rating_avg:float,rating_count:int}|null $infoLocal */
@@ -15,12 +18,8 @@ $anio = $fecha !== '' ? substr($fecha, 0, 4) : '';
 $sinopsis = $detalle['overview'] ?? 'Sin descripción disponible.';
 $generos = array_map(static fn (array $g): string => $g['name'], $detalle['genres'] ?? []);
 
-$backdrop = !empty($detalle['backdrop_path'])
-    ? 'https://image.tmdb.org/t/p/w1280' . $detalle['backdrop_path']
-    : null;
-$poster = !empty($detalle['poster_path'])
-    ? 'https://image.tmdb.org/t/p/w500' . $detalle['poster_path']
-    : '/assets/images/placeholder.webp';
+$backdrop = TmdbImagen::backdrop($detalle['backdrop_path'] ?? null);
+$poster = TmdbImagen::poster($detalle['poster_path'] ?? null, 'md');
 
 $ratingAvg = $infoLocal['rating_avg'] ?? 0.0;
 $ratingCount = $infoLocal['rating_count'] ?? 0;

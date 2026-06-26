@@ -1,4 +1,7 @@
 <?php
+
+use App\Helpers\TmdbImagen;
+
 /** @var string $csrf */
 /** @var list<array<string,mixed>> $items */
 /** @var int $totalPaginas */
@@ -47,12 +50,8 @@ $tema = $_COOKIE['tema'] ?? null;
                     $anio = $fecha !== '' ? substr($fecha, 0, 4) : '';
                     $overview = htmlspecialchars($item['overview'] ?? 'Sin descripción disponible.', ENT_QUOTES, 'UTF-8');
                     $nota = isset($item['vote_average']) ? number_format((float) $item['vote_average'], 1) : null;
-                    $backdrop = !empty($item['backdrop_path'])
-                        ? 'https://image.tmdb.org/t/p/w1280' . $item['backdrop_path']
-                        : null;
-                    $poster = !empty($item['poster_path'])
-                        ? 'https://image.tmdb.org/t/p/w342' . $item['poster_path']
-                        : '/assets/images/placeholder.webp';
+                    $backdrop = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
+                    $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
                 ?>
                 <section class="feed-slide" data-feed-slide>
                     <div class="feed-fondo" <?= $backdrop ? 'style="background-image: url(' . htmlspecialchars($backdrop, ENT_QUOTES, 'UTF-8') . ')"' : '' ?>></div>
