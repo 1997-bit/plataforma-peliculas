@@ -6,7 +6,7 @@ namespace App\Services\Auth;
 
 use App\Models\TokenRepo;
 use App\Models\UserRepo;
-use App\Services\SessionManager;
+use App\Core\Session;
 use App\Services\CookieManejador;
 use App\Services\CryptoServicio;
 use App\Helpers\UuidHelper;
@@ -18,26 +18,24 @@ class RestaurarSesion
     public function __construct(
         private TokenRepo $tokens,
         private UserRepo $usuarios,
-        private SessionManager $session,
-        private CookieManejador $cookie,
-        private CryptoServicio  $crypto,
+        private CryptoServicio $crypto,
     ) {
     }
 
     private function fallar(): bool
     {
-        $this->cookie->eliminar(self::NOMBRE_COOKIE);
+        CookieManejador::eliminar(self::NOMBRE_COOKIE);
         return false;
     }
 
     public function restaurarSesion(): bool
     {
-        if (!$this->cookie->existe(self::NOMBRE_COOKIE)) {
+        if (!CookieManejador::existe(self::NOMBRE_COOKIE)) {
             return false;
         }
 
         try {
-            $token = $this->crypto->descifrar($this->cookie->obtener(self::NOMBRE_COOKIE));
+            $token = $this->crypto->descifrar(CookieManejador::obtener(self::NOMBRE_COOKIE));
         } catch (\Exception $e) {
             return $this->fallar();
         }
@@ -52,10 +50,10 @@ class RestaurarSesion
             return $this->fallar();
         }
 
-        $this->session->regenerar();
-        $this->session->establecer('user_id', $user->id);
-        $this->session->establecer('user_role', $user->role);
-        $this->session->establecer('username', $user->username);
+        Session::regenerar();
+        Session::establecer('user_id', $user->id);
+        Session::establecer('user_role', $user->role);
+        Session::establecer('username', $user->username);
 
         $this->tokens->rotar(hash('sha256', $token), $user->id);
         return true;

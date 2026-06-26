@@ -41,7 +41,9 @@ final class SettingsController
     public function actualizar(): void
     {
         if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            (new \App\Services\Respuesta())->abortar(403, 'errors/403.php');
+            http_response_code(403);
+            require ROOT . '/views/errors/403.php';
+            exit;
         }
 
         $idUsuario = (string) Session::obtener('user_id');
@@ -93,7 +95,9 @@ final class SettingsController
     public function importar(): void
     {
         if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            (new \App\Services\Respuesta())->abortar(403, 'errors/403.php');
+            http_response_code(403);
+            require ROOT . '/views/errors/403.php';
+            exit;
         }
 
         http_response_code(501);

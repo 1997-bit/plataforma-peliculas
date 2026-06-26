@@ -6,17 +6,6 @@ namespace App\Controllers\Catalogo;
 
 use App\Core\Session;
 use App\Helpers\GenerosTmdb;
-
-final class CatalogoController
-{
-<?php
-
-declare(strict_types=1);
-
-namespace App\Controllers\Catalogo;
-
-use App\Core\Session;
-use App\Helpers\GenerosTmdb;
 use App\Helpers\TmdbTipo;
 use App\Services\TmdbClient;
 

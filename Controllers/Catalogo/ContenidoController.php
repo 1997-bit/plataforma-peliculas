@@ -5,69 +5,6 @@ declare(strict_types=1);
 namespace App\Controllers\Catalogo;
 
 use App\Core\Session;
-use App\Models\ContenidoRepo;
-
-final class ContenidoController
-{
-    private const TMDB_BASE = 'https://api.themoviedb.org/3';
-    private const CACHE_DIR = ROOT . '/storage/tmdb_cache';
-    private const CACHE_TTL = 3600;
-
-    private string $apiKey;
-
-    public function __construct(private ContenidoRepo $contenidoRepo)
-    {
-        $this->apiKey = (string) ($_ENV['TMDB_API_KEY'] ?? '');
-    }
-
-    public function index(): void
-    {
-        $tmdbId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-        $tipo = ($_GET['tipo'] ?? 'movie') === 'series' ? 'tv' : 'movie';
-
-        if ($tmdbId <= 0) {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-            return;
-        }
-
-        $detalle = $this->fetchDetalle($tipo, $tmdbId);
-        if ($detalle === null || empty($detalle['id'])) {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-            return;
-        }
-
-        $generoIds = array_map(
-            static fn (array $g): int => (int) $g['id'],
-            $detalle['genres'] ?? []
-        );
-
-        $contentId = $this->contenidoRepo->upsertDesdeTmdb(
-            tmdbId: $tmdbId,
-            tipo: $tipo,
-            titulo: $detalle['title'] ?? $detalle['name'] ?? 'Sin título',
-            descripcion: $detalle['overview'] ?? null,
-            posterPath: $detalle['poster_path'] ?? null,
-            anio: $this->extraerAnio($detalle),
-            generoIdsTmdb: $generoIds
-        );
-
-        $userId = (string) Session::obtener('user_id');
-        $this->contenidoRepo->registrarVista($userId, $contentId);
-
-        $infoLocal = $this->contenidoRepo->buscarPorTmdbId($tmdbId);
-        $miCalificacion = $this->contenidoRepo->obtenerCalificacionUsuario($userId, $contentId);
-
-        $cast = array_slice($detalle['credits']['cast'] ?? [], 0, 12);
-        $csrf = Session::generarCsrf();
-<?php
-
-declare(strict_types=1);
-
-namespace App\Controllers\Catalogo;
-
-use App\Core\Session;
 use App\Helpers\TmdbTipo;
 use App\Models\ContenidoRepo;
 use App\Services\TmdbClient;

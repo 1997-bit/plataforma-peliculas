@@ -9,8 +9,6 @@ use App\Models\IntentosLoginRepo;
 use App\Models\ContenidoRepo;
 use App\Services\TmdbClient;
 use App\Services\CryptoServicio;
-use App\Services\SessionManager;
-use App\Services\CookieManejador;
 use App\Services\Auth\ProcesarLogin;
 use App\Services\Auth\RegistrarUsuario;
 use App\Services\Auth\CerrarSesion;
@@ -20,16 +18,14 @@ use App\Services\User\PerfilService;
 $pdo = Database::obtenerInstancia();
 
 $crypto = new CryptoServicio();
-$session = new SessionManager();
-$cookie = new CookieManejador();
 
 $usuarioRepo = new UserRepo($pdo, $crypto);
-$tokenRepo = new TokenRepo($pdo, $crypto, $cookie);
+$tokenRepo = new TokenRepo($pdo, $crypto);
 $intentosRepo = new IntentosLoginRepo($pdo);
 $contenidoRepo = new ContenidoRepo($pdo);
 $tmdbClient = new TmdbClient();
 
-$procesarLogin = new ProcesarLogin($usuarioRepo, $intentosRepo, $session, $tokenRepo);
-$registrarUsuario = new RegistrarUsuario($usuarioRepo, $intentosRepo, $session);
-$cerrarSesion = new CerrarSesion($session, $tokenRepo, $cookie, $intentosRepo);
+$procesarLogin = new ProcesarLogin($usuarioRepo, $intentosRepo, $tokenRepo);
+$registrarUsuario = new RegistrarUsuario($usuarioRepo, $intentosRepo);
+$cerrarSesion = new CerrarSesion($tokenRepo, $intentosRepo);
 $perfilService = new PerfilService($usuarioRepo);

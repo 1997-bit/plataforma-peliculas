@@ -13,7 +13,6 @@ use App\Models\UserRepo;
 use App\Services\Auth\RestaurarSesion;
 use App\Services\CookieManejador;
 use App\Services\CryptoServicio;
-use App\Services\SessionManager;
 
 header_remove('X-Powered-By');
 
@@ -42,13 +41,10 @@ if (random_int(1, 100) === 1) {
 if (!Session::existe('user_id') && CookieManejador::existe('remember_token')) {
     $pdo = Database::obtenerInstancia();
     $crypto = new CryptoServicio();
-    $cookie = new CookieManejador();
 
     (new RestaurarSesion(
-        new TokenRepo($pdo, $crypto, $cookie),
+        new TokenRepo($pdo, $crypto),
         new UserRepo($pdo, $crypto),
-        new SessionManager(),
-        $cookie,
         $crypto,
     ))->restaurarSesion();
 }

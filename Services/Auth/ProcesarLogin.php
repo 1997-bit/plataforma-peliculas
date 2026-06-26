@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\UserRepo;
 use App\Models\IntentosLoginRepo;
 use App\Models\TokenRepo;
-use App\Services\SessionManager;
+use App\Core\Session;
 
 class ProcesarLogin
 {
@@ -18,7 +18,6 @@ class ProcesarLogin
     public function __construct(
         private UserRepo $usuarios,
         private IntentosLoginRepo $intentos,
-        private SessionManager $session,
         private TokenRepo $tokens,
     ) {
     }
@@ -48,10 +47,10 @@ class ProcesarLogin
         }
 
         // 5. Sesión
-        $this->session->regenerar();
-        $this->session->establecer('user_id', $user->id);
-        $this->session->establecer('user_role', $user->role);
-        $this->session->establecer('username', $user->username);
+        Session::regenerar();
+        Session::establecer('user_id', $user->id);
+        Session::establecer('user_role', $user->role);
+        Session::establecer('username', $user->username);
 
         // 6. Remember me
         if ($remember) {

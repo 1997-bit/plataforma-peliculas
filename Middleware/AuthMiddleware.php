@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use App\Core\Session;
-use App\Services\Respuesta;
 
 class AuthMiddleware
 {
@@ -22,7 +21,9 @@ class AuthMiddleware
         self::verificarAutenticacion();
 
         if (Session::obtener('user_role') !== $rol) {
-            (new Respuesta())->abortar(403, 'errors/403.php');
+            http_response_code(403);
+            require ROOT . '/views/errors/403.php';
+            exit;
         }
     }
 }

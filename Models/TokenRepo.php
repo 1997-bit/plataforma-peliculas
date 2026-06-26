@@ -17,7 +17,6 @@ class TokenRepo
     public function __construct(
         private PDO $pdo,
         private CryptoServicio $crypto,
-        private CookieManejador $cookie,
     ) {
     }
 
@@ -36,7 +35,7 @@ class TokenRepo
             ':expires_at' => $expiraEn,
         ]);
 
-        $this->cookie->establecer(self::NOMBRE_COOKIE, $this->crypto->cifrar($token), self::DIAS_VIDA);
+        CookieManejador::establecer(self::NOMBRE_COOKIE, $this->crypto->cifrar($token), self::DIAS_VIDA);
     }
 
     /** @return array<string, mixed>|null */
@@ -69,7 +68,7 @@ class TokenRepo
         ]);
 
         if ($stmt->rowCount() > 0) {
-            $this->cookie->establecer(self::NOMBRE_COOKIE, $this->crypto->cifrar($nuevoToken), self::DIAS_VIDA);
+            CookieManejador::establecer(self::NOMBRE_COOKIE, $this->crypto->cifrar($nuevoToken), self::DIAS_VIDA);
         }
     }
 
@@ -79,6 +78,6 @@ class TokenRepo
             'DELETE FROM remember_tokens WHERE token_hash = :token_hash'
         );
         $stmt->execute([':token_hash' => hash('sha256', $token)]);
-        $this->cookie->eliminar(self::NOMBRE_COOKIE);
+        CookieManejador::eliminar(self::NOMBRE_COOKIE);
     }
 }
