@@ -121,34 +121,36 @@ $tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
             </div>
         </section>
 
-        <?php if ($recomendaciones !== []): ?>
-        <section class="shelf">
-            <h2 class="shelf-titulo">Recomendado para ti</h2>
-            <div class="shelf-viewport">
-                <div class="shelf-fila" role="list" data-carousel>
-                    <?php foreach ($recomendaciones as $item): ?>
-                        <?php
-                            $title  = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                            $fecha  = $item['release_date'] ?? $item['first_air_date'] ?? '';
-                            $year   = substr($fecha, 0, 4);
-                            $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
-                        ?>
-                        <article class="card" role="listitem">
-                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlActual ?>" class="card-link">
-                                <div class="poster-marco poster-marco--md">
-                                    <img class="poster-img" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
-                                </div>
-                                <div class="card-info">
-                                    <p class="card-titulo"><?= $title ?></p>
-                                    <p class="card-anio"><?= $year ?></p>
-                                </div>
-                            </a>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </section>
-        <?php endif; ?>
+<?php if ($recomendaciones !== []): ?>
+<section class="shelf">
+    <h2 class="shelf-titulo">Recomendado para ti</h2>
+    <div class="shelf-viewport">
+        <div class="shelf-fila shelf-fila--backdrop" role="list" data-carousel>
+            <?php foreach ($recomendaciones as $item): ?>
+                <?php
+                    $title    = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                    $fecha    = $item['release_date'] ?? $item['first_air_date'] ?? '';
+                    $year     = substr($fecha, 0, 4);
+                    $backdrop = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
+                ?>
+                <article class="card card--backdrop" role="listitem">
+                    <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlActual ?>" class="card-link">
+                        <div class="backdrop-marco">
+                            <?php if ($backdrop): ?>
+                                <img class="backdrop-img" src="<?= $backdrop ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
+                            <?php endif; ?>
+                        </div>
+                        <div class="card-info">
+                            <p class="card-titulo"><?= $title ?></p>
+                            <p class="card-anio"><?= $year ?></p>
+                        </div>
+                    </a>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
     </main>
 
     <script src="/assets/js/carousel.js" defer></script>
