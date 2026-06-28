@@ -30,63 +30,63 @@ $tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
     <?php require ROOT . '/views/partials/nav.php'; ?>
 
     <?php if ($hero !== []): ?>
-    <section class="hero" data-hero>
-        <div class="hero-viewport" data-hero-viewport>
-            <?php foreach ($hero as $i => $item): ?>
-                <?php
-                    $tituloHero = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                    $overviewHero = htmlspecialchars($item['overview'] ?? '', ENT_QUOTES, 'UTF-8');
-                    $backdropHero = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
-                ?>
-                <article class="hero-slide <?= $i === 0 ? 'hero-slide--activo' : '' ?>" data-hero-slide <?= $backdropHero ? 'style="background-image: url(' . htmlspecialchars($backdropHero, ENT_QUOTES, 'UTF-8') . ')"' : '' ?>>
-                    <div class="hero-veladura"></div>
-                    <div class="hero-contenido">
-                        <h1 class="hero-titulo"><?= $tituloHero ?></h1>
-                        <p class="hero-descripcion"><?= $overviewHero ?></p>
-                        <a href="/contenido?id=<?= urlencode((string) ($item['id'] ?? '')) ?>&tipo=<?= $tipoUrlActual ?>" class="boton boton--claro hero-boton">
-                            Ver más
-                        </a>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
+        <section class="hero" data-hero>
+            <div class="hero-viewport" data-hero-viewport>
+                <?php foreach ($hero as $i => $item): ?>
+                    <?php
+                        $tituloHero = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                        $overviewHero = htmlspecialchars($item['overview'] ?? '', ENT_QUOTES, 'UTF-8');
+                        $backdropHero = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
+                    ?>
+                    <article class="hero-slide <?= $i === 0 ? 'hero-slide--activo' : '' ?>" data-hero-slide <?= $backdropHero ? 'style="background-image: url(' . htmlspecialchars($backdropHero, ENT_QUOTES, 'UTF-8') . ')"' : '' ?>>
+                        <div class="hero-veladura"></div>
+                        <div class="hero-contenido">
+                            <h1 class="hero-titulo"><?= $tituloHero ?></h1>
+                            <p class="hero-descripcion"><?= $overviewHero ?></p>
+                            <a href="/contenido?id=<?= urlencode((string) ($item['id'] ?? '')) ?>&tipo=<?= $tipoUrlActual ?>" class="boton boton--claro hero-boton">
+                                Ver más
+                            </a>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
 
-        <?php if (count($hero) > 1): ?>
-        <div class="hero-dots" data-hero-dots>
-            <?php foreach ($hero as $i => $item): ?>
-                <button type="button" class="hero-dot <?= $i === 0 ? 'hero-dot--activo' : '' ?>" data-hero-dot="<?= $i ?>" aria-label="Ir a slide <?= $i + 1 ?>"></button>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
-    </section>
+            <?php if (count($hero) > 1): ?>
+                <div class="hero-dots" data-hero-dots>
+                    <?php foreach ($hero as $i => $item): ?>
+                        <button type="button" class="hero-dot <?= $i === 0 ? 'hero-dot--activo' : '' ?>" data-hero-dot="<?= $i ?>" aria-label="Ir a slide <?= $i + 1 ?>"></button>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </section>
     <?php endif; ?>
 
     <main class="home">
         <?php if ($vistoReciente !== []): ?>
-        <section class="shelf">
-            <h2 class="shelf-titulo">Visto recientemente</h2>
-            <div class="shelf-viewport">
-                <div class="shelf-fila" role="list" data-carousel>
-                    <?php foreach ($vistoReciente as $item): ?>
-                        <?php
-                            $title  = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                            $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
-                            $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
-                        ?>
-                        <article class="card" role="listitem">
-                            <a href="/contenido?id=<?= urlencode((string) $item['tmdb_id']) ?>&tipo=<?= $tipoUrl ?>" class="card-link">
-                                <div class="poster-marco poster-marco--md">
-                                    <img class="poster-img" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
-                                </div>
-                                <div class="card-info">
-                                    <p class="card-titulo"><?= $title ?></p>
-                                </div>
-                            </a>
-                        </article>
-                    <?php endforeach; ?>
+            <section class="shelf">
+                <h2 class="shelf-titulo">Visto recientemente</h2>
+                <div class="shelf-viewport">
+                    <div class="shelf-fila" role="list" data-carousel>
+                        <?php foreach ($vistoReciente as $item): ?>
+                            <?php
+                                $title = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                                $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
+                                $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
+                            ?>
+                            <article class="card" role="listitem">
+                                <a href="/contenido?id=<?= urlencode((string) $item['tmdb_id']) ?>&tipo=<?= $tipoUrl ?>" class="card-link">
+                                    <div class="poster-marco poster-marco--md">
+                                        <img class="poster-img" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
+                                    </div>
+                                    <div class="card-info">
+                                        <p class="card-titulo"><?= $title ?></p>
+                                    </div>
+                                </a>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
         <?php endif; ?>
 
         <div class="tipo-switch">
@@ -100,9 +100,9 @@ $tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
                 <div class="shelf-fila" role="list" data-carousel>
                     <?php foreach ($populares as $item): ?>
                         <?php
-                            $title  = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                            $fecha  = $item['release_date'] ?? $item['first_air_date'] ?? '';
-                            $year   = substr($fecha, 0, 4);
+                            $title = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                            $fecha = $item['release_date'] ?? $item['first_air_date'] ?? '';
+                            $year = substr($fecha, 0, 4);
                             $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
                         ?>
                         <article class="card" role="listitem">
@@ -121,36 +121,42 @@ $tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
             </div>
         </section>
 
-<?php if ($recomendaciones !== []): ?>
-<section class="shelf">
-    <h2 class="shelf-titulo">Recomendado para ti</h2>
-    <div class="shelf-viewport">
-        <div class="shelf-fila shelf-fila--backdrop" role="list" data-carousel>
-            <?php foreach ($recomendaciones as $item): ?>
-                <?php
-                    $title    = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                    $fecha    = $item['release_date'] ?? $item['first_air_date'] ?? '';
-                    $year     = substr($fecha, 0, 4);
-                    $backdrop = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
-                ?>
-                <article class="card card--backdrop" role="listitem">
-                    <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlActual ?>" class="card-link">
-                        <div class="backdrop-marco">
-                            <?php if ($backdrop): ?>
-                                <img class="backdrop-img" src="<?= $backdrop ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
-                            <?php endif; ?>
-                        </div>
-                        <div class="card-info">
-                            <p class="card-titulo"><?= $title ?></p>
-                            <p class="card-anio"><?= $year ?></p>
-                        </div>
-                    </a>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
+        <?php if ($recomendaciones !== []): ?>
+            <section class="shelf">
+                <h2 class="shelf-titulo">Recomendado para ti</h2>
+                <div class="shelf-viewport">
+                    <div class="shelf-fila shelf-fila--backdrop" role="list" data-carousel>
+                        <?php foreach ($recomendaciones as $i => $item): ?>
+                            <?php
+                                $title = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                                $fecha = $item['release_date'] ?? $item['first_air_date'] ?? '';
+                                $year = substr($fecha, 0, 4);
+                                $backdrop = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
+                                $logo = TmdbImagen::logo($item['logo_path'] ?? null);
+                            ?>
+                            <article class="card card--backdrop" role="listitem" style="--card-i: <?= min($i, 12) ?>">
+                                <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlActual ?>" class="card-link">
+                                    <div class="backdrop-marco">
+                                        <?php if ($backdrop): ?>
+                                            <img class="backdrop-img" src="<?= $backdrop ?>" alt="<?= $logo ? '' : $title ?>" loading="lazy" draggable="false">
+                                        <?php endif; ?>
+                                        <?php if ($logo): ?>
+                                            <img class="backdrop-logo" src="<?= $logo ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
+                                        <?php else: ?>
+                                            <span class="backdrop-titulo-overlay"><?= $title ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="card-info">
+                                        <p class="card-titulo"><?= $title ?></p>
+                                        <p class="card-anio"><?= $year ?></p>
+                                    </div>
+                                </a>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+        <?php endif; ?>
     </main>
 
     <script src="/assets/js/carousel.js" defer></script>

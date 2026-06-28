@@ -42,4 +42,14 @@ final class TmdbImagen
     {
         return !empty($path) ? self::BASE . '/w1280' . $path : null;
     }
+
+    /**
+     * Logo del titulo (PNG/SVG transparente con el nombre estilizado).
+     * Sin fallback: si no hay logo_path, las vistas muestran el
+     * titulo en texto plano en su lugar.
+     */
+    public static function logo(?string $path): ?string
+    {
+        return !empty($path) ? self::BASE . '/w300' . $path : null;
+    }
 }

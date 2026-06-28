@@ -150,24 +150,32 @@
   font-weight: 300;
   opacity: 0.6;
 }
-
-/* hero
-   carrousel arriba de todo */
+/* ============ hero ============
+   carrousel con altura fija en vh (sin aspect-ratio forzado, asi no
+   compite con max-height y corta la imagen de forma impredecible).
+   cover + position top: prioriza que no se recorte la parte de
+   arriba de la imagen. degradado fuerte abajo + izquierda. */
 .hero {
   position: relative;
   width: 100%;
-  height: min(70vh, 640px);
+  height: min(75vh, 700px);
   margin-top: -82px;
   overflow: hidden;
-  background: var(--bg);
+  background: oklch(8% 0 0);
+}
+
+.hero-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .hero-slide {
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center;
-  background-color: oklch(20% 0 0);
+  background-position: top center;
+  background-color: oklch(8% 0 0);
   opacity: 0;
   transition: opacity 0.6s ease;
 }
@@ -176,17 +184,20 @@
   opacity: 1;
 }
 
+/* degradado fuerte: negro solido abajo, negro fuerte a la izquierda
+   donde va el texto, transparente en el resto para que se vea la
+   escena. funde con --bg al final del hero. */
 .hero-veladura {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to bottom, oklch(0% 0 0 / 0.15) 0%, transparent 35%, var(--bg) 100%),
-    linear-gradient(to right, oklch(0% 0 0 / 0.55) 0%, transparent 55%);
+    linear-gradient(to bottom, transparent 35%, oklch(0% 0 0 / 0.55) 70%, var(--bg) 100%),
+    linear-gradient(to right, oklch(0% 0 0 / 0.75) 0%, oklch(0% 0 0 / 0.35) 35%, transparent 65%);
 }
 
 .hero-contenido {
   position: absolute;
-  bottom: 14%;
+  bottom: 8%;
   left: clamp(1.5rem, 5vw, 4rem);
   max-width: min(600px, 90vw);
   z-index: 2;
@@ -198,7 +209,7 @@
   font-weight: 800;
   line-height: 1.05;
   margin: 0 0 0.75rem;
-  text-shadow: 0 2px 12px oklch(0% 0 0 / 0.5);
+  text-shadow: 0 2px 12px oklch(0% 0 0 / 0.6);
 }
 
 .hero-descripcion {
@@ -210,12 +221,12 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-shadow: 0 1px 6px oklch(0% 0 0 / 0.4);
+  text-shadow: 0 1px 6px oklch(0% 0 0 / 0.5);
 }
 
 .hero-dots {
   position: absolute;
-  bottom: 6%;
+  bottom: 3%;
   left: clamp(1.5rem, 5vw, 4rem);
   display: flex;
   gap: 0.5rem;
@@ -245,9 +256,7 @@
   .hero-descripcion {
     -webkit-line-clamp: 2;
   }
-}
-
-/* tipo-switch
+}/* ============ tipo-switch ============
    toggle peliculas/series, mismo patron visual que .chip */
 .tipo-switch {
   display: flex;
@@ -274,4 +283,48 @@
   background: oklch(55% 0.18 250);
   border-color: oklch(55% 0.18 250);
   color: white;
+}
+
+/* backdrop logo overlay
+   logo del titulo superpuesto en la
+   esquina inferior izquierda del backdrop.
+   si no hay logo disponible, cae a mostrar el titulo en texto plano
+   en la misma posicion */
+.backdrop-marco {
+  position: relative;
+}
+
+.backdrop-logo {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.85rem;
+  max-width: 60%;
+  max-height: 40%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px oklch(0% 0 0 / 0.6));
+  pointer-events: none;
+}
+
+.backdrop-titulo-overlay {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.85rem;
+  max-width: 80%;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: oklch(98% 0 0);
+  text-shadow: 0 2px 6px oklch(0% 0 0 / 0.75);
+  line-height: 1.2;
+}
+
+/* sombra inferior sutil en el backdrop para que el logo/texto
+   siempre tenga contraste, sin importar que tan clara sea la imagen */
+.backdrop-marco::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 55%, oklch(0% 0 0 / 0.65) 100%);
+  pointer-events: none;
 }
