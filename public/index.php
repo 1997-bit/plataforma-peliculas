@@ -29,7 +29,7 @@ $router->registrarGet('/register', [$registroController, 'mostrarFormulario']);
 $router->registrarPost('/register', [$registroController, 'procesarRegistro']);
 
 // Rutas protegidas (requieren sesion activa)
-$homeController = new HomeController($contenidoRepo, $tmdbClient);
+$homeController = new HomeController($contenidoRepo, $usuarioRepo, $tmdbClient);
 $router->registrarGet('/home', function () use ($homeController) {
     AuthMiddleware::verificarAutenticacion();
     $homeController->index();
