@@ -13,6 +13,28 @@
 	background: linear-gradient(to bottom, oklch(0% 0 0 / 0.65), transparent);
 }
 
+/* scroll-driven animation nativa CSS: ata transform a la posicion
+   absoluta de scroll de la pagina (no a entrada/salida del propio
+   elemento, que no aplica bien a un nav fixed). Se oculta tras los
+   primeros ~600px de scroll y no vuelve a aparecer hasta el tope.
+   No distingue subir/bajar (eso requiere JS), por eso no reaparece
+   a mitad de pagina. Soporte: Chrome/Edge 115+. Sin soporte, el nav
+   queda fijo y siempre visible (degradacion segura). */
+@supports (animation-timeline: scroll()) {
+	.nav {
+		animation-name: nav-ocultar;
+		animation-timeline: scroll(root block);
+		animation-range: 0px 600px;
+		animation-fill-mode: both;
+	}
+
+	@keyframes nav-ocultar {
+		to {
+			transform: translateY(-100%);
+		}
+	}
+}
+
 .nav-logo {
 	font-size: var(--text-lg);
 	font-weight: 700;
