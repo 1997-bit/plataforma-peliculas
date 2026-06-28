@@ -7,11 +7,9 @@ use App\Helpers\TmdbImagen;
 /** @var list<array<string,mixed>> $hero */
 /** @var list<array<string,mixed>> $populares */
 /** @var list<array<string,mixed>> $recomendaciones */
-/** @var string $tipoActual */
 /** @var list<array{tmdb_id:int,type:string,title:string,poster_path:?string,viewed_at:string}> $vistoReciente */
 
 $tema = $_COOKIE['tema'] ?? null;
-$tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
 ?>
 <!DOCTYPE html>
 <html lang="es" <?= $tema ? 'data-tema="' . htmlspecialchars($tema, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
@@ -37,13 +35,14 @@ $tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
                         $tituloHero = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                         $overviewHero = htmlspecialchars($item['overview'] ?? '', ENT_QUOTES, 'UTF-8');
                         $backdropHero = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
+                        $tipoUrlHero = $item['type'] === 'series' ? 'series' : 'movie';
                     ?>
                     <article class="hero-slide <?= $i === 0 ? 'hero-slide--activo' : '' ?>" data-hero-slide <?= $backdropHero ? 'style="background-image: url(' . htmlspecialchars($backdropHero, ENT_QUOTES, 'UTF-8') . ')"' : '' ?>>
                         <div class="hero-veladura"></div>
                         <div class="hero-contenido">
                             <h1 class="hero-titulo"><?= $tituloHero ?></h1>
                             <p class="hero-descripcion"><?= $overviewHero ?></p>
-                            <a href="/contenido?id=<?= urlencode((string) ($item['id'] ?? '')) ?>&tipo=<?= $tipoUrlActual ?>" class="boton boton--claro hero-boton">
+                            <a href="/contenido?id=<?= urlencode((string) ($item['id'] ?? '')) ?>&tipo=<?= $tipoUrlHero ?>" class="boton boton--claro hero-boton">
                                 Ver más
                             </a>
                         </div>
@@ -72,9 +71,12 @@ $tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
                                 $title = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                                 $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
                                 $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
+                                $esLocal = ($item['origen'] ?? 'tmdb') === 'local';
+                                $idUrl = $esLocal ? $item['id'] : $item['tmdb_id'];
+                                $origenUrl = $esLocal ? '&origen=local' : '';
                             ?>
                             <article class="card" role="listitem">
-                                <a href="/contenido?id=<?= urlencode((string) $item['tmdb_id']) ?>&tipo=<?= $tipoUrl ?>" class="card-link">
+                                <a href="/contenido?id=<?= urlencode((string) $idUrl) ?>&tipo=<?= $tipoUrl ?><?= $origenUrl ?>" class="card-link">
                                     <div class="poster-marco poster-marco--md">
                                         <img class="poster-img" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
                                     </div>
@@ -89,13 +91,8 @@ $tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
             </section>
         <?php endif; ?>
 
-        <div class="tipo-switch">
-            <a href="/home?tipo=movie" class="tipo-switch-boton <?= $tipoActual === 'movie' ? 'tipo-switch-activo' : '' ?>">Películas</a>
-            <a href="/home?tipo=series" class="tipo-switch-boton <?= $tipoActual === 'series' ? 'tipo-switch-activo' : '' ?>">Series</a>
-        </div>
-
         <section class="shelf">
-            <h2 class="shelf-titulo"><?= $tipoActual === 'series' ? 'Series populares' : 'Películas populares' ?></h2>
+            <h2 class="shelf-titulo">Populares</h2>
             <div class="shelf-viewport">
                 <div class="shelf-fila" role="list" data-carousel>
                     <?php foreach ($populares as $item): ?>
@@ -104,9 +101,11 @@ $tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
                             $fecha = $item['release_date'] ?? $item['first_air_date'] ?? '';
                             $year = substr($fecha, 0, 4);
                             $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
+                            $tipoUrlItem = $item['type'] === 'series' ? 'series' : 'movie';
+                            $origenUrl = ($item['origen'] ?? 'tmdb') === 'local' ? '&origen=local' : '';
                         ?>
                         <article class="card" role="listitem">
-                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlActual ?>" class="card-link">
+                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlItem ?><?= $origenUrl ?>" class="card-link">
                                 <div class="poster-marco poster-marco--md">
                                     <img class="poster-img" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
                                 </div>
@@ -133,9 +132,10 @@ $tipoUrlActual = $tipoActual === 'series' ? 'series' : 'movie';
                                 $year = substr($fecha, 0, 4);
                                 $backdrop = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
                                 $logo = TmdbImagen::logo($item['logo_path'] ?? null);
+                                $tipoUrlItem = $item['type'] === 'series' ? 'series' : 'movie';
                             ?>
                             <article class="card card--backdrop" role="listitem" style="--card-i: <?= min($i, 12) ?>">
-                                <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlActual ?>" class="card-link">
+                                <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlItem ?>" class="card-link">
                                     <div class="backdrop-marco">
                                         <?php if ($backdrop): ?>
                                             <img class="backdrop-img" src="<?= $backdrop ?>" alt="<?= $logo ? '' : $title ?>" loading="lazy" draggable="false">

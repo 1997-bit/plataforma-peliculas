@@ -160,11 +160,11 @@ final class ContenidoRepo
     public function historialReciente(string $idUsuario, int $limite = 10): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT c.tmdb_id, c.type, c.titulo AS title, c.poster_path, MAX(vh.viewed_at) AS viewed_at
+            'SELECT c.id, c.tmdb_id, c.origen, c.type, c.titulo AS title, c.poster_path, MAX(vh.viewed_at) AS viewed_at
              FROM historial_vistas vh
              INNER JOIN contenido c ON c.id = vh.content_id
              WHERE vh.user_id = :user_id
-             GROUP BY vh.content_id, c.tmdb_id, c.type, c.titulo, c.poster_path
+             GROUP BY vh.content_id, c.id, c.tmdb_id, c.origen, c.type, c.titulo, c.poster_path
              ORDER BY viewed_at DESC
              LIMIT :limite'
         );
@@ -172,7 +172,12 @@ final class ContenidoRepo
         $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($filas as &$fila) {
+            $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
+        }
+
+        return $filas;
     }
 
     /**
@@ -250,6 +255,28 @@ final class ContenidoRepo
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Generos mas vistos, para el resumen de comportamiento del admin.
+     *
+     * @return list<array{nombre:string, vistas:int}>
+     */
+    public function generosMasVistos(int $limite = 10): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT g.nombre, COUNT(*) AS vistas
+             FROM historial_vistas vh
+             INNER JOIN contenido_generos cg ON cg.content_id = vh.content_id
+             INNER JOIN generos g ON g.id = cg.genre_id
+             GROUP BY g.id, g.nombre
+             ORDER BY vistas DESC
+             LIMIT :limite'
+        );
+        $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     /** @param list<int> $generoIdsTmdb */

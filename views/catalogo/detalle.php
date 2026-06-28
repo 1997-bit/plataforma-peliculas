@@ -7,6 +7,7 @@ use App\Helpers\TmdbImagen;
 /** @var array{rating_avg:float,rating_count:int}|null $infoLocal */
 /** @var int|null $miCalificacion */
 /** @var list<array<string,mixed>> $cast */
+/** @var string|null $backdropPath */
 /** @var string $csrf */
 
 $tema = $_COOKIE['tema'] ?? null;
@@ -18,7 +19,7 @@ $anio = $fecha !== '' ? substr($fecha, 0, 4) : '';
 $sinopsis = $detalle['overview'] ?? 'Sin descripción disponible.';
 $generos = array_map(static fn (array $g): string => $g['name'], $detalle['genres'] ?? []);
 
-$backdrop = TmdbImagen::backdrop($detalle['backdrop_path'] ?? null);
+$backdrop = TmdbImagen::backdrop($backdropPath ?? $detalle['backdrop_path'] ?? null);
 $poster = TmdbImagen::poster($detalle['poster_path'] ?? null, 'md');
 
 $ratingAvg = $infoLocal['rating_avg'] ?? 0.0;
@@ -42,9 +43,10 @@ $miEstrellas = $miCalificacion !== null ? (int) round($miCalificacion / 2) : 0;
     <?php require ROOT . '/views/partials/nav.php'; ?>
 
     <main class="detalle">
-        <div class="detalle-hero" <?= $backdrop ? 'style="background-image: url(' . htmlspecialchars($backdrop, ENT_QUOTES, 'UTF-8') . ')"' : '' ?>>
-            <div class="detalle-hero-sombra"></div>
-        </div>
+        <section class="hero">
+            <?php $heroFondoUrl = $backdrop; ?>
+            <?php require ROOT . '/views/partials/hero-fondo.php'; ?>
+        </section>
 
         <div class="detalle-contenido">
             <div class="poster-marco poster-marco--lg detalle-poster-marco">

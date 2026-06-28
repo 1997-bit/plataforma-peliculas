@@ -1,3 +1,5 @@
+DROP DATABASE IF EXISTS cineapp;
+
 CREATE DATABASE cineapp 
   CHARACTER SET utf8mb4 
   COLLATE utf8mb4_unicode_ci;
@@ -29,6 +31,12 @@ CREATE TABLE generos (
 CREATE TABLE contenido (
   id BINARY(16) PRIMARY KEY,
   tmdb_id INT UNIQUE,
+  -- 'tmdb' = vino de la API (lazy seed). 'local' = lo creo un admin a mano,
+  -- sin tmdb_id real. Es lo que permite mezclar ambos en home/recomendaciones
+  -- sin que el resto del codigo (que asume tmdb_id) se rompa.
+  origen ENUM('tmdb','local') NOT NULL DEFAULT 'tmdb',
+  -- quien creo el registro si origen='local'; NULL para todo lo que viene de TMDB.
+  created_by BINARY(16),
   type ENUM('movie','series') NOT NULL,
   titulo VARCHAR(255) NOT NULL,
   descripcion TEXT,
@@ -39,7 +47,10 @@ CREATE TABLE contenido (
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_tmdb_id (tmdb_id),
+  CONSTRAINT fk_contenido_created_by
+  FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL ON UPDATE CASCADE,
   INDEX idx_type_rating (type, rating_avg DESC),
+  INDEX idx_origen (origen),
   FULLTEXT INDEX ft_titulo (titulo),
   INDEX idx_anio_lanzamiento (anio_lanzamiento),
   INDEX idx_created (created_at)

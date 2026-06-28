@@ -7,6 +7,7 @@ use App\Models\UserRepo;
 use App\Models\TokenRepo;
 use App\Models\IntentosLoginRepo;
 use App\Models\ContenidoRepo;
+use App\Models\AdminContenidoRepo;
 use App\Services\TmdbClient;
 use App\Services\CryptoServicio;
 use App\Services\Auth\ProcesarLogin;
@@ -23,6 +24,7 @@ $usuarioRepo = new UserRepo($pdo, $crypto);
 $tokenRepo = new TokenRepo($pdo, $crypto);
 $intentosRepo = new IntentosLoginRepo($pdo);
 $contenidoRepo = new ContenidoRepo($pdo);
+$adminContenidoRepo = new AdminContenidoRepo($pdo);
 $tmdbClient = new TmdbClient();
 
 $procesarLogin = new ProcesarLogin($usuarioRepo, $intentosRepo, $tokenRepo);

@@ -83,4 +83,21 @@ final class PerfilService
 
         return $ids;
     }
+
+/**
+     * TODO: generar XML de preferencias (username + generos + tema).
+     * Formato esperado (mantenerlo, el WSDL/cliente SOAP lo asume):
+     *
+     * <preferencias version="1">
+     *   <username>...</username>
+     *   <tema>...</tema>
+     *   <generos><genero id="28"/><genero id="16"/></generos>
+     * </preferencias>
+     *
+     * Usar DOMDocument, no concatenar strings.
+     */
+    public function exportarSettingsXml(string $idUsuario): string
+    {
+        throw new \RuntimeException('exportarSettingsXml no implementado todavia.');
+    }
 }

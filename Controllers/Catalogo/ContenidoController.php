@@ -6,6 +6,7 @@ namespace App\Controllers\Catalogo;
 
 use App\Core\Session;
 use App\Helpers\TmdbTipo;
+use App\Models\AdminContenidoRepo;
 use App\Models\ContenidoRepo;
 use App\Services\TmdbClient;
 
@@ -14,10 +15,71 @@ final class ContenidoController
     public function __construct(
         private ContenidoRepo $contenidoRepo,
         private TmdbClient $tmdb,
+        private AdminContenidoRepo $adminContenidoRepo,
     ) {
     }
 
     public function index(): void
+    {
+        $origen = ($_GET['origen'] ?? '') === 'local' ? 'local' : 'tmdb';
+
+        if ($origen === 'local') {
+            $this->mostrarLocal();
+            return;
+        }
+
+        $this->mostrarTmdb();
+    }
+
+    /**
+     * Detalle de contenido creado por un admin (sin tmdb_id real). No pega
+     * a la API: todo sale de la tabla contenido. Se normaliza al mismo
+     * shape minimo que espera views/catalogo/detalle.php (title, overview,
+     * genres como list<{name}>, etc) para no tener que tocar esa vista.
+     */
+    private function mostrarLocal(): void
+    {
+        $contentId = (string) ($_GET['id'] ?? '');
+
+        if ($contentId === '') {
+            http_response_code(404);
+            require ROOT . '/views/errors/404.php';
+            return;
+        }
+
+        $local = $this->adminContenidoRepo->buscarLocalPorId($contentId);
+        if ($local === null) {
+            http_response_code(404);
+            require ROOT . '/views/errors/404.php';
+            return;
+        }
+
+        $idUsuario = (string) Session::obtener('user_id');
+        $this->contenidoRepo->registrarVistaConThrottle($idUsuario, $contentId);
+
+        $detalle = [
+            'title' => $local['titulo'],
+            'overview' => $local['descripcion'],
+            'genres' => array_map(static fn (string $nombre): array => ['name' => $nombre], $local['generos']),
+            'poster_path' => $local['poster_path'],
+            'backdrop_path' => null,
+            'release_date' => $local['anio_lanzamiento'] ? $local['anio_lanzamiento'] . '-01-01' : null,
+        ];
+
+        $miCalificacion = $this->contenidoRepo->obtenerCalificacionUsuario($idUsuario, $contentId);
+        $infoLocal = [
+            'rating_avg' => (float) $local['rating_avg'],
+            'rating_count' => (int) $local['rating_count'],
+        ];
+        $cast = [];
+        $backdropPath = null;
+        $csrf = Session::generarCsrf();
+
+        require ROOT . '/views/catalogo/detalle.php';
+    }
+
+    /** Detalle de contenido que viene de la API de TMDB (flujo original, sin cambios de comportamiento). */
+    private function mostrarTmdb(): void
     {
         $tmdbId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         $tipo = TmdbTipo::normalizar($_GET['tipo'] ?? null);
@@ -58,6 +120,12 @@ final class ContenidoController
         $miCalificacion = $this->contenidoRepo->obtenerCalificacionUsuario($idUsuario, $contentId);
 
         $cast = array_slice($detalle['credits']['cast'] ?? [], 0, 12);
+
+        // Backdrop random en cada visita: 'images' viene en el mismo
+        // request via append_to_response (cero llamadas extra). Si el
+        // titulo no tiene backdrops alternativos, cae al principal.
+        $backdropPath = $this->elegirBackdropRandom($detalle);
+
         $csrf = Session::generarCsrf();
 
         require ROOT . '/views/catalogo/detalle.php';
@@ -110,9 +178,33 @@ final class ContenidoController
     /** @return array<string,mixed>|null */
     private function fetchDetalle(string $recurso, int $tmdbId): ?array
     {
-        $params = ['language' => 'es-MX', 'append_to_response' => 'credits'];
+        $params = [
+            'language' => 'es-MX',
+            'append_to_response' => 'credits,images',
+            'include_image_language' => 'es,en,null',
+        ];
 
         return $this->tmdb->fetch("/{$recurso}/{$tmdbId}", $params) ?: null;
+    }
+
+    /**
+     * Elige un backdrop al azar entre los disponibles del titulo para
+     * que el hero de detalle no se vea siempre igual. Cae al backdrop
+     * principal si 'images' no trajo alternativas (titulo con pocas
+     * imagenes subidas a TMDB).
+     *
+     * @param array<string,mixed> $detalle
+     */
+    private function elegirBackdropRandom(array $detalle): ?string
+    {
+        $backdrops = $detalle['images']['backdrops'] ?? [];
+        if ($backdrops === []) {
+            return $detalle['backdrop_path'] ?? null;
+        }
+
+        $elegido = $backdrops[array_rand($backdrops)];
+
+        return $elegido['file_path'] ?? ($detalle['backdrop_path'] ?? null);
     }
 
     /** @param array<string,mixed> $detalle */

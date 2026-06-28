@@ -46,7 +46,7 @@ class RegistrarUsuario
         Session::establecer('user_role', 'user');
         Session::establecer('username', $username);
 
-        return new ResultadoRegistro(success: true, redirectUrl: '/home');
+        return new ResultadoRegistro(success: true, redirectUrl: '/onboarding');
     }
 
     /** @return array<int, string> */

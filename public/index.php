@@ -8,6 +8,7 @@ require_once dirname(__DIR__) . '/config/container.php';
 use App\Core\Router;
 use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\RegistroController;
+use App\Controllers\Setup\SetupController;
 use App\Middleware\AuthMiddleware;
 use App\Controllers\Home\HomeController;
 use App\Controllers\Catalogo\CatalogoController;
@@ -15,6 +16,7 @@ use App\Controllers\Catalogo\ContenidoController;
 use App\Controllers\Catalogo\RecomendacionController;
 use App\Controllers\User\UserController;
 use App\Controllers\User\SettingsController;
+use App\Controllers\User\OnboardingController;
 
 $router = new Router();
 
@@ -28,21 +30,18 @@ $router->registrarPost('/logout', [$loginController, 'logout']);
 $router->registrarGet('/register', [$registroController, 'mostrarFormulario']);
 $router->registrarPost('/register', [$registroController, 'procesarRegistro']);
 
+// Setup: crea el primer admin. Sin AuthMiddleware a proposito (todavia
+// no hay nadie logueado la primera vez que se usa). Se autobloquea con
+// 403 en cuanto existe cualquier admin (ver SetupController).
+$setupController = new SetupController($usuarioRepo);
+$router->registrarGet('/setup/admin', [$setupController, 'mostrar']);
+$router->registrarPost('/setup/admin', [$setupController, 'crear']);
+
 // Rutas protegidas (requieren sesion activa)
-$homeController = new HomeController($contenidoRepo, $usuarioRepo, $tmdbClient);
+$homeController = new HomeController($contenidoRepo, $usuarioRepo, $tmdbClient, $adminContenidoRepo);
 $router->registrarGet('/home', function () use ($homeController) {
     AuthMiddleware::verificarAutenticacion();
     $homeController->index();
-});
-
-$router->registrarGet('/onboarding/step1', function () {
-    AuthMiddleware::verificarAutenticacion();
-    require ROOT . '/views/onboarding/step1.php';
-});
-
-$router->registrarGet('/onboarding/step2', function () {
-    AuthMiddleware::verificarAutenticacion();
-    require ROOT . '/views/onboarding/step2.php';
 });
 
 $catalogoController = new CatalogoController($tmdbClient);
@@ -55,7 +54,7 @@ $router->registrarPost('/catalogo/vista', function () use ($catalogoController) 
     $catalogoController->registrarVista();
 });
 
-$contenidoController = new ContenidoController($contenidoRepo, $tmdbClient);
+$contenidoController = new ContenidoController($contenidoRepo, $tmdbClient, $adminContenidoRepo);
 $router->registrarGet('/contenido', function () use ($contenidoController) {
     AuthMiddleware::verificarAutenticacion();
     $contenidoController->index();
@@ -65,7 +64,7 @@ $router->registrarPost('/contenido/calificar', function () use ($contenidoContro
     $contenidoController->calificar();
 });
 
-$recomendacionController = new RecomendacionController($usuarioRepo, $tmdbClient);
+$recomendacionController = new RecomendacionController($usuarioRepo, $tmdbClient, $adminContenidoRepo);
 $router->registrarGet('/recomendaciones', function () use ($recomendacionController) {
     AuthMiddleware::verificarAutenticacion();
     $recomendacionController->index();
@@ -93,6 +92,16 @@ $router->registrarGet('/settings/exportar', function () use ($settingsController
 $router->registrarPost('/settings/importar', function () use ($settingsController) {
     AuthMiddleware::verificarAutenticacion();
     $settingsController->importar();
+});
+
+$onboardingController = new OnboardingController($perfilService);
+$router->registrarGet('/onboarding', function () use ($onboardingController) {
+    AuthMiddleware::verificarAutenticacion();
+    $onboardingController->mostrar();
+});
+$router->registrarPost('/onboarding', function () use ($onboardingController) {
+    AuthMiddleware::verificarAutenticacion();
+    $onboardingController->procesar();
 });
 
 // Rutas de admin (requieren rol admin)

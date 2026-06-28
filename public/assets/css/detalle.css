@@ -7,25 +7,28 @@
 	--detalle-poster-offset: 70px;
 }
 
-.detalle {
-	display: flex;
-	flex-direction: column;
-}
-
-.detalle-hero {
+.hero {
 	position: relative;
+	width: 100%;
 	height: var(--detalle-hero-h);
-	background-color: oklch(18% 0.03 231);
-	background-size: cover;
-	background-position: center top;
+	overflow: hidden;
+	background: oklch(8% 0 0);
 }
 
-.detalle-hero-sombra {
+.hero-slide {
+	position: absolute;
+	inset: 0;
+	background-size: cover;
+	background-position: top center;
+	background-color: oklch(8% 0 0);
+}
+
+.hero-veladura {
 	position: absolute;
 	inset: 0;
 	background: linear-gradient(
 		to bottom,
-		oklch(10% 0 0 / 20%) 0%,
+		oklch(0% 0 0 / 20%) 0%,
 		var(--bg) 95%
 	);
 }

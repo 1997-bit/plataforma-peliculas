@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Controllers\Auth;
@@ -11,67 +10,65 @@ use voku\helper\AntiXSS;
 
 class LoginController
 {
-    public function __construct(
-        private ProcesarLogin $procesarLogin,
-        private CerrarSesion $cerrarSesion,
-    ) {
+  public function __construct(
+    private ProcesarLogin $procesarLogin,
+    private CerrarSesion $cerrarSesion,
+  ) {}
+
+  public function mostrarFormulario(): void
+  {
+    if (Session::existe('user_id')) {
+      $this->redirigir(Session::obtener('user_role') === 'admin' ? '/admin' : '/home');
+      return;
     }
 
-    public function mostrarFormulario(): void
-    {
-        if (Session::existe('user_id')) {
-            $this->redirigir('/home');
-        }
+    $csrf = Session::generarCsrf();
+    require ROOT . '/views/auth/login.php';
+  }
 
-        $csrf = Session::generarCsrf();
-        require ROOT . '/views/auth/login.php';
+  public function login(): void
+  {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+
+    if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
+      $this->redirigir('/login');
+      return;
     }
 
-    public function login(): void
-    {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $antixss = new AntiXSS();
+    $email = $antixss->xss_clean(trim($_POST['email'] ?? ''));
+    $password = trim($_POST['password'] ?? '');
+    $remember = isset($_POST['remember']) && $_POST['remember'] === '1';
 
-        if (!Session::validarCsrf((string)($_POST['_csrf'] ?? ''))) {
-            $this->redirigir('/login');
-            return;
-        }
+    $resultado = $this->procesarLogin->procesar($email, $password, $ip, $remember);
 
-        $antixss = new AntiXSS();
-        $email = $antixss->xss_clean(trim((string)($_POST['email'] ?? '')));
-        $password = trim((string)($_POST['password'] ?? ''));
-        $remember = isset($_POST['remember']) && $_POST['remember'] === '1';
-
-        $resultado = $this->procesarLogin->procesar($email, $password, $ip, $remember);
-
-        if (!$resultado->success) {
-            $error = $resultado->errorMsg;
-            $csrf = Session::generarCsrf();
-            if ($resultado->rateLimited) {
-                http_response_code(429);
-            }
-            require ROOT . '/views/auth/login.php';
-            return;
-        }
-
-        $this->redirigir($resultado->redirectUrl);
+    if (!$resultado->success) {
+      $error = $resultado->errorMsg;
+      $csrf  = Session::generarCsrf();
+      if ($resultado->rateLimited) http_response_code(429);
+      require ROOT . '/views/auth/login.php';
+      return;
     }
 
-    public function logout(): void
-    {
-        if (!Session::validarCsrf((string)($_POST['_csrf'] ?? ''))) {
-            $this->redirigir('/');
-            return;
-        }
+    $this->redirigir($resultado->redirectUrl);
+  }
 
-        $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
-        $idUsuario = Session::obtener('user_id') !== null ? (string)Session::obtener('user_id') : null;
-        $this->cerrarSesion->cerrarSesion($ip, $idUsuario);
-        $this->redirigir('/');
+  public function logout(): void
+  {
+    if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
+      $this->redirigir('/');
+      return;
     }
 
-    private function redirigir(string $ruta): void
-    {
-        header('Location: ' . $ruta);
-        exit;
-    }
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $userId = Session::obtener('user_id');
+    $this->cerrarSesion->cerrarSesion($ip, $userId);
+    $this->redirigir('/');
+  }
+
+  private function redirigir(string $ruta): void
+  {
+    header('Location: ' . $ruta);
+    exit;
+  }
 }
