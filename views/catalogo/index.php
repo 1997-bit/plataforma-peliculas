@@ -68,9 +68,10 @@ $paginaActual = max(1, (int) ($_GET['page'] ?? 1));
                         $tmdbId = $item['id'] ?? null;
                         $titulo = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                         $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
+                        $origenUrl = ($item['origen'] ?? 'tmdb') === 'local' ? '&origen=local' : '';
                     ?>
                     <article class="card catalogo-card" role="listitem">
-                        <a href="/contenido?id=<?= urlencode((string) $tmdbId) ?>&tipo=<?= htmlspecialchars($tipoActual, ENT_QUOTES, 'UTF-8') ?>" class="catalogo-card-link">
+                        <a href="/contenido?id=<?= urlencode((string) $tmdbId) ?>&tipo=<?= htmlspecialchars($tipoActual, ENT_QUOTES, 'UTF-8') ?><?= $origenUrl ?>" class="catalogo-card-link">
                             <div class="poster-marco poster-marco--md">
                                 <img class="poster-img" src="<?= $poster ?>" alt="<?= $titulo ?>" loading="lazy" draggable="false">
                             </div>

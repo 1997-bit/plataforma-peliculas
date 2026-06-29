@@ -24,9 +24,7 @@ final class SetupController
 
     public function mostrar(): void
     {
-        if ($this->usuarios->existeAlgunAdmin()) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
+        if ($this->bloquearSiYaHayAdmin()) {
             return;
         }
 
@@ -36,9 +34,7 @@ final class SetupController
 
     public function crear(): void
     {
-        if ($this->usuarios->existeAlgunAdmin()) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
+        if ($this->bloquearSiYaHayAdmin()) {
             return;
         }
 
@@ -54,24 +50,8 @@ final class SetupController
 
         $csrf = Session::generarCsrf();
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = 'Email inválido.';
-            require ROOT . '/views/setup/admin.php';
-            return;
-        }
-        if (strlen($username) < 2 || strlen($username) > 50) {
-            $error = 'El nombre debe tener entre 2 y 50 caracteres.';
-            require ROOT . '/views/setup/admin.php';
-            return;
-        }
-        if (strlen($password) < 8) {
-            $error = 'La contraseña debe tener al menos 8 caracteres.';
-            require ROOT . '/views/setup/admin.php';
-            return;
-        }
-
-        if ($this->usuarios->correoExiste($email)) {
-            $error = 'Ese correo ya está registrado.';
+        $error = $this->validarDatos($email, $username, $password);
+        if ($error !== null) {
             require ROOT . '/views/setup/admin.php';
             return;
         }
@@ -90,5 +70,36 @@ final class SetupController
 
         $creado = ['email' => $email, 'password' => $password];
         require ROOT . '/views/setup/admin.php';
+    }
+
+    /** Junta las validaciones de crear() en un solo lugar. Devuelve el primer error, o null si todo esta bien. */
+    private function validarDatos(string $email, string $username, string $password): ?string
+    {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return 'Email inválido.';
+        }
+        if (strlen($username) < 2 || strlen($username) > 50) {
+            return 'El nombre debe tener entre 2 y 50 caracteres.';
+        }
+        if (strlen($password) < 8) {
+            return 'La contraseña debe tener al menos 8 caracteres.';
+        }
+        if ($this->usuarios->correoExiste($email)) {
+            return 'Ese correo ya está registrado.';
+        }
+
+        return null;
+    }
+
+    /** true + responde 403 si ya existe un admin (mostrar()/crear() deben cortar ahi). */
+    private function bloquearSiYaHayAdmin(): bool
+    {
+        if (!$this->usuarios->existeAlgunAdmin()) {
+            return false;
+        }
+
+        http_response_code(403);
+        require ROOT . '/views/errors/403.php';
+        return true;
     }
 }

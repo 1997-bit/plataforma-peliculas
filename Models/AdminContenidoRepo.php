@@ -231,6 +231,41 @@ final class AdminContenidoRepo
     }
 
     /**
+     * Igual que contenidoLocalParaCatalogo(), pero filtra por titulo (LIKE)
+     * en vez de por genero. Usado cuando el catalogo tiene una busqueda
+     * activa (parametro ?q=), para que el contenido local tambien aparezca
+     * en los resultados de busqueda, no solo al navegar sin filtro.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function buscarContenidoLocal(string $tipo, string $query, int $limite = 20): array
+    {
+        $tipoDb = $tipo === 'series' ? 'series' : 'movie';
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id, tmdb_id, type, titulo, descripcion, poster_path,
+                    anio_lanzamiento, rating_avg, rating_count
+             FROM contenido
+             WHERE origen = 'local' AND is_active = 1 AND type = :type
+               AND titulo LIKE :query
+             ORDER BY created_at DESC
+             LIMIT :limite"
+        );
+        $stmt->bindValue(':type', $tipoDb);
+        $stmt->bindValue(':query', '%' . $query . '%');
+        $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        foreach ($filas as &$fila) {
+            $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
+        }
+
+        return $filas;
+    }
+
+    /**
      * Un contenido local por id, con generos ya resueltos (para que el
      * detalle pueda mostrar chips de genero igual que el contenido TMDB).
      * Devuelve null si no existe o si no es local.

@@ -47,7 +47,7 @@ $router->registrarGet('/home', function () use ($homeController) {
     $homeController->index();
 });
 
-$catalogoController = new CatalogoController($tmdbClient);
+$catalogoController = new CatalogoController($tmdbClient, $adminContenidoRepo);
 $router->registrarGet('/catalogo', function () use ($catalogoController) {
     AuthMiddleware::bloquearRol('admin');
     $catalogoController->index();
