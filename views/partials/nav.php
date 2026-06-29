@@ -3,9 +3,12 @@ $usuarioLogueado = \App\Core\Session::existe('user_id');
 $nombreUsuario = \App\Core\Session::obtener('username');
 $rutaActual = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $esActiva = static fn(string $ruta): string => $rutaActual === $ruta ? ' nav-link--activo' : '';
+$rutaLogo = $usuarioLogueado
+	? (\App\Core\Session::obtener('user_role') === 'admin' ? '/admin' : '/home')
+	: '/';
 ?>
 <header class="nav">
-	<a href="/" class="nav-logo">PANCONQUESO</a>
+	<a href="<?= $rutaLogo ?>" class="nav-logo">PANCONQUESO</a>
 	<nav aria-label="Navegación principal">
 		<?php if ($usuarioLogueado): ?>
 		<div class="nav-links">

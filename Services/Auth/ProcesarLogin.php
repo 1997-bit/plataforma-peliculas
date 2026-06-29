@@ -24,21 +24,12 @@ class ProcesarLogin
 
     public function procesar(string $email, string $password, string $ip, bool $remember): ResultadoLogin
     {
-        // 1. Rate limit
-        $intentos = $this->intentos->contarFallidosRecientes($ip, self::SEGUNDOS_BLOQUEO);
-        if ($intentos >= self::MAX_INTENTOS) {
+        if ($this->estaBloqueado($ip)) {
             return new ResultadoLogin(success: false, errorMsg: 'Demasiados intentos. Espera 15 minutos.', rateLimited: true);
         }
 
-        // 2. Buscar usuario
         $user = $this->usuarios->buscarPorCorreo($email);
-
-        // 3. Verificar password en tiempo constante (CWE-208)
-        $hashVerificar = $user ? $user->passwordHash : User::DUMMY_HASH;
-        $passwordOk = password_verify($password, $hashVerificar);
-        $credencialesValidas = $user !== null && $user->puedeIniciarSesion() && $passwordOk;
-
-        // 4. Registrar intento
+        $credencialesValidas = $this->credencialesValidas($user, $password);
         $this->intentos->registrarIntento($ip, $email, $credencialesValidas);
 
         if (!$credencialesValidas) {
@@ -46,21 +37,35 @@ class ProcesarLogin
             return new ResultadoLogin(success: false, errorMsg: 'Credenciales inválidas.');
         }
 
-        // 5. Sesión
         Session::regenerar();
         Session::establecer('user_id', $user->id);
         Session::establecer('user_role', $user->role);
         Session::establecer('username', $user->username);
 
-        // 6. Remember me
         if ($remember) {
             $this->tokens->crear($user->id);
         }
 
-        // 7. Log + redirect
         $this->intentos->registrarEvento('LOGIN_EXITOSO', $ip, $user->id, []);
-        $redirectUrl = $user->esAdmin() ? '/admin' : '/home';
+        return new ResultadoLogin(success: true, redirectUrl: $this->rutaDestino($user));
+    }
 
-        return new ResultadoLogin(success: true, redirectUrl: $redirectUrl);
+    private function estaBloqueado(string $ip): bool
+    {
+        return $this->intentos->contarFallidosRecientes($ip, self::SEGUNDOS_BLOQUEO) >= self::MAX_INTENTOS;
+    }
+
+    private function credencialesValidas(?User $user, string $password): bool
+    {
+        $hash = $user?->passwordHash ?? User::DUMMY_HASH;
+
+        return $user !== null
+            && $user->puedeIniciarSesion()
+            && password_verify($password, $hash);
+    }
+
+    private function rutaDestino(User $user): string
+    {
+        return $user->esAdmin() ? '/admin' : '/home';
     }
 }

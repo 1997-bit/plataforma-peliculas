@@ -15,28 +15,15 @@ class Session
             return;
         }
 
-        $lifetime = (int)($_ENV['SESSION_LIFETIME'] ?? 3600);
-        $isSeguro = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-          || (($_SERVER['SERVER_PORT'] ?? null) == 443);
-
-        session_set_cookie_params([
-          'lifetime' => 0,
-          'path' => '/',
-          'domain' => '',
-          'secure' => $isSeguro,
-          'httponly' => true,
-          'samesite' => 'Strict',
-        ]);
+        self::configurarCookie();
 
         session_name('CINESESSID');
         session_start();
         self::$started = true;
 
-        if (isset($_SESSION['_last_activity'])) {
-            if (time() - $_SESSION['_last_activity'] > $lifetime) {
-                self::destruir();
-                return;
-            }
+        if (self::haExpirado()) {
+            self::destruir();
+            return;
         }
 
         $_SESSION['_last_activity'] = time();
@@ -50,10 +37,7 @@ class Session
     public static function destruir(): void
     {
         $_SESSION = [];
-        if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 3600, $params['path']);
-        }
+        self::eliminarCookieSesion();
         session_destroy();
         self::$started = false;
     }
@@ -86,5 +70,38 @@ class Session
     public static function validarCsrf(string $token): bool
     {
         return (new \App\Services\ManejadorCsrf())->validarTokenCsrf($token);
+    }
+
+    private static function configurarCookie(): void
+    {
+        $esSeguro = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (($_SERVER['SERVER_PORT'] ?? null) == 443);
+
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => $esSeguro,
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ]);
+    }
+
+    private static function haExpirado(): bool
+    {
+        $lifetime = (int) ($_ENV['SESSION_LIFETIME'] ?? 3600);
+        $ultimaActividad = $_SESSION['_last_activity'] ?? null;
+
+        return is_int($ultimaActividad) && (time() - $ultimaActividad > $lifetime);
+    }
+
+    private static function eliminarCookieSesion(): void
+    {
+        if (!ini_get('session.use_cookies')) {
+            return;
+        }
+
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 3600, $params['path']);
     }
 }

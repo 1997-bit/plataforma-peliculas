@@ -40,22 +40,35 @@ class RestaurarSesion
             return $this->fallar();
         }
 
+        $user = $this->buscarUsuarioPorToken($token);
+        if ($user === null) {
+            return $this->fallar();
+        }
+
+        if (!$user->puedeIniciarSesion()) {
+            return $this->fallar();
+        }
+
+        $this->iniciarSesion($user);
+        $this->tokens->rotar(hash('sha256', $token), $user->id);
+        return true;
+    }
+
+    private function buscarUsuarioPorToken(string $token): ?\App\Models\User
+    {
         $fila = $this->tokens->buscarPorToken($token);
         if (!$fila) {
-            return $this->fallar();
+            return null;
         }
 
-        $user = $this->usuarios->buscarPorId(UuidHelper::binarioAUuid($fila['user_id']));
-        if (!$user || !$user->puedeIniciarSesion()) {
-            return $this->fallar();
-        }
+        return $this->usuarios->buscarPorId(UuidHelper::binarioAUuid($fila['user_id']));
+    }
 
+    private function iniciarSesion(\App\Models\User $user): void
+    {
         Session::regenerar();
         Session::establecer('user_id', $user->id);
         Session::establecer('user_role', $user->role);
         Session::establecer('username', $user->username);
-
-        $this->tokens->rotar(hash('sha256', $token), $user->id);
-        return true;
     }
 }

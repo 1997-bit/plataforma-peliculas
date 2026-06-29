@@ -22,7 +22,10 @@ $router = new Router();
 
 $loginController = new LoginController($procesarLogin, $cerrarSesion);
 $registroController = new RegistroController($registrarUsuario);
-$router->registrarGet('/', fn () => require ROOT . '/views/landing.php');
+$router->registrarGet('/', function () {
+    AuthMiddleware::redirigirSiAutenticado();
+    require ROOT . '/views/landing.php';
+});
 $router->registrarGet('/privacidad', fn () => require ROOT . '/views/privacidad.php');
 $router->registrarGet('/login', [$loginController, 'mostrarFormulario']);
 $router->registrarPost('/login', [$loginController, 'login']);
@@ -40,67 +43,67 @@ $router->registrarPost('/setup/admin', [$setupController, 'crear']);
 // Rutas protegidas (requieren sesion activa)
 $homeController = new HomeController($contenidoRepo, $usuarioRepo, $tmdbClient, $adminContenidoRepo);
 $router->registrarGet('/home', function () use ($homeController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $homeController->index();
 });
 
 $catalogoController = new CatalogoController($tmdbClient);
 $router->registrarGet('/catalogo', function () use ($catalogoController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $catalogoController->index();
 });
 $router->registrarPost('/catalogo/vista', function () use ($catalogoController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $catalogoController->registrarVista();
 });
 
 $contenidoController = new ContenidoController($contenidoRepo, $tmdbClient, $adminContenidoRepo);
 $router->registrarGet('/contenido', function () use ($contenidoController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $contenidoController->index();
 });
 $router->registrarPost('/contenido/calificar', function () use ($contenidoController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $contenidoController->calificar();
 });
 
 $recomendacionController = new RecomendacionController($usuarioRepo, $tmdbClient, $adminContenidoRepo);
 $router->registrarGet('/recomendaciones', function () use ($recomendacionController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $recomendacionController->index();
 });
 
 $userController = new UserController($perfilService, $contenidoRepo);
 $router->registrarGet('/profile', function () use ($userController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $userController->index();
 });
 
 $settingsController = new SettingsController($perfilService);
 $router->registrarGet('/settings', function () use ($settingsController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $settingsController->index();
 });
 $router->registrarPost('/settings', function () use ($settingsController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $settingsController->actualizar();
 });
 $router->registrarGet('/settings/exportar', function () use ($settingsController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $settingsController->exportar();
 });
 $router->registrarPost('/settings/importar', function () use ($settingsController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $settingsController->importar();
 });
 
 $onboardingController = new OnboardingController($perfilService);
 $router->registrarGet('/onboarding', function () use ($onboardingController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $onboardingController->mostrar();
 });
 $router->registrarPost('/onboarding', function () use ($onboardingController) {
-    AuthMiddleware::verificarAutenticacion();
+    AuthMiddleware::bloquearRol('admin');
     $onboardingController->procesar();
 });
 

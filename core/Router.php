@@ -21,10 +21,8 @@ class Router
     public function despachar(): void
     {
         $metodo = $_SERVER['REQUEST_METHOD'];
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $uri = rtrim($uri, '/') ?: '/';
-
-        $manejador = $this->rutas[$metodo][$uri] ?? null;
+        $ruta = $this->normalizarRuta((string) parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+        $manejador = $this->rutas[$metodo][$ruta] ?? null;
 
         if ($manejador === null) {
             http_response_code(404);
@@ -32,12 +30,23 @@ class Router
             return;
         }
 
-        if (is_array($manejador)) {
-            [$clase, $accion] = $manejador;
-            $instancia = is_object($clase) ? $clase : new $clase();
-            $instancia->$accion();
-        } else {
+        $this->ejecutar($manejador);
+    }
+
+    private function normalizarRuta(string $ruta): string
+    {
+        return rtrim($ruta, '/') ?: '/';
+    }
+
+    private function ejecutar(callable|array $manejador): void
+    {
+        if (!is_array($manejador)) {
             $manejador();
+            return;
         }
+
+        [$clase, $accion] = $manejador;
+        $instancia = is_object($clase) ? $clase : new $clase();
+        $instancia->$accion();
     }
 }

@@ -34,18 +34,9 @@ final class PerfilService
      */
     public function actualizarPerfil(string $idUsuario, string $usernameCrudo, array $generosCrudos): ResultadoPerfil
     {
-        $errores = [];
-
         $username = $this->sanitizarTexto($usernameCrudo);
-        if (strlen($username) < 2 || strlen($username) > 50) {
-            $errores[] = 'El nombre debe tener entre 2 y 50 caracteres.';
-        }
-
         $generos = $this->normalizarGeneros($generosCrudos);
-        if (count($generos) > self::GENEROS_MAX) {
-            $errores[] = 'Puedes elegir como máximo ' . self::GENEROS_MAX . ' géneros.';
-        }
-
+        $errores = $this->validarPerfil($username, $generos);
         if ($errores !== []) {
             return new ResultadoPerfil(success: false, errores: $errores);
         }
@@ -63,6 +54,22 @@ final class PerfilService
         $this->usuarios->actualizarPerfil($idUsuario, $username, $preferences);
 
         return new ResultadoPerfil(success: true, username: $username, preferences: $preferences);
+    }
+
+    /** @return list<string> */
+    private function validarPerfil(string $username, array $generos): array
+    {
+        $errores = [];
+
+        if (strlen($username) < 2 || strlen($username) > 50) {
+            $errores[] = 'El nombre debe tener entre 2 y 50 caracteres.';
+        }
+
+        if (count($generos) > self::GENEROS_MAX) {
+            $errores[] = 'Puedes elegir como máximo ' . self::GENEROS_MAX . ' géneros.';
+        }
+
+        return $errores;
     }
 
     private function sanitizarTexto(string $valor): string
