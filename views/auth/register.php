@@ -65,7 +65,7 @@
 					</div>
 
 					<div class="auth-campo">
-						<label for="password">Contrasena</label>
+						<label for="password">Contraseña</label>
 						<div class="auth-campo-con-icono tiene-icono-izq tiene-icono-der">
 							<svg class="auth-icono-izq" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true">
 								<path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80Zm-80,84a12,12,0,1,1,12-12A12,12,0,0,1,128,164Zm32-84H96V56a32,32,0,0,1,64,0Z"></path>
@@ -77,7 +77,7 @@
 								autocomplete="new-password"
 								required
 							/>
-							<button type="button" class="auth-toggle-ojo" aria-label="Mostrar u ocultar contrasena">
+							<button type="button" class="auth-toggle-ojo" aria-label="Mostrar u ocultar contraseña">
 								<svg class="icono-ojo-abierto" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true">
 									<path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"></path>
 								</svg>
@@ -89,7 +89,7 @@
 					</div>
 
 					<div class="auth-campo">
-						<label for="password_confirm">Confirmar contrasena</label>
+						<label for="password_confirm">Confirmar contraseña</label>
 						<div class="auth-campo-con-icono tiene-icono-izq tiene-icono-der">
 							<svg class="auth-icono-izq" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true">
 								<path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80Zm-80,84a12,12,0,1,1,12-12A12,12,0,0,1,128,164Zm32-84H96V56a32,32,0,0,1,64,0Z"></path>
@@ -100,7 +100,7 @@
 								name="password_confirm"
 								required
 							/>
-							<button type="button" class="auth-toggle-ojo" aria-label="Mostrar u ocultar contrasena">
+							<button type="button" class="auth-toggle-ojo" aria-label="Mostrar u ocultar contraseña">
 								<svg class="icono-ojo-abierto" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true">
 									<path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"></path>
 								</svg>
