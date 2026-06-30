@@ -5,7 +5,6 @@
 .env
 .env.testing
 
-
 # PHPUnit
 .phpunit.result.cache
 .phpunit.cache/
@@ -14,12 +13,6 @@
 *.log
 /logs/
 /cache/
+/storage/
 
-
-
-/public/assets/images/posters/*.jpg
-/public/assets/images/posters/*.jpeg
-/public/assets/images/posters/*.png
-/app/
-*.log
 .php-cs-fixer.cache

@@ -8,6 +8,10 @@ class ManejadorCsrf
 {
     public function generarTokenCsrf(): string
     {
+        if (!empty($_SESSION['_csrf_token'])) {
+            return (string) $_SESSION['_csrf_token'];
+        }
+
         $token = bin2hex(random_bytes(32));
         $_SESSION['_csrf_token'] = $token;
         return $token;

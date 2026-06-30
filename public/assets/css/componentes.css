@@ -1,0 +1,175 @@
+/* componentes.css */
+/* piezas de UI reusables entre paginas: poster, boton, chip.
+   requiere tokens.css cargado antes (usa sus variables --poster-*). */
+
+/* ============ poster ============
+   marco: contenedor con la proporcion 2:3 fija y el recorte.
+   imagen: el <img> de adentro, siempre cubre el marco entero.
+   modificador de tamaño: .poster-marco--xs/--sm/--md/--lg
+   Ejemplo de uso:
+   <div class="poster-marco poster-marco--sm">
+     <img class="poster-img" src="..." alt="...">
+   </div>
+*/
+.poster-marco {
+	position: relative;
+	aspect-ratio: var(--poster-ratio);
+	border-radius: var(--poster-radio-md);
+	overflow: hidden;
+	background: oklch(60% 0 0 / 15%);
+	flex-shrink: 0;
+}
+
+.poster-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.poster-marco--xs {
+	width: var(--poster-w-xs);
+	border-radius: var(--poster-radio-sm);
+}
+
+.poster-marco--sm {
+	width: var(--poster-w-sm);
+	border-radius: var(--poster-radio-md);
+}
+
+.poster-marco--md {
+	width: var(--poster-w-md);
+	border-radius: var(--poster-radio-md);
+}
+
+.poster-marco--lg {
+	width: var(--poster-w-lg);
+	border-radius: var(--poster-radio-lg);
+}
+
+/* ============ boton ============
+   .boton es la base; .boton--primario y .boton--secundario son los dos
+   estilos que ya existian repetidos en perfil.css/catalogo.css/etc,
+   ahora centralizados aqui.
+*/
+.boton {
+	font: inherit;
+	font-size: var(--text-sm);
+	font-weight: 600;
+	padding: 0.6rem 1.5rem;
+	border-radius: 8px;
+	border: none;
+	cursor: pointer;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.boton--primario {
+	background: oklch(55% 0.18 250);
+	color: white;
+}
+
+.boton--primario:hover {
+	background: oklch(48% 0.18 250);
+}
+
+.boton--secundario {
+	background: transparent;
+	border: 1px solid oklch(60% 0 0 / 30%);
+	color: var(--texto);
+}
+
+.boton--secundario:hover {
+	background: oklch(60% 0 0 / 8%);
+}
+
+.boton--claro {
+	background: oklch(95% 0 0);
+	color: oklch(15% 0 0);
+}
+
+.boton--claro:hover {
+	background: oklch(85% 0 0);
+}
+
+.boton:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.boton:disabled:hover {
+	background: transparent;
+}
+
+/* ============ chip ============
+   chip generico tipo pastilla, usado para generos, tags, filtros activos.
+*/
+.chip {
+	display: inline-flex;
+	align-items: center;
+	font-size: var(--text-sm);
+	font-weight: 500;
+	padding: 0.5rem 1.1rem;
+	border-radius: 999px;
+	border: 1px solid oklch(60% 0 0 / 30%);
+	color: var(--texto);
+	user-select: none;
+	transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+/* chips interactivos (con un <input> adentro, como en /settings) si
+   muestran mano y feedback de click */
+.chip:has(input) {
+	cursor: pointer;
+}
+
+.chip:has(input):hover {
+	border-color: oklch(60% 0 0 / 55%);
+}
+
+.chip:has(input):active {
+	transform: scale(0.97);
+}
+
+.chip--activo {
+	background: oklch(55% 0.18 250);
+	border-color: oklch(55% 0.18 250);
+	color: white;
+}
+
+.chip--simple {
+	border: none;
+	background: oklch(60% 0 0 / 10%);
+	cursor: default;
+	font-size: var(--text-xs);
+	padding: 0.35rem 0.8rem;
+}
+
+.chip--simple:hover {
+	border-color: transparent;
+}
+
+/* chip-como-checkbox: el chip envuelve un <input type="checkbox"> real
+   (accesible, funciona con teclado/screen reader) pero el input se
+   esconde visualmente. el color del chip entero indica seleccionado/no.
+   Ejemplo: <label class="chip"><input type="checkbox" class="chip-input">Texto</label> */
+.chip:has(input:checked) {
+	background: oklch(55% 0.18 250);
+	border-color: oklch(55% 0.18 250);
+	color: white;
+}
+
+.chip-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.chip:has(input:focus-visible) {
+	outline: 2px solid oklch(70% 0.15 250);
+	outline-offset: 3px;
+}

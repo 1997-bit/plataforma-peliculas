@@ -1,0 +1,139 @@
+/* catalogo.css
+   layout del catalogo: filtros, grid responsivo y paginacion.
+   Reusa .card, .card-poster-marco, .card-poster, .card-info, .card-titulo
+   ya definidos en home.css */
+
+:root {
+  --catalogo-grid-min: 140px;
+  --catalogo-gap: 1rem;
+}
+
+.catalogo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem var(--page-px, 1.5rem) 3rem;
+}
+
+.catalogo-titulo {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+/* barra de filtros: en mobile cada control ocupa todo el ancho y se apilan */
+.catalogo-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.filtro-busqueda,
+.filtro-select,
+.filtro-boton {
+  width: 100%;
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.filtro-busqueda,
+.filtro-select {
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid oklch(60% 0 0 / 35%);
+  background: var(--bg);
+  color: var(--texto);
+}
+
+.filtro-boton {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: oklch(55% 0.18 250);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filtro-boton:hover {
+  background: oklch(48% 0.18 250);
+}
+
+/* grid de tarjetas, mismo --card-ancho que usa home.css */
+.catalogo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--catalogo-grid-min), 1fr));
+  gap: var(--catalogo-gap);
+}
+
+.catalogo-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.catalogo-vacio {
+  text-align: center;
+  opacity: 0.6;
+  padding: 3rem 0;
+  font-size: var(--text-sm);
+}
+
+/* paginacion */
+.catalogo-paginacion {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.catalogo-siguiente {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid oklch(60% 0 0 / 35%);
+  text-decoration: none;
+  color: var(--texto);
+}
+
+.catalogo-siguiente:hover {
+  background: oklch(60% 0 0 / 10%);
+}
+
+/* tablet: filtros en una sola fila */
+@media (min-width: 601px) {
+  :root {
+    --catalogo-grid-min: 170px;
+  }
+
+  .catalogo-filtros {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .filtro-busqueda {
+    flex: 1 1 240px;
+    width: auto;
+  }
+
+  .filtro-select {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .filtro-boton {
+    width: auto;
+    flex: 0 0 auto;
+  }
+}
+
+/* desktop: cards mas grandes, mismo punto de quiebre que home.css */
+@media (min-width: 1024px) {
+  :root {
+    --catalogo-grid-min: 190px;
+  }
+
+  .catalogo {
+    padding-top: 2rem;
+  }
+}

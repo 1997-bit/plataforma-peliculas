@@ -6,26 +6,41 @@ namespace App\Services;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
+use Defuse\Crypto\Exception\BadFormatException;
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
+use RuntimeException;
 
-class CryptoServicio
+final class CryptoServicio
 {
-    private static ?Key $clave = null;
+    private readonly Key $clave;
 
-    private static function obtenerClave(): Key
+    public function __construct()
     {
-        if (self::$clave === null) {
-            self::$clave = Key::loadFromAsciiSafeString((string)($_ENV['APP_KEY'] ?? ''));
+        $appKey = $_ENV['APP_KEY'] ?? null;
+
+        if (!is_string($appKey) || $appKey === '') {
+            throw new RuntimeException('APP_KEY no está configurada o es inválida.');
         }
-        return self::$clave;
+
+        try {
+            $this->clave = Key::loadFromAsciiSafeString($appKey);
+        } catch (BadFormatException|EnvironmentIsBrokenException $e) {
+            throw new RuntimeException('APP_KEY tiene un formato inválido.', previous: $e);
+        }
     }
 
-    public static function cifrar(string $dato): string
+    public function cifrar(string $dato): string
     {
-        return Crypto::encrypt($dato, self::obtenerClave());
+        return Crypto::encrypt($dato, $this->clave);
     }
 
-    public static function descifrar(string $dato): string
+    public function descifrar(string $dato): string
     {
-        return Crypto::decrypt($dato, self::obtenerClave());
+        try {
+            return Crypto::decrypt($dato, $this->clave);
+        } catch (WrongKeyOrModifiedCiphertextException $e) {
+            throw new RuntimeException('No se pudo descifrar: dato corrupto o clave incorrecta.', previous: $e);
+        }
     }
 }

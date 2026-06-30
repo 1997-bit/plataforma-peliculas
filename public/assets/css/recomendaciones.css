@@ -1,0 +1,191 @@
+/* recomendaciones.css */
+/* feed vertical full-screen, scroll libre (sin snap), backdrop difuminado.
+   requiere tokens.css + componentes.css cargados antes. */
+
+.cuerpo-feed {
+	margin: 0;
+}
+
+/* estado vacio (sin generos elegidos, o sin resultados) */
+.feed-vacio {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	text-align: center;
+	padding: 0 1.5rem;
+}
+
+.feed-vacio-link {
+	color: oklch(70% 0.15 250);
+	font-weight: 600;
+	text-decoration: underline;
+}
+
+/* contenedor del feed: scroll continuo, sin snap, momentum nativo */
+.feed {
+	height: 100vh;
+	overflow-y: scroll;
+	-webkit-overflow-scrolling: touch;
+}
+
+.feed-tipo-switch {
+	position: fixed;
+	top: 4.5rem;
+	inset-inline: 0;
+	z-index: 50;
+	display: flex;
+	justify-content: center;
+	gap: 0.5rem;
+	pointer-events: none;
+}
+
+.feed-tipo-boton {
+	pointer-events: auto;
+	font-size: var(--text-sm);
+	font-weight: 600;
+	padding: 0.4rem 1rem;
+	border-radius: 999px;
+	color: oklch(95% 0 0);
+	text-decoration: none;
+	background: oklch(20% 0 0 / 45%);
+	backdrop-filter: blur(8px);
+}
+
+.feed-tipo-activo {
+	background: oklch(100% 0 0 / 90%);
+	color: oklch(15% 0 0);
+}
+
+/* cada slide ocupa la pantalla completa, sin snap */
+.feed-slide {
+	position: relative;
+	height: 100vh;
+	width: 100%;
+	display: flex;
+	align-items: flex-end;
+	overflow: hidden;
+}
+
+.feed-fondo {
+	position: absolute;
+	inset: 0;
+	background-color: oklch(18% 0.03 231);
+	background-size: cover;
+	background-position: center;
+	filter: blur(8px) saturate(1.08) brightness(0.8);
+	transform: scale(1.08);
+}
+
+.feed-veladura {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		to top,
+		oklch(8% 0 0 / 92%) 0%,
+		oklch(8% 0 0 / 55%) 40%,
+		oklch(8% 0 0 / 10%) 75%,
+		oklch(8% 0 0 / 35%) 100%
+	);
+}
+
+/* info del slide */
+.feed-info {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	align-items: flex-end;
+	gap: 1.25rem;
+	width: 100%;
+	padding: 0 1.5rem 4.5rem;
+	color: oklch(95% 0 0);
+	opacity: 0;
+	transform: translateY(24px);
+	transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* activada por feed.js (IntersectionObserver) cuando el slide esta
+   centrado en viewport */
+.feed-info-visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* el poster del feed usa el componente compartido (poster-marco--sm),
+   esto solo ajusta la sombra propia del feed */
+.feed-poster {
+	box-shadow: 0 8px 24px oklch(0% 0 0 / 50%);
+}
+
+.feed-texto {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+.feed-titulo {
+	margin: 0;
+	font-size: var(--text-xl);
+	font-weight: 700;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.5rem;
+	text-shadow: 0 2px 12px oklch(0% 0 0 / 40%);
+}
+
+.feed-anio {
+	font-size: var(--text-sm);
+	font-weight: 400;
+	opacity: 0.7;
+}
+
+.feed-nota {
+	margin: 0;
+	font-size: var(--text-sm);
+	font-weight: 600;
+	color: oklch(80% 0.16 80);
+}
+
+.feed-sinopsis {
+	margin: 0;
+	font-size: var(--text-sm);
+	line-height: 1.5;
+	max-width: 60ch;
+	opacity: 0.9;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.feed-boton {
+	align-self: flex-start;
+	margin-top: 0.4rem;
+	border-radius: 999px;
+	padding: 0.55rem 1.3rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.feed-info {
+		transition: none;
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (min-width: 601px) {
+	.feed-titulo {
+		font-size: var(--text-2xl);
+	}
+	.feed-sinopsis {
+		font-size: var(--text-base);
+	}
+	.feed-info {
+		padding-inline: 3rem;
+		max-width: 720px;
+	}
+}
