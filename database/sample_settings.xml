@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<preferencias version="1">
+  <username>Usuario Demo</username>
+  <tema>dark</tema>
+  <generos>
+    <genero id="28" />
+    <genero id="18" />
+    <genero id="878" />
+  </generos>
+</preferencias>

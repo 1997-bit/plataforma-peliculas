@@ -18,6 +18,7 @@ use voku\helper\AntiXSS;
 final class PerfilService
 {
     private const GENEROS_MAX = 10;
+    private const TEMAS_VALIDOS = ['light', 'dark'];
 
     public function __construct(private UserRepo $usuarios)
     {
@@ -91,20 +92,170 @@ final class PerfilService
         return $ids;
     }
 
-/**
-     * TODO: generar XML de preferencias (username + generos + tema).
-     * Formato esperado (mantenerlo, el WSDL/cliente SOAP lo asume):
+    /**
+     * Genera XML de preferencias (username + generos + tema).
      *
      * <preferencias version="1">
      *   <username>...</username>
      *   <tema>...</tema>
      *   <generos><genero id="28"/><genero id="16"/></generos>
      * </preferencias>
-     *
-     * Usar DOMDocument, no concatenar strings.
      */
     public function exportarSettingsXml(string $idUsuario): string
     {
-        throw new \RuntimeException('exportarSettingsXml no implementado todavia.');
+        // Se construyó este XML para que el usuario pueda sacar su configuración
+        // de forma simple y luego volver a cargarla cuando la necesite.
+        $usuario = $this->usuarios->buscarPorId($idUsuario);
+        if ($usuario === null) {
+            throw new \RuntimeException('Usuario no encontrado.');
+        }
+
+        $tema = $this->temaExportable($usuario->preferences['tema'] ?? ($_COOKIE['tema'] ?? 'light'));
+        $generos = $usuario->preferences['generos'] ?? [];
+        $generos = is_array($generos) ? $generos : [];
+
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->formatOutput = true;
+        $dom->preserveWhiteSpace = false;
+
+        $root = $dom->createElement('preferencias');
+        $root->setAttribute('version', '1');
+        $dom->appendChild($root);
+
+        $root->appendChild($this->crearNodoTexto($dom, 'username', $usuario->username));
+        $root->appendChild($this->crearNodoTexto($dom, 'tema', $tema));
+
+        $nodoGeneros = $dom->createElement('generos');
+        foreach ($this->normalizarGeneros(array_map('intval', $generos)) as $idGenero) {
+            $genero = $dom->createElement('genero');
+            $genero->setAttribute('id', (string) $idGenero);
+            $nodoGeneros->appendChild($genero);
+        }
+        $root->appendChild($nodoGeneros);
+
+        return $dom->saveXML() ?: '';
+    }
+
+    public function importarSettingsXml(string $idUsuario, string $contenidoXml): ResultadoPerfil
+    {
+        // Aquí se validá primero la estructura y los valores del XML para no pisar
+        // la cuenta con datos raros o incompletos.
+        $usuarioActual = $this->usuarios->buscarPorId($idUsuario);
+        if ($usuarioActual === null) {
+            return new ResultadoPerfil(success: false, errores: ['Usuario no encontrado.']);
+        }
+
+        $dom = $this->cargarXmlSeguro($contenidoXml);
+        if ($dom === null) {
+            return new ResultadoPerfil(success: false, errores: ['El archivo XML es inválido o no se pudo leer.']);
+        }
+
+        $root = $dom->documentElement;
+        if ($root === null || $root->nodeName !== 'preferencias') {
+            return new ResultadoPerfil(success: false, errores: ['La raíz del XML debe ser <preferencias>.']);
+        }
+
+        if ($root->getAttribute('version') !== '1') {
+            return new ResultadoPerfil(success: false, errores: ['La versión del XML no es compatible.']);
+        }
+
+        $username = $this->sanitizarTexto($this->leerTextoNodo($root, 'username'));
+        if ($username === '') {
+            return new ResultadoPerfil(success: false, errores: ['El XML debe incluir un nombre de usuario válido.']);
+        }
+
+        $tema = $this->temaImportable($this->leerTextoNodo($root, 'tema'));
+        if ($tema === null) {
+            return new ResultadoPerfil(success: false, errores: ['El tema del XML no es válido.']);
+        }
+
+        $generos = $this->leerGenerosDesdeXml($root);
+        if (count($generos) > self::GENEROS_MAX) {
+            return new ResultadoPerfil(success: false, errores: ['Puedes elegir como máximo ' . self::GENEROS_MAX . ' géneros.']);
+        }
+
+        $preferences = $usuarioActual->preferences;
+        $preferences['generos'] = $generos;
+        $preferences['tema'] = $tema;
+
+        $this->usuarios->actualizarPerfil($idUsuario, $username, $preferences);
+
+        return new ResultadoPerfil(success: true, username: $username, preferences: $preferences);
+    }
+
+    private function temaExportable(mixed $tema): string
+    {
+        $temaNormalizado = is_string($tema) ? strtolower(trim($tema)) : 'light';
+
+        return in_array($temaNormalizado, self::TEMAS_VALIDOS, true) ? $temaNormalizado : 'light';
+    }
+
+    private function temaImportable(string $tema): ?string
+    {
+        $temaNormalizado = strtolower(trim($tema));
+
+        return in_array($temaNormalizado, self::TEMAS_VALIDOS, true) ? $temaNormalizado : null;
+    }
+
+    private function crearNodoTexto(\DOMDocument $dom, string $nombre, string $valor): \DOMElement
+    {
+        $nodo = $dom->createElement($nombre);
+        $nodo->appendChild($dom->createTextNode($valor));
+
+        return $nodo;
+    }
+
+    private function leerTextoNodo(\DOMElement $padre, string $nombre): string
+    {
+        $nodos = $padre->getElementsByTagName($nombre);
+        $nodo = $nodos->item(0);
+
+        return $nodo?->textContent ?? '';
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function leerGenerosDesdeXml(\DOMElement $root): array
+    {
+        $generos = [];
+
+        $nodosGeneros = $root->getElementsByTagName('generos')->item(0);
+        if (!$nodosGeneros instanceof \DOMElement) {
+            return [];
+        }
+
+        foreach ($nodosGeneros->getElementsByTagName('genero') as $nodoGenero) {
+            if (!$nodoGenero instanceof \DOMElement) {
+                continue;
+            }
+
+            $idGenero = (int) $nodoGenero->getAttribute('id');
+            if ($idGenero > 0) {
+                $generos[] = $idGenero;
+            }
+        }
+
+        return array_values(array_unique($generos));
+    }
+
+    private function cargarXmlSeguro(string $contenidoXml): ?\DOMDocument
+    {
+        $contenidoXml = trim($contenidoXml);
+        if ($contenidoXml === '' || str_contains($contenidoXml, '<!DOCTYPE') || str_contains($contenidoXml, '<!ENTITY')) {
+            return null;
+        }
+
+        $anterior = libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->preserveWhiteSpace = false;
+        $dom->resolveExternals = false;
+        $dom->substituteEntities = false;
+
+        $cargado = $dom->loadXML($contenidoXml, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
+        libxml_clear_errors();
+        libxml_use_internal_errors($anterior);
+
+        return $cargado ? $dom : null;
     }
 }

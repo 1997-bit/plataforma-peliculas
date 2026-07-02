@@ -98,24 +98,34 @@ $errorQuery = $_GET['error'] ?? null;
             </div>
         </section>
 
-        <!-- exportar / importar settings -->
-        <!--
-            TODO: importar usando XML, usando una API SOAP.
-            
-        -->
         <section class="perfil-seccion">
             <h2 class="perfil-subtitulo">Exportar / Importar configuración</h2>
             <p class="perfil-vacio">
-              TODO: soap api
+              Exporta tus preferencias actuales o importa un XML válido con nombre, tema y géneros.
             </p>
+            <!-- Dejé la parte de preferencias en XML porque va ligada a la cuenta del usuario. -->
             <div class="perfil-export-acciones">
                 <a href="/settings/exportar" class="boton boton--secundario">
                     Exportar configuración (XML)
                 </a>
-                <button type="button" class="boton boton--secundario" disabled title="Disponible próximamente">
-                    Importar configuración (XML)
-                </button>
             </div>
+
+            <form method="POST" action="/settings/importar" enctype="multipart/form-data" class="perfil-form perfil-form--importar">
+                <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+
+                <div class="perfil-campo">
+                    <label for="xml_config">Importar configuración XML</label>
+                    <input
+                        type="file"
+                        id="xml_config"
+                        name="xml_config"
+                        accept=".xml,application/xml,text/xml"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="boton boton--secundario">Importar configuración (XML)</button>
+            </form>
         </section>
     </main>
 
