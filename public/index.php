@@ -14,6 +14,7 @@ use App\Controllers\Home\HomeController;
 use App\Controllers\Catalogo\CatalogoController;
 use App\Controllers\Catalogo\ContenidoController;
 use App\Controllers\Catalogo\RecomendacionController;
+use App\Controllers\Admin\AdminController;
 use App\Controllers\User\UserController;
 use App\Controllers\User\SettingsController;
 use App\Controllers\User\OnboardingController;
@@ -107,10 +108,19 @@ $router->registrarPost('/onboarding', function () use ($onboardingController) {
     $onboardingController->procesar();
 });
 
-// Rutas de admin (requieren rol admin)
-$router->registrarGet('/admin', function () {
+$adminController = new AdminController($adminContenidoRepo);
+// Aquí se conectan las rutas XML al panel de admin sin mover el resto del enrutado.
+$router->registrarGet('/admin', function () use ($adminController) {
     AuthMiddleware::requerirRol('admin');
-    require ROOT . '/views/admin/index.php';
+    $adminController->index();
+});
+$router->registrarGet('/admin/xml/exportar', function () use ($adminController) {
+    AuthMiddleware::requerirRol('admin');
+    $adminController->exportarXml();
+});
+$router->registrarPost('/admin/xml/importar', function () use ($adminController) {
+    AuthMiddleware::requerirRol('admin');
+    $adminController->importarXml();
 });
 
 try {

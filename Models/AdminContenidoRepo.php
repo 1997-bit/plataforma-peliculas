@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Helpers\UuidHelper;
 use PDO;
+use voku\helper\AntiXSS;
 
 /**
  * Capa de datos para que un admin gestione contenido LOCAL (peliculas/series
@@ -29,6 +30,158 @@ final class AdminContenidoRepo
 {
     public function __construct(private PDO $pdo)
     {
+    }
+
+    /**
+     * Exporta el contenido local del catálogo a XML.
+     */
+    public function exportarContenidoXml(int $limite = 100): string
+    {
+        // Se deja el catálogo listo para salir en XML.
+        $stmt = $this->pdo->prepare(
+            "SELECT id, type, titulo, descripcion, anio_lanzamiento, poster_path, is_active, created_at
+             FROM contenido
+             WHERE origen = 'local'
+             ORDER BY created_at DESC
+             LIMIT :limite"
+        );
+        $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->formatOutput = true;
+        $dom->preserveWhiteSpace = false;
+
+        $root = $dom->createElement('catalogo');
+        $root->setAttribute('version', '1');
+        $dom->appendChild($root);
+
+        foreach ($filas as $fila) {
+            $idBinario = $fila['id'];
+            $generos = $this->pdo->prepare(
+                'SELECT g.nombre
+                 FROM contenido_generos cg
+                 INNER JOIN generos g ON g.id = cg.genre_id
+                 WHERE cg.content_id = :content_id
+                 ORDER BY g.nombre ASC'
+            );
+            $generos->execute([':content_id' => $idBinario]);
+
+            $nodoContenido = $dom->createElement('contenido');
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'tipo', (string) $fila['type']));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'titulo', (string) $fila['titulo']));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'descripcion', (string) ($fila['descripcion'] ?? '')));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'anio', (string) ($fila['anio_lanzamiento'] ?? '')));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'poster_path', (string) ($fila['poster_path'] ?? '')));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'activo', (string) ((int) $fila['is_active'])));
+
+            $nodoGeneros = $dom->createElement('generos');
+            foreach ($generos->fetchAll(PDO::FETCH_COLUMN) ?: [] as $nombreGenero) {
+                $nodoGeneros->appendChild($this->crearNodoTexto($dom, 'genero', (string) $nombreGenero));
+            }
+            $nodoContenido->appendChild($nodoGeneros);
+
+            $root->appendChild($nodoContenido);
+        }
+
+        return $dom->saveXML() ?: '';
+    }
+
+    /**
+     * Importa contenido local desde XML.
+     *
+     * @return array{success: bool, created: int, errors: list<string>}
+     */
+    public function importarContenidoXml(string $contenidoXml, string $creadoPorIdUsuario): array
+    {
+        // Antes de tocar la base, se valida el XML para evitar que entren datos rotos
+        // o peligrosos y para que el error se vea claro desde el panel.
+        $dom = $this->cargarXmlSeguro($contenidoXml);
+        if ($dom === null) {
+            return ['success' => false, 'created' => 0, 'errors' => ['El XML es inválido o no se pudo leer.']];
+        }
+
+        $root = $dom->documentElement;
+        if ($root === null || $root->nodeName !== 'catalogo') {
+            return ['success' => false, 'created' => 0, 'errors' => ['La raíz del XML debe ser <catalogo>.']];
+        }
+
+        if ($root->getAttribute('version') !== '1') {
+            return ['success' => false, 'created' => 0, 'errors' => ['La versión del XML no es compatible.']];
+        }
+
+        $entradas = [];
+        $errores = [];
+        foreach ($root->getElementsByTagName('contenido') as $nodoContenido) {
+            if (!$nodoContenido instanceof \DOMElement) {
+                continue;
+            }
+
+            $tipo = $this->sanitizarTexto($this->leerTextoNodo($nodoContenido, 'tipo'));
+            $titulo = $this->sanitizarTexto($this->leerTextoNodo($nodoContenido, 'titulo'));
+            $descripcion = $this->sanitizarTexto($this->leerTextoNodo($nodoContenido, 'descripcion'));
+            $anio = $this->parseYear($this->leerTextoNodo($nodoContenido, 'anio'));
+            $posterPath = $this->sanitizarTexto($this->leerTextoNodo($nodoContenido, 'poster_path'));
+            $generos = $this->leerGenerosDelNodo($nodoContenido);
+
+            if (!in_array($tipo, ['movie', 'series'], true)) {
+                $errores[] = 'Uno de los contenidos tiene un tipo inválido.';
+                continue;
+            }
+            if ($titulo === '') {
+                $errores[] = 'Uno de los contenidos no tiene título.';
+                continue;
+            }
+
+            $entradas[] = [
+                'tipo' => $tipo,
+                'titulo' => $titulo,
+                'descripcion' => $descripcion !== '' ? $descripcion : null,
+                'anio' => $anio,
+                'posterPath' => $posterPath !== '' ? $posterPath : null,
+                'generos' => $generos,
+            ];
+        }
+
+        if ($entradas === []) {
+            $errores[] = 'El XML no contiene elementos <contenido> válidos.';
+        }
+
+        if ($errores !== []) {
+            return ['success' => false, 'created' => 0, 'errors' => $errores];
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $creados = 0;
+            foreach ($entradas as $entrada) {
+                $generoIdsLocales = [];
+                foreach ($entrada['generos'] as $nombreGenero) {
+                    $generoIdsLocales[] = $this->crearGeneroLocal($nombreGenero);
+                }
+
+                $this->crearContenidoLocal(
+                    $entrada['tipo'],
+                    $entrada['titulo'],
+                    $entrada['descripcion'],
+                    $entrada['posterPath'],
+                    $entrada['anio'],
+                    $generoIdsLocales,
+                    $creadoPorIdUsuario
+                );
+                $creados++;
+            }
+
+            $this->pdo->commit();
+
+            return ['success' => true, 'created' => $creados, 'errors' => []];
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+
+            return ['success' => false, 'created' => 0, 'errors' => ['No se pudo importar el XML: ' . $e->getMessage()]];
+        }
     }
 
     /**
@@ -379,5 +532,84 @@ final class AdminContenidoRepo
         foreach ($generoIdsLocales as $genreId) {
             $insertar->execute([':content_id' => $contentIdBin, ':genre_id' => $genreId]);
         }
+    }
+
+    private function crearNodoTexto(\DOMDocument $dom, string $nombre, string $valor): \DOMElement
+    {
+        $nodo = $dom->createElement($nombre);
+        $nodo->appendChild($dom->createTextNode($valor));
+
+        return $nodo;
+    }
+
+    private function cargarXmlSeguro(string $contenidoXml): ?\DOMDocument
+    {
+        $contenidoXml = trim($contenidoXml);
+        if ($contenidoXml === '' || str_contains($contenidoXml, '<!DOCTYPE') || str_contains($contenidoXml, '<!ENTITY')) {
+            return null;
+        }
+
+        $anterior = libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->preserveWhiteSpace = false;
+        $dom->resolveExternals = false;
+        $dom->substituteEntities = false;
+
+        $cargado = $dom->loadXML($contenidoXml, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
+        libxml_clear_errors();
+        libxml_use_internal_errors($anterior);
+
+        return $cargado ? $dom : null;
+    }
+
+    private function leerTextoNodo(\DOMElement $padre, string $nombre): string
+    {
+        $nodos = $padre->getElementsByTagName($nombre);
+        $nodo = $nodos->item(0);
+
+        return $nodo?->textContent ?? '';
+    }
+
+    private function sanitizarTexto(string $valor): string
+    {
+        $limpio = (new AntiXSS())->xss_clean(trim($valor));
+
+        return strip_tags($limpio);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function leerGenerosDelNodo(\DOMElement $nodoContenido): array
+    {
+        $nodoGeneros = $nodoContenido->getElementsByTagName('generos')->item(0);
+        if (!$nodoGeneros instanceof \DOMElement) {
+            return [];
+        }
+
+        $generos = [];
+        foreach ($nodoGeneros->getElementsByTagName('genero') as $nodoGenero) {
+            if (!$nodoGenero instanceof \DOMElement) {
+                continue;
+            }
+
+            $nombre = $this->sanitizarTexto($nodoGenero->textContent ?? '');
+            if ($nombre !== '') {
+                $generos[] = $nombre;
+            }
+        }
+
+        return array_values(array_unique($generos));
+    }
+
+    private function parseYear(string $valor): ?int
+    {
+        $anio = (int) trim($valor);
+
+        if ($anio < 1888 || $anio > ((int) date('Y') + 1)) {
+            return null;
+        }
+
+        return $anio;
     }
 }

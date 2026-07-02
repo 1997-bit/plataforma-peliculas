@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalogo version="1">
+  <contenido>
+    <tipo>movie</tipo>
+    <titulo>Predator</titulo>
+    <descripcion>Un comando de élite enfrenta a una criatura letal en la selva.</descripcion>
+    <anio>1987</anio>
+    <poster_path>/assets/images/posters/PREDATOR.webp</poster_path>
+    <generos>
+      <genero>Acción</genero>
+      <genero>Ciencia ficción</genero>
+      <genero>Suspenso</genero>
+    </generos>
+  </contenido>
+
+  <contenido>
+    <tipo>series</tipo>
+    <titulo>Evangelion</titulo>
+    <descripcion>Un grupo de adolescentes enfrenta una amenaza apocalíptica pilotando unidades biomecánicas.</descripcion>
+    <anio>2021</anio>
+    <poster_path>/assets/images/posters/EVANGELION.webp</poster_path>
+    <generos>
+      <genero>Animación</genero>
+      <genero>Drama</genero>
+      <genero>Ciencia ficción</genero>
+    </generos>
+  </contenido>
+
+  <contenido>
+    <tipo>movie</tipo>
+    <titulo>The Warriors</titulo>
+    <descripcion>Una pandilla debe sobrevivir a una noche caótica mientras cruza la ciudad.</descripcion>
+    <anio>1979</anio>
+    <poster_path>/assets/images/posters/THE-WARRIORS.webp</poster_path>
+    <generos>
+      <genero>Acción</genero>
+      <genero>Crimen</genero>
+      <genero>Suspenso</genero>
+    </generos>
+  </contenido>
+
+  <contenido>
+    <tipo>movie</tipo>
+    <titulo>Vocación</titulo>
+    <descripcion>Una historia de identidad, propósito y choque emocional alrededor de una decisión vital.</descripcion>
+    <anio>2024</anio>
+    <poster_path>/assets/images/posters/VOCACION.webp</poster_path>
+    <generos>
+      <genero>Drama</genero>
+      <genero>Familiar</genero>
+    </generos>
+  </contenido>
+
+  <contenido>
+    <tipo>movie</tipo>
+    <titulo>Disclosure Day</titulo>
+    <descripcion>Un evento desencadena una revelación que altera el rumbo de la ciudad.</descripcion>
+    <anio>2024</anio>
+    <poster_path>/assets/images/posters/DISCLOSUREDAY.webp</poster_path>
+    <generos>
+      <genero>Drama</genero>
+      <genero>Thriller</genero>
+      <genero>Ciencia ficción</genero>
+    </generos>
+  </contenido>
+
+  <contenido>
+    <tipo>movie</tipo>
+    <titulo>Domingo y la niebla</titulo>
+    <descripcion>Un relato íntimo en torno a la pérdida, la memoria y la incertidumbre.</descripcion>
+    <anio>2022</anio>
+    <poster_path>/assets/images/posters/DOMINGOYLANIEBLA.webp</poster_path>
+    <generos>
+      <genero>Drama</genero>
+    </generos>
+  </contenido>
+
+  <contenido>
+    <tipo>movie</tipo>
+    <titulo>El Brujo</titulo>
+    <descripcion>Una historia oscura donde lo real y lo supersticioso se cruzan peligrosamente.</descripcion>
+    <anio>2023</anio>
+    <poster_path>/assets/images/posters/ELBRUJO.webp</poster_path>
+    <generos>
+      <genero>Terror</genero>
+      <genero>Suspenso</genero>
+      <genero>Drama</genero>
+    </generos>
+  </contenido>
+
+  <contenido>
+    <tipo>movie</tipo>
+    <titulo>The Big Lebowski</titulo>
+    <descripcion>Un hombre queda atrapado en una confusión absurda con criminales, apuestas y caos cotidiano.</descripcion>
+    <anio>1998</anio>
+    <poster_path>/assets/images/posters/BIG-LEBOWSKI.webp</poster_path>
+    <generos>
+      <genero>Comedia</genero>
+      <genero>Crimen</genero>
+    </generos>
+  </contenido>
+</catalogo>
