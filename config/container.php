@@ -25,7 +25,7 @@ $tokenRepo = new TokenRepo($pdo, $crypto);
 $intentosRepo = new IntentosLoginRepo($pdo);
 $contenidoRepo = new ContenidoRepo($pdo);
 $adminContenidoRepo = new AdminContenidoRepo($pdo);
-$tmdbClient = new TmdbClient();
+$tmdbClient = new TmdbClient(); // solo lo usan controllers de admin
 
 $procesarLogin = new ProcesarLogin($usuarioRepo, $intentosRepo, $tokenRepo);
 $registrarUsuario = new RegistrarUsuario($usuarioRepo, $intentosRepo);

@@ -16,3 +16,7 @@
 /storage/
 
 .php-cs-fixer.cache
+
+# Imágenes descargadas de TMDB
+public/assets/images/posters/admin/
+

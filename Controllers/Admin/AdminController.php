@@ -9,12 +9,6 @@ use App\Models\AdminContenidoRepo;
 use App\Services\ContenidoValidator;
 use App\Services\PosterUploader;
 
-/**
- * Maneja el panel de administracion.
- * Solo accesible con rol admin (chequeo server-side via
- * AuthMiddleware::requerirRol('admin') en public/index.php, ANTES de que
- * cualquier metodo de esta clase se ejecute).
- */
 final class AdminController
 {
     public function __construct(private AdminContenidoRepo $adminContenidoRepo)
@@ -23,60 +17,14 @@ final class AdminController
 
     public function index(): void
     {
-        // Se conecta el panel de admin con el XML del catálogo, para que todo
-        // quede en un solo lugar y no tenga que abrir otro flujo aparte.
         $csrf = Session::generarCsrf();
         $okMsg = $this->mensajeOk();
-        $errorMsg = isset($_GET['xml_error']) ? (string) $_GET['xml_error'] : null;
+        $errorMsg = null;
         $contenidoLocal = $this->adminContenidoRepo->listarContenidoLocal(50);
 
         require ROOT . '/views/admin/index.php';
     }
 
-    public function exportarXml(): void
-    {
-        $xml = $this->adminContenidoRepo->exportarContenidoXml();
-
-        header('Content-Type: application/xml; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="catalogo-local.xml"');
-        echo $xml;
-    }
-
-    public function importarXml(): void
-    {
-        if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
-            exit;
-        }
-
-        // Aquí se toma el archivo subido y se manda al repositorio, para mantener la
-        // lógica de importación en la misma capa de datos que ya usa el proyecto.
-        $archivo = $_FILES['xml_catalogo'] ?? null;
-        if (!is_array($archivo) || ($archivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_string($archivo['tmp_name']) || !is_uploaded_file($archivo['tmp_name'])) {
-            header('Location: /admin?xml_error=' . urlencode('Debes seleccionar un archivo XML válido.'));
-            exit;
-        }
-
-        $contenidoXml = file_get_contents($archivo['tmp_name']);
-        if ($contenidoXml === false || trim($contenidoXml) === '') {
-            header('Location: /admin?xml_error=' . urlencode('El archivo XML está vacío.'));
-            exit;
-        }
-
-        $resultado = $this->adminContenidoRepo->importarContenidoXml($contenidoXml, (string) Session::obtener('user_id'));
-        if (!$resultado['success']) {
-            header('Location: /admin?xml_error=' . urlencode(implode(' ', $resultado['errors'])));
-            exit;
-        }
-
-        header('Location: /admin?xml_importado=1');
-        exit;
-    }
-
-    /**
-     * GET /admin/contenido/nuevo — muestra el form vacio.
-     */
     public function nuevo(): void
     {
         $csrf = Session::generarCsrf();
@@ -89,9 +37,6 @@ final class AdminController
         require ROOT . '/views/admin/form.php';
     }
 
-    /**
-     * POST /admin/contenido/nuevo — valida, sube poster y crea el contenido + generos.
-     */
     public function guardar(): void
     {
         if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
@@ -102,7 +47,6 @@ final class AdminController
 
         $datos = ContenidoValidator::validar($_POST, $this->adminContenidoRepo->listarGeneros());
 
-        // poster es obligatorio al crear.
         $poster = PosterUploader::subir($_FILES['poster'] ?? null, obligatorio: true);
         if ($poster['error'] !== null) {
             $datos['errores'][] = $poster['error'];
@@ -134,9 +78,6 @@ final class AdminController
         exit;
     }
 
-    /**
-     * GET /admin/contenido/editar?id=... — muestra el form pre-poblado.
-     */
     public function editar(): void
     {
         $id = (string) ($_GET['id'] ?? '');
@@ -151,10 +92,6 @@ final class AdminController
         require ROOT . '/views/admin/form.php';
     }
 
-    /**
-     * POST /admin/contenido/editar?id=... — valida, opcionalmente reemplaza
-     * el poster y actualiza contenido + generos (transaccion, ver repo).
-     */
     public function actualizar(): void
     {
         if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
@@ -168,7 +105,6 @@ final class AdminController
 
         $datos = ContenidoValidator::validar($_POST, $this->adminContenidoRepo->listarGeneros());
 
-        // poster es OPCIONAL al editar: si no suben uno nuevo, se mantiene el que ya tenia.
         $poster = PosterUploader::subir($_FILES['poster'] ?? null, obligatorio: false);
         if ($poster['error'] !== null) {
             $datos['errores'][] = $poster['error'];
@@ -201,9 +137,6 @@ final class AdminController
         exit;
     }
 
-    /**
-     * POST /admin/contenido/eliminar — soft delete (is_active=0). Nunca DELETE fisico.
-     */
     public function eliminar(): void
     {
         if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
@@ -213,22 +146,13 @@ final class AdminController
         }
 
         $id = (string) ($_POST['id'] ?? '');
-        // valida que exista y sea local antes de tocar nada; si no existe
-        // o el id viene manipulado, 404 en vez de fallar silencioso.
         $this->cargarItemOFallar($id);
-
         $this->adminContenidoRepo->eliminarContenidoLocal($id);
 
         header('Location: /admin?contenido_eliminado=1');
         exit;
     }
 
-    /**
-     * Trae un item local por id o corta con 404. Centraliza el chequeo
-     * para no repetirlo en editar/actualizar/eliminar.
-     *
-     * @return array<string,mixed>
-     */
     private function cargarItemOFallar(string $id): array
     {
         if ($id === '') {
@@ -240,7 +164,6 @@ final class AdminController
         try {
             $item = $this->adminContenidoRepo->obtenerLocalPorIdParaEditar($id);
         } catch (\InvalidArgumentException) {
-            // uuid con formato invalido (alguien tocando la url a mano) -> 404, no 500.
             $item = null;
         }
 
@@ -255,18 +178,9 @@ final class AdminController
 
     private function mensajeOk(): ?string
     {
-        if (isset($_GET['xml_importado'])) {
-            return 'Archivo XML importado correctamente.';
-        }
-        if (isset($_GET['contenido_creado'])) {
-            return 'Contenido creado correctamente.';
-        }
-        if (isset($_GET['contenido_actualizado'])) {
-            return 'Contenido actualizado correctamente.';
-        }
-        if (isset($_GET['contenido_eliminado'])) {
-            return 'Contenido eliminado (soft delete).';
-        }
+        if (isset($_GET['contenido_creado']))      return 'Contenido creado correctamente.';
+        if (isset($_GET['contenido_actualizado'])) return 'Contenido actualizado correctamente.';
+        if (isset($_GET['contenido_eliminado']))   return 'Contenido eliminado.';
 
         return null;
     }
