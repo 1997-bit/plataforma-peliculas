@@ -1,11 +1,8 @@
 <?php
-
 use App\Helpers\TmdbImagen;
-
 /** @var \App\Models\User $usuario */
-/** @var list<array{tmdb_id:int,type:string,title:string,poster_path:?string,viewed_at:string}> $historial */
-/** @var list<array{tmdb_id:int,type:string,title:string,poster_path:?string,score:int,created_at:string}> $calificaciones */
-
+/** @var list<array<string,mixed>> $historial */
+/** @var list<array<string,mixed>> $calificaciones */
 $tema = $_COOKIE['tema'] ?? null;
 $historial = $historial ?? [];
 $calificaciones = $calificaciones ?? [];
@@ -25,16 +22,11 @@ $calificaciones = $calificaciones ?? [];
 </head>
 <body>
     <?php require ROOT . '/views/partials/nav.php'; ?>
-
     <?php
-        // color del banner/avatar derivado del id del usuario: mismo usuario,
-        // mismo color siempre, sin guardar nada nuevo en la BD.
         $hueBanner = hexdec(substr(md5($usuario->id), 0, 4)) % 360;
         $iniciales = mb_strtoupper(mb_substr($usuario->username, 0, 1), 'UTF-8');
     ?>
-
     <div class="perfil-banner" style="--banner-hue: <?= $hueBanner ?>"></div>
-
     <main class="perfil">
         <div class="perfil-encabezado">
             <div class="perfil-avatar" style="--banner-hue: <?= $hueBanner ?>" aria-hidden="true">
@@ -48,7 +40,6 @@ $calificaciones = $calificaciones ?? [];
             </div>
         </div>
 
-        <!-- datos de cuenta, solo lectura -->
         <section class="perfil-seccion">
             <h2 class="perfil-subtitulo">Datos de la cuenta</h2>
             <dl class="perfil-datos">
@@ -64,7 +55,6 @@ $calificaciones = $calificaciones ?? [];
             <a href="/settings" class="perfil-editar-link">Editar perfil y configuración</a>
         </section>
 
-        <!-- historial de vistas -->
         <section class="perfil-seccion">
             <h2 class="perfil-subtitulo">Visto recientemente</h2>
             <?php if ($historial === []): ?>
@@ -76,10 +66,10 @@ $calificaciones = $calificaciones ?? [];
                             $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                             $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
                             $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'xs');
-                            $fecha = $item['viewed_at'] ? date('d/m/Y', strtotime((string) $item['viewed_at'])) : '';
+                            $fecha = !empty($item['viewed_at']) ? date('d/m/Y', strtotime((string) $item['viewed_at'])) : '';
                         ?>
                         <li class="perfil-item">
-                            <a href="/contenido?id=<?= urlencode((string) $item['tmdb_id']) ?>&tipo=<?= $tipoUrl ?>" class="perfil-item-link">
+                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrl ?>" class="perfil-item-link">
                                 <div class="poster-marco poster-marco--xs"><img class="poster-img" src="<?= $poster ?>" alt="" loading="lazy"></div>
                                 <span class="perfil-item-info">
                                     <span class="perfil-item-titulo"><?= $titulo ?></span>
@@ -92,7 +82,6 @@ $calificaciones = $calificaciones ?? [];
             <?php endif; ?>
         </section>
 
-        <!-- calificaciones del usuario -->
         <section class="perfil-seccion">
             <h2 class="perfil-subtitulo">Tus calificaciones</h2>
             <?php if ($calificaciones === []): ?>
@@ -107,7 +96,7 @@ $calificaciones = $calificaciones ?? [];
                             $estrellas = (int) round(((int) $item['score']) / 2);
                         ?>
                         <li class="perfil-item">
-                            <a href="/contenido?id=<?= urlencode((string) $item['tmdb_id']) ?>&tipo=<?= $tipoUrl ?>" class="perfil-item-link">
+                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrl ?>" class="perfil-item-link">
                                 <div class="poster-marco poster-marco--xs"><img class="poster-img" src="<?= $poster ?>" alt="" loading="lazy"></div>
                                 <span class="perfil-item-info">
                                     <span class="perfil-item-titulo"><?= $titulo ?></span>
@@ -122,7 +111,6 @@ $calificaciones = $calificaciones ?? [];
             <?php endif; ?>
         </section>
     </main>
-
     <?php require ROOT . '/views/partials/footer.php'; ?>
 </body>
 </html>

@@ -1,14 +1,11 @@
 <?php
-
 use App\Helpers\TmdbImagen;
-
 /** @var string $username */
 /** @var string $csrf */
 /** @var list<array<string,mixed>> $hero */
 /** @var list<array<string,mixed>> $populares */
 /** @var list<array<string,mixed>> $recomendaciones */
-/** @var list<array{tmdb_id:int,type:string,title:string,poster_path:?string,viewed_at:string}> $vistoReciente */
-
+/** @var list<array<string,mixed>> $vistoReciente */
 $tema = $_COOKIE['tema'] ?? null;
 ?>
 <!DOCTYPE html>
@@ -32,7 +29,7 @@ $tema = $_COOKIE['tema'] ?? null;
             <div class="hero-viewport" data-hero-viewport>
                 <?php foreach ($hero as $i => $item): ?>
                     <?php
-                        $tituloHero = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                        $tituloHero = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                         $overviewHero = htmlspecialchars($item['overview'] ?? '', ENT_QUOTES, 'UTF-8');
                         $backdropHero = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
                         $tipoUrlHero = $item['type'] === 'series' ? 'series' : 'movie';
@@ -49,7 +46,6 @@ $tema = $_COOKIE['tema'] ?? null;
                     </article>
                 <?php endforeach; ?>
             </div>
-
             <?php if (count($hero) > 1): ?>
                 <div class="hero-dots" data-hero-dots>
                     <?php foreach ($hero as $i => $item): ?>
@@ -71,12 +67,9 @@ $tema = $_COOKIE['tema'] ?? null;
                                 $title = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                                 $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
                                 $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
-                                $esLocal = ($item['origen'] ?? 'tmdb') === 'local';
-                                $idUrl = $esLocal ? $item['id'] : $item['tmdb_id'];
-                                $origenUrl = $esLocal ? '&origen=local' : '';
                             ?>
                             <article class="card" role="listitem">
-                                <a href="/contenido?id=<?= urlencode((string) $idUrl) ?>&tipo=<?= $tipoUrl ?><?= $origenUrl ?>" class="card-link">
+                                <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrl ?>" class="card-link">
                                     <div class="poster-marco poster-marco--md">
                                         <img class="poster-img" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
                                     </div>
@@ -97,15 +90,14 @@ $tema = $_COOKIE['tema'] ?? null;
                 <div class="shelf-fila" role="list" data-carousel>
                     <?php foreach ($populares as $item): ?>
                         <?php
-                            $title = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                            $fecha = $item['release_date'] ?? $item['first_air_date'] ?? '';
+                            $title = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                            $fecha = $item['release_date'] ?? '';
                             $year = substr($fecha, 0, 4);
                             $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
                             $tipoUrlItem = $item['type'] === 'series' ? 'series' : 'movie';
-                            $origenUrl = ($item['origen'] ?? 'tmdb') === 'local' ? '&origen=local' : '';
                         ?>
                         <article class="card" role="listitem">
-                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlItem ?><?= $origenUrl ?>" class="card-link">
+                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlItem ?>" class="card-link">
                                 <div class="poster-marco poster-marco--md">
                                     <img class="poster-img" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
                                 </div>
@@ -127,8 +119,8 @@ $tema = $_COOKIE['tema'] ?? null;
                     <div class="shelf-fila shelf-fila--backdrop" role="list" data-carousel>
                         <?php foreach ($recomendaciones as $i => $item): ?>
                             <?php
-                                $title = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                                $fecha = $item['release_date'] ?? $item['first_air_date'] ?? '';
+                                $title = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                                $fecha = $item['release_date'] ?? '';
                                 $year = substr($fecha, 0, 4);
                                 $backdrop = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
                                 $logo = TmdbImagen::logo($item['logo_path'] ?? null);
@@ -161,7 +153,6 @@ $tema = $_COOKIE['tema'] ?? null;
 
     <script src="/assets/js/carousel.js" defer></script>
     <script src="/assets/js/hero.js" defer></script>
-
     <?php require ROOT . '/views/partials/footer.php'; ?>
 </body>
 </html>
