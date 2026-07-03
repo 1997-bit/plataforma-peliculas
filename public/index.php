@@ -14,6 +14,8 @@ use App\Controllers\Home\HomeController;
 use App\Controllers\Catalogo\CatalogoController;
 use App\Controllers\Catalogo\ContenidoController;
 use App\Controllers\Catalogo\RecomendacionController;
+use App\Controllers\Admin\AdminController;
+use App\Controllers\Api\V1\ContenidoApiController;
 use App\Controllers\User\UserController;
 use App\Controllers\User\SettingsController;
 use App\Controllers\User\OnboardingController;
@@ -107,11 +109,49 @@ $router->registrarPost('/onboarding', function () use ($onboardingController) {
     $onboardingController->procesar();
 });
 
-// Rutas de admin (requieren rol admin)
-$router->registrarGet('/admin', function () {
+$adminController = new AdminController($adminContenidoRepo);
+// Aquí se conectan las rutas XML al panel de admin sin mover el resto del enrutado.
+$router->registrarGet('/admin', function () use ($adminController) {
     AuthMiddleware::requerirRol('admin');
-    require ROOT . '/views/admin/index.php';
+    $adminController->index();
 });
+$router->registrarGet('/admin/xml/exportar', function () use ($adminController) {
+    AuthMiddleware::requerirRol('admin');
+    $adminController->exportarXml();
+});
+$router->registrarPost('/admin/xml/importar', function () use ($adminController) {
+    AuthMiddleware::requerirRol('admin');
+    $adminController->importarXml();
+});
+
+// CRUD de contenido (RF-10). id siempre por query string: el Router de
+// este proyecto no soporta parametros en la ruta (ver Router::despachar).
+$router->registrarGet('/admin/contenido/nuevo', function () use ($adminController) {
+    AuthMiddleware::requerirRol('admin');
+    $adminController->nuevo();
+});
+$router->registrarPost('/admin/contenido/nuevo', function () use ($adminController) {
+    AuthMiddleware::requerirRol('admin');
+    $adminController->guardar();
+});
+$router->registrarGet('/admin/contenido/editar', function () use ($adminController) {
+    AuthMiddleware::requerirRol('admin');
+    $adminController->editar();
+});
+$router->registrarPost('/admin/contenido/editar', function () use ($adminController) {
+    AuthMiddleware::requerirRol('admin');
+    $adminController->actualizar();
+});
+$router->registrarPost('/admin/contenido/eliminar', function () use ($adminController) {
+    AuthMiddleware::requerirRol('admin');
+    $adminController->eliminar();
+});
+
+// API REST de import (sin sesion; auth via header X-API-Key, ver
+// ContenidoApiController::autenticado()).
+$contenidoApiController = new ContenidoApiController($adminContenidoRepo);
+$router->registrarPost('/api/v1/contenido', [$contenidoApiController, 'crear']);
+$router->registrarGet('/api/v1/generos', [$contenidoApiController, 'generos']);
 
 try {
     $router->despachar();
