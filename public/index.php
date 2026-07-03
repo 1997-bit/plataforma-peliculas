@@ -151,6 +151,8 @@ $router->registrarPost('/admin/contenido/eliminar', function () use ($adminContr
 // ContenidoApiController::autenticado()).
 $contenidoApiController = new ContenidoApiController($adminContenidoRepo);
 $router->registrarPost('/api/v1/contenido', [$contenidoApiController, 'crear']);
+$router->registrarPut('/api/v1/contenido', [$contenidoApiController, 'actualizar']);
+$router->registrarDelete('/api/v1/contenido', [$contenidoApiController, 'eliminar']);
 $router->registrarGet('/api/v1/generos', [$contenidoApiController, 'generos']);
 
 try {

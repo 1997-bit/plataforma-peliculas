@@ -5,17 +5,12 @@ declare(strict_types=1);
 namespace App\Controllers\Api\V1;
 
 use App\Models\AdminContenidoRepo;
-use App\Services\ContenidoValidator;
-use App\Services\PosterUploader;
+use PDOException;
 
 /**
- * API REST para importar contenido nuevo (peliculas/series) desde afuera
- * (script de import, cron, sistema externo). Sin sesion/cookie: auth via
- * header X-API-Key contra ADMIN_API_KEY del .env (comparacion timing-safe).
- *
- * Reusa la MISMA validacion y el MISMO upload de poster que el panel admin
- * (ContenidoValidator, PosterUploader) para no tener dos criterios de
- * seguridad distintos en el proyecto.
+ * API REST JSON pura. Validacion minima en PHP (titulo, tipo, anio);
+ * duplicados (titulo+tipo+anio) y genero_id invalido se delegan a la DB
+ * (UNIQUE KEY + FK) y se traducen del PDOException a HTTP status.
  */
 final class ContenidoApiController
 {
@@ -23,137 +18,197 @@ final class ContenidoApiController
     {
     }
 
-    /**
-     * POST /api/v1/contenido
-     * multipart/form-data: titulo, tipo(movie|series), descripcion, anio,
-     *   generos[]        -> ids de generos existentes (opcional)
-     *   genero_nombres[] -> nombres de genero, se crean si no existen (opcional)
-     *   poster           -> archivo (opcional en API; el panel admin si lo exige)
-     *
-     * Devuelve 201 + el contenido creado, o 4xx + errores.
-     */
     public function crear(): void
     {
         if (!$this->autenticado()) {
-            $this->responder(401, ['success' => false, 'errors' => ['API key inválida o ausente.']]);
+            $this->responder(401, ['error' => 'API key inválida o ausente.']);
             return;
         }
 
-        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-            $this->responder(405, ['success' => false, 'errors' => ['Método no permitido, usá POST.']]);
+        $body = $this->leerJson();
+        if ($body === null) {
+            $this->responder(400, ['error' => 'JSON inválido.']);
             return;
         }
 
-        $generosDisponibles = $this->adminContenidoRepo->listarGeneros();
-        $datos = ContenidoValidator::validar($_POST, $generosDisponibles);
-
-        // generos por nombre: se crean (o se reusan si ya existen) y se
-        // suman a los ids que ya vinieron validados por ContenidoValidator.
-        $nombresCrudos = is_array($_POST['genero_nombres'] ?? null) ? $_POST['genero_nombres'] : [];
-        foreach ($nombresCrudos as $nombre) {
-            $nombre = trim(strip_tags((string) $nombre));
-            if ($nombre === '') {
-                continue;
-            }
-            $datos['generoIds'][] = $this->adminContenidoRepo->crearGeneroLocal(mb_substr($nombre, 0, 50));
-        }
-        $datos['generoIds'] = array_values(array_unique($datos['generoIds']));
-
-        // poster NO es obligatorio via API: muchos imports no traen imagen
-        // todavia (se completa despues desde el panel).
-        $poster = PosterUploader::subir($_FILES['poster'] ?? null, obligatorio: false);
-        if ($poster['error'] !== null) {
-            $datos['errores'][] = $poster['error'];
-        }
-
-        if ($datos['errores'] !== []) {
-            $this->responder(400, ['success' => false, 'errors' => $datos['errores']]);
+        $errores = $this->validarBasico($body);
+        if ($errores !== []) {
+            $this->responder(400, ['errors' => $errores]);
             return;
         }
 
-        // idempotencia: si el import se corre 2 veces con el mismo catalogo,
-        // no queremos duplicados por cada corrida.
-        if ($this->adminContenidoRepo->existeContenidoLocal($datos['titulo'], $datos['tipo'], $datos['anio'])) {
-            $this->responder(409, ['success' => false, 'errors' => ['Ya existe un contenido local con ese título, tipo y año.']]);
-            return;
-        }
-
-        $idUsuarioApi = $this->idUsuarioApi();
+        $idUsuarioApi = (string) ($_ENV['ADMIN_API_USER_ID'] ?? '');
         if ($idUsuarioApi === '') {
-            $this->responder(500, ['success' => false, 'errors' => ['ADMIN_API_USER_ID no está configurado en el servidor.']]);
+            $this->responder(500, ['error' => 'ADMIN_API_USER_ID no configurado.']);
             return;
         }
 
-        $id = $this->adminContenidoRepo->crearContenidoLocal(
-            $datos['tipo'],
-            $datos['titulo'],
-            $datos['descripcion'],
-            $poster['path'],
-            $datos['anio'],
-            $datos['generoIds'],
-            $idUsuarioApi
-        );
+        try {
+            $id = $this->adminContenidoRepo->crearContenidoLocal(
+                (string) $body['tipo'],
+                trim((string) $body['titulo']),
+                isset($body['descripcion']) ? (string) $body['descripcion'] : null,
+                isset($body['poster_path']) ? (string) $body['poster_path'] : null,
+                isset($body['anio']) ? (int) $body['anio'] : null,
+                array_map('intval', $body['generos'] ?? []),
+                $idUsuarioApi
+            );
+        } catch (PDOException $e) {
+            $this->responderErrorDb($e);
+            return;
+        }
 
-        $this->responder(201, [
-            'success' => true,
-            'data' => [
-                'id' => $id,
-                'titulo' => $datos['titulo'],
-                'tipo' => $datos['tipo'],
-                'anio' => $datos['anio'],
-                'poster_path' => $poster['path'],
-                'generos' => $datos['generoIds'],
-            ],
-        ]);
+        $this->responder(201, ['id' => $id]);
     }
 
-    /**
-     * GET /api/v1/generos — para que el script de import pueda mapear
-     * nombre de genero -> id antes de mandar el POST, si prefiere eso
-     * en vez de mandar genero_nombres[] y que se cree solo.
-     */
+    public function actualizar(): void
+    {
+        if (!$this->autenticado()) {
+            $this->responder(401, ['error' => 'API key inválida o ausente.']);
+            return;
+        }
+
+        $id = (string) ($_GET['id'] ?? '');
+        if ($id === '') {
+            $this->responder(400, ['error' => 'Falta el parámetro id.']);
+            return;
+        }
+
+        $body = $this->leerJson();
+        if ($body === null) {
+            $this->responder(400, ['error' => 'JSON inválido.']);
+            return;
+        }
+
+        $errores = $this->validarBasico($body);
+        if ($errores !== []) {
+            $this->responder(400, ['errors' => $errores]);
+            return;
+        }
+
+        try {
+            $actual = $this->adminContenidoRepo->obtenerLocalPorIdParaEditar($id);
+        } catch (\InvalidArgumentException) {
+            $actual = null;
+        }
+
+        if ($actual === null) {
+            $this->responder(404, ['error' => 'Contenido no encontrado.']);
+            return;
+        }
+
+        try {
+            $this->adminContenidoRepo->actualizarContenidoLocal(
+                $actual['id'],
+                trim((string) $body['titulo']),
+                isset($body['descripcion']) ? (string) $body['descripcion'] : null,
+                isset($body['poster_path']) ? (string) $body['poster_path'] : $actual['poster_path'],
+                isset($body['anio']) ? (int) $body['anio'] : null,
+                array_map('intval', $body['generos'] ?? [])
+            );
+        } catch (PDOException $e) {
+            $this->responderErrorDb($e);
+            return;
+        }
+
+        $this->responder(200, ['id' => $actual['id']]);
+    }
+
+    public function eliminar(): void
+    {
+        if (!$this->autenticado()) {
+            $this->responder(401, ['error' => 'API key inválida o ausente.']);
+            return;
+        }
+
+        $id = (string) ($_GET['id'] ?? '');
+        if ($id === '') {
+            $this->responder(400, ['error' => 'Falta el parámetro id.']);
+            return;
+        }
+
+        try {
+            $existe = $this->adminContenidoRepo->obtenerLocalPorIdParaEditar($id) !== null;
+        } catch (\InvalidArgumentException) {
+            $existe = false;
+        }
+
+        if (!$existe) {
+            $this->responder(404, ['error' => 'Contenido no encontrado.']);
+            return;
+        }
+
+        $this->adminContenidoRepo->eliminarContenidoLocal($id);
+        $this->responder(200, ['id' => $id, 'is_active' => 0]);
+    }
+
     public function generos(): void
     {
         if (!$this->autenticado()) {
-            $this->responder(401, ['success' => false, 'errors' => ['API key inválida o ausente.']]);
+            $this->responder(401, ['error' => 'API key inválida o ausente.']);
             return;
         }
 
-        $this->responder(200, ['success' => true, 'data' => $this->adminContenidoRepo->listarGeneros()]);
+        $this->responder(200, $this->adminContenidoRepo->listarGeneros());
     }
 
     /**
-     * Compara la API key contra ADMIN_API_KEY del .env con hash_equals
-     * (evita timing attack). Si ADMIN_API_KEY no esta configurada, la
-     * API queda cerrada por default (fail closed, no fail open).
+     * @return list<string>
      */
+    private function validarBasico(array $body): array
+    {
+        $errores = [];
+
+        if (trim((string) ($body['titulo'] ?? '')) === '') {
+            $errores[] = 'titulo requerido.';
+        }
+        if (!in_array($body['tipo'] ?? '', ['movie', 'series'], true)) {
+            $errores[] = 'tipo debe ser movie|series.';
+        }
+        if (isset($body['anio']) && $body['anio'] !== null && !ctype_digit((string) $body['anio'])) {
+            $errores[] = 'anio invalido.';
+        }
+
+        return $errores;
+    }
+
+    private function leerJson(): ?array
+    {
+        $data = json_decode((string) file_get_contents('php://input'), true);
+
+        return is_array($data) ? $data : null;
+    }
+
     private function autenticado(): bool
     {
         $esperada = (string) ($_ENV['ADMIN_API_KEY'] ?? '');
-        if ($esperada === '') {
-            return false;
-        }
-
         $recibida = (string) ($_SERVER['HTTP_X_API_KEY'] ?? '');
-        if ($recibida === '') {
-            return false;
+
+        return $esperada !== '' && $recibida !== '' && hash_equals($esperada, $recibida);
+    }
+
+    /**
+     * Mapea codigo de error MySQL -> HTTP status. 1062 = UNIQUE (duplicado),
+     * 1452 = FK invalida (genero_id no existe).
+     */
+    private function responderErrorDb(PDOException $e): void
+    {
+        $codigo = (int) ($e->errorInfo[1] ?? 0);
+
+        if ($codigo === 1062) {
+            $this->responder(409, ['error' => 'Ya existe un contenido con ese título+tipo+año.']);
+            return;
+        }
+        if ($codigo === 1452) {
+            $this->responder(400, ['error' => 'Uno de los genero_id no existe.']);
+            return;
         }
 
-        return hash_equals($esperada, $recibida);
+        $this->responder(500, ['error' => 'Error de base de datos.']);
     }
 
     /**
-     * created_by de contenido requiere un usuario (FK a usuarios.id). Como
-     * la API no tiene sesion, se usa un UUID fijo de "sistema" configurado
-     * en el .env (debe existir un usuario admin con ese id).
-     */
-    private function idUsuarioApi(): string
-    {
-        return (string) ($_ENV['ADMIN_API_USER_ID'] ?? '');
-    }
-
-    /**
-     * @param array<string,mixed> $payload
+     * @param array<string,mixed>|list<array<string,mixed>> $payload
      */
     private function responder(int $status, array $payload): void
     {

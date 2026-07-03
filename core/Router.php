@@ -18,9 +18,19 @@ class Router
         $this->rutas['POST'][$ruta] = $manejador;
     }
 
+    public function registrarPut(string $ruta, callable|array $manejador): void
+    {
+        $this->rutas['PUT'][$ruta] = $manejador;
+    }
+
+    public function registrarDelete(string $ruta, callable|array $manejador): void
+    {
+        $this->rutas['DELETE'][$ruta] = $manejador;
+    }
+
     public function despachar(): void
     {
-        $metodo = $_SERVER['REQUEST_METHOD'];
+        $metodo = $this->metodoReal();
         $ruta = $this->normalizarRuta((string) parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
         $manejador = $this->rutas[$metodo][$ruta] ?? null;
 
@@ -31,6 +41,29 @@ class Router
         }
 
         $this->ejecutar($manejador);
+    }
+
+    /**
+     * Metodo HTTP real. Los forms HTML solo mandan GET/POST (limitacion del
+     * browser, no de PHP), asi que para PUT/DELETE via form se acepta:
+     *  - header X-HTTP-Method-Override (fetch/curl/API clients)
+     *  - campo _method en el body (forms HTML con <input type=hidden>)
+     * API clients pueden mandar PUT/DELETE real y no necesitan nada de esto.
+     */
+    private function metodoReal(): string
+    {
+        $metodo = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+
+        if ($metodo !== 'POST') {
+            return $metodo;
+        }
+
+        $override = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ?? ($_POST['_method'] ?? null);
+        if (is_string($override) && in_array(strtoupper($override), ['PUT', 'DELETE'], true)) {
+            return strtoupper($override);
+        }
+
+        return 'POST';
     }
 
     private function normalizarRuta(string $ruta): string

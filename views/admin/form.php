@@ -72,7 +72,6 @@ $posterActual = (string) ($item['poster_path'] ?? '');
 						</option>
 					<?php endforeach; ?>
 				</select>
-				<small>Mantené Ctrl (o Cmd) apretado para elegir varios.</small>
 			</div>
 
 			<div class="perfil-campo">

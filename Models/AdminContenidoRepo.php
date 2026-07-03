@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Helpers\UuidHelper;
 use PDO;
+use voku\helper\AntiXSS;
 
 /**
  * Capa de datos para que un admin gestione contenido LOCAL (peliculas/series
@@ -32,6 +33,158 @@ final class AdminContenidoRepo
     }
 
     /**
+     * Exporta el contenido local del catálogo a XML.
+     */
+    public function exportarContenidoXml(int $limite = 100): string
+    {
+        // Se deja el catálogo listo para salir en XML.
+        $stmt = $this->pdo->prepare(
+            "SELECT id, type, titulo, descripcion, anio_lanzamiento, poster_path, is_active, created_at
+             FROM contenido
+             WHERE origen = 'local'
+             ORDER BY created_at DESC
+             LIMIT :limite"
+        );
+        $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->formatOutput = true;
+        $dom->preserveWhiteSpace = false;
+
+        $root = $dom->createElement('catalogo');
+        $root->setAttribute('version', '1');
+        $dom->appendChild($root);
+
+        foreach ($filas as $fila) {
+            $idBinario = $fila['id'];
+            $generos = $this->pdo->prepare(
+                'SELECT g.nombre
+                 FROM contenido_generos cg
+                 INNER JOIN generos g ON g.id = cg.genre_id
+                 WHERE cg.content_id = :content_id
+                 ORDER BY g.nombre ASC'
+            );
+            $generos->execute([':content_id' => $idBinario]);
+
+            $nodoContenido = $dom->createElement('contenido');
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'tipo', (string) $fila['type']));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'titulo', (string) $fila['titulo']));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'descripcion', (string) ($fila['descripcion'] ?? '')));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'anio', (string) ($fila['anio_lanzamiento'] ?? '')));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'poster_path', (string) ($fila['poster_path'] ?? '')));
+            $nodoContenido->appendChild($this->crearNodoTexto($dom, 'activo', (string) ((int) $fila['is_active'])));
+
+            $nodoGeneros = $dom->createElement('generos');
+            foreach ($generos->fetchAll(PDO::FETCH_COLUMN) ?: [] as $nombreGenero) {
+                $nodoGeneros->appendChild($this->crearNodoTexto($dom, 'genero', (string) $nombreGenero));
+            }
+            $nodoContenido->appendChild($nodoGeneros);
+
+            $root->appendChild($nodoContenido);
+        }
+
+        return $dom->saveXML() ?: '';
+    }
+
+    /**
+     * Importa contenido local desde XML.
+     *
+     * @return array{success: bool, created: int, errors: list<string>}
+     */
+    public function importarContenidoXml(string $contenidoXml, string $creadoPorIdUsuario): array
+    {
+        // Antes de tocar la base, se valida el XML para evitar que entren datos rotos
+        // o peligrosos y para que el error se vea claro desde el panel.
+        $dom = $this->cargarXmlSeguro($contenidoXml);
+        if ($dom === null) {
+            return ['success' => false, 'created' => 0, 'errors' => ['El XML es inválido o no se pudo leer.']];
+        }
+
+        $root = $dom->documentElement;
+        if ($root === null || $root->nodeName !== 'catalogo') {
+            return ['success' => false, 'created' => 0, 'errors' => ['La raíz del XML debe ser <catalogo>.']];
+        }
+
+        if ($root->getAttribute('version') !== '1') {
+            return ['success' => false, 'created' => 0, 'errors' => ['La versión del XML no es compatible.']];
+        }
+
+        $entradas = [];
+        $errores = [];
+        foreach ($root->getElementsByTagName('contenido') as $nodoContenido) {
+            if (!$nodoContenido instanceof \DOMElement) {
+                continue;
+            }
+
+            $tipo = $this->sanitizarTexto($this->leerTextoNodo($nodoContenido, 'tipo'));
+            $titulo = $this->sanitizarTexto($this->leerTextoNodo($nodoContenido, 'titulo'));
+            $descripcion = $this->sanitizarTexto($this->leerTextoNodo($nodoContenido, 'descripcion'));
+            $anio = $this->parseYear($this->leerTextoNodo($nodoContenido, 'anio'));
+            $posterPath = $this->sanitizarTexto($this->leerTextoNodo($nodoContenido, 'poster_path'));
+            $generos = $this->leerGenerosDelNodo($nodoContenido);
+
+            if (!in_array($tipo, ['movie', 'series'], true)) {
+                $errores[] = 'Uno de los contenidos tiene un tipo inválido.';
+                continue;
+            }
+            if ($titulo === '') {
+                $errores[] = 'Uno de los contenidos no tiene título.';
+                continue;
+            }
+
+            $entradas[] = [
+                'tipo' => $tipo,
+                'titulo' => $titulo,
+                'descripcion' => $descripcion !== '' ? $descripcion : null,
+                'anio' => $anio,
+                'posterPath' => $posterPath !== '' ? $posterPath : null,
+                'generos' => $generos,
+            ];
+        }
+
+        if ($entradas === []) {
+            $errores[] = 'El XML no contiene elementos <contenido> válidos.';
+        }
+
+        if ($errores !== []) {
+            return ['success' => false, 'created' => 0, 'errors' => $errores];
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $creados = 0;
+            foreach ($entradas as $entrada) {
+                $generoIdsLocales = [];
+                foreach ($entrada['generos'] as $nombreGenero) {
+                    $generoIdsLocales[] = $this->crearGeneroLocal($nombreGenero);
+                }
+
+                $this->crearContenidoLocal(
+                    $entrada['tipo'],
+                    $entrada['titulo'],
+                    $entrada['descripcion'],
+                    $entrada['posterPath'],
+                    $entrada['anio'],
+                    $generoIdsLocales,
+                    $creadoPorIdUsuario
+                );
+                $creados++;
+            }
+
+            $this->pdo->commit();
+
+            return ['success' => true, 'created' => $creados, 'errors' => []];
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+
+            return ['success' => false, 'created' => 0, 'errors' => ['No se pudo importar el XML: ' . $e->getMessage()]];
+        }
+    }
+
+    /**
      * Crea una pelicula/serie local. $posterPath ya debe venir resuelto
      * (ej. "/assets/images/posters/admin/<uuid>.webp") — esta capa no
      * sube archivos, solo guarda el path que le pasen.
@@ -51,23 +204,33 @@ final class AdminContenidoRepo
         $tipoDb = $tipo === 'series' ? 'series' : 'movie';
         $idBinario = UuidHelper::v7();
 
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO contenido
-                (id, tmdb_id, origen, created_by, type, titulo, descripcion, poster_path, anio_lanzamiento)
-             VALUES
-                (:id, NULL, \'local\', :created_by, :type, :titulo, :descripcion, :poster_path, :anio_lanzamiento)'
-        );
-        $stmt->execute([
-            ':id' => $idBinario,
-            ':created_by' => UuidHelper::uuidABinario($creadoPorIdUsuario),
-            ':type' => $tipoDb,
-            ':titulo' => $titulo,
-            ':descripcion' => $descripcion,
-            ':poster_path' => $posterPath,
-            ':anio_lanzamiento' => $anio,
-        ]);
+        // INSERT + sync de generos en UNA transaccion: si el insert de
+        // contenido_generos falla, no queda un contenido "huerfano" sin generos.
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare(
+                'INSERT INTO contenido
+                    (id, tmdb_id, origen, created_by, type, titulo, descripcion, poster_path, anio_lanzamiento)
+                 VALUES
+                    (:id, NULL, \'local\', :created_by, :type, :titulo, :descripcion, :poster_path, :anio_lanzamiento)'
+            );
+            $stmt->execute([
+                ':id' => $idBinario,
+                ':created_by' => UuidHelper::uuidABinario($creadoPorIdUsuario),
+                ':type' => $tipoDb,
+                ':titulo' => $titulo,
+                ':descripcion' => $descripcion,
+                ':poster_path' => $posterPath,
+                ':anio_lanzamiento' => $anio,
+            ]);
 
-        $this->sincronizarGenerosLocales($idBinario, $generoIdsLocales);
+            $this->sincronizarGenerosLocales($idBinario, $generoIdsLocales);
+
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
 
         return UuidHelper::binarioAUuid($idBinario);
     }
@@ -100,23 +263,31 @@ final class AdminContenidoRepo
             throw new \RuntimeException('Solo se puede editar contenido local (origen=local).');
         }
 
-        $stmt = $this->pdo->prepare(
-            'UPDATE contenido SET
-                titulo = :titulo,
-                descripcion = :descripcion,
-                poster_path = :poster_path,
-                anio_lanzamiento = :anio_lanzamiento
-             WHERE id = :id'
-        );
-        $stmt->execute([
-            ':titulo' => $titulo,
-            ':descripcion' => $descripcion,
-            ':poster_path' => $posterPath,
-            ':anio_lanzamiento' => $anio,
-            ':id' => $idBinario,
-        ]);
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare(
+                'UPDATE contenido SET
+                    titulo = :titulo,
+                    descripcion = :descripcion,
+                    poster_path = :poster_path,
+                    anio_lanzamiento = :anio_lanzamiento
+                 WHERE id = :id'
+            );
+            $stmt->execute([
+                ':titulo' => $titulo,
+                ':descripcion' => $descripcion,
+                ':poster_path' => $posterPath,
+                ':anio_lanzamiento' => $anio,
+                ':id' => $idBinario,
+            ]);
 
-        $this->sincronizarGenerosLocales($idBinario, $generoIdsLocales);
+            $this->sincronizarGenerosLocales($idBinario, $generoIdsLocales);
+
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
     /**
@@ -325,6 +496,61 @@ final class AdminContenidoRepo
     }
 
     /**
+     * Trae UN contenido local (activo o no) con sus genero IDS (no nombres)
+     * para pre-poblar el form de editar. Distinto de buscarLocalPorId(),
+     * que solo devuelve activos y nombres de genero (pensado para detalle
+     * publico, no para el form admin).
+     *
+     * @return array<string,mixed>|null
+     */
+    public function obtenerLocalPorIdParaEditar(string $contentId): ?array
+    {
+        $idBinario = UuidHelper::uuidABinario($contentId);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id, type, titulo, descripcion, poster_path, anio_lanzamiento, is_active
+             FROM contenido
+             WHERE id = :id AND origen = 'local'"
+        );
+        $stmt->execute([':id' => $idBinario]);
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!is_array($fila)) {
+            return null;
+        }
+
+        $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
+
+        $generos = $this->pdo->prepare(
+            'SELECT genre_id FROM contenido_generos WHERE content_id = :content_id'
+        );
+        $generos->execute([':content_id' => $idBinario]);
+        $fila['genero_ids'] = array_map('intval', $generos->fetchAll(PDO::FETCH_COLUMN) ?: []);
+
+        return $fila;
+    }
+
+    /**
+     * Chequea si ya existe un local con mismo titulo+anio+tipo (case-insensitive).
+     * Usado por la API de import para no duplicar en corridas repetidas.
+     */
+    public function existeContenidoLocal(string $titulo, string $tipo, ?int $anio): bool
+    {
+        $tipoDb = $tipo === 'series' ? 'series' : 'movie';
+
+        $stmt = $this->pdo->prepare(
+            "SELECT 1 FROM contenido
+             WHERE origen = 'local' AND type = :type
+               AND LOWER(titulo) = LOWER(:titulo)
+               AND anio_lanzamiento <=> :anio
+             LIMIT 1"
+        );
+        $stmt->execute([':type' => $tipoDb, ':titulo' => $titulo, ':anio' => $anio]);
+
+        return $stmt->fetchColumn() !== false;
+    }
+
+    /**
      * Crea un genero nuevo SIN tmdb_id (genero 100% inventado por el admin).
      * Si ya existe uno con ese nombre, devuelve el id existente (UNIQUE en
      * nombre) en vez de fallar.
@@ -373,12 +599,90 @@ final class AdminContenidoRepo
         }
 
         $insertar = $this->pdo->prepare(
-            'INSERT IGNORE INTO contenido_generos (content_id, genre_id) VALUES (:content_id, :genre_id)'
+            'INSERT INTO contenido_generos (content_id, genre_id) VALUES (:content_id, :genre_id)'
         );
 
         foreach ($generoIdsLocales as $genreId) {
             $insertar->execute([':content_id' => $contentIdBin, ':genre_id' => $genreId]);
         }
     }
-}
 
+    private function crearNodoTexto(\DOMDocument $dom, string $nombre, string $valor): \DOMElement
+    {
+        $nodo = $dom->createElement($nombre);
+        $nodo->appendChild($dom->createTextNode($valor));
+
+        return $nodo;
+    }
+
+    private function cargarXmlSeguro(string $contenidoXml): ?\DOMDocument
+    {
+        $contenidoXml = trim($contenidoXml);
+        if ($contenidoXml === '' || str_contains($contenidoXml, '<!DOCTYPE') || str_contains($contenidoXml, '<!ENTITY')) {
+            return null;
+        }
+
+        $anterior = libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->preserveWhiteSpace = false;
+        $dom->resolveExternals = false;
+        $dom->substituteEntities = false;
+
+        $cargado = $dom->loadXML($contenidoXml, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
+        libxml_clear_errors();
+        libxml_use_internal_errors($anterior);
+
+        return $cargado ? $dom : null;
+    }
+
+    private function leerTextoNodo(\DOMElement $padre, string $nombre): string
+    {
+        $nodos = $padre->getElementsByTagName($nombre);
+        $nodo = $nodos->item(0);
+
+        return $nodo?->textContent ?? '';
+    }
+
+    private function sanitizarTexto(string $valor): string
+    {
+        $limpio = (new AntiXSS())->xss_clean(trim($valor));
+
+        return strip_tags($limpio);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function leerGenerosDelNodo(\DOMElement $nodoContenido): array
+    {
+        $nodoGeneros = $nodoContenido->getElementsByTagName('generos')->item(0);
+        if (!$nodoGeneros instanceof \DOMElement) {
+            return [];
+        }
+
+        $generos = [];
+        foreach ($nodoGeneros->getElementsByTagName('genero') as $nodoGenero) {
+            if (!$nodoGenero instanceof \DOMElement) {
+                continue;
+            }
+
+            $nombre = $this->sanitizarTexto($nodoGenero->textContent ?? '');
+            if ($nombre !== '') {
+                $generos[] = $nombre;
+            }
+        }
+
+        return array_values(array_unique($generos));
+    }
+
+    private function parseYear(string $valor): ?int
+    {
+        $anio = (int) trim($valor);
+
+        if ($anio < 1888 || $anio > ((int) date('Y') + 1)) {
+            return null;
+        }
+
+        return $anio;
+    }
+}
