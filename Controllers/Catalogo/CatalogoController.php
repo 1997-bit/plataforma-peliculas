@@ -6,6 +6,7 @@ namespace App\Controllers\Catalogo;
 
 use App\Core\Session;
 use App\Helpers\GenerosTmdb;
+use App\Helpers\Normalizador;
 use App\Models\AdminContenidoRepo;
 
 final class CatalogoController
@@ -26,32 +27,14 @@ final class CatalogoController
       ? $this->repo->idsInternosPorTmdbId([$generoId])
       : [];
 
-    $items = array_map(fn ($f) => [
-    'id' => $f['id'],
-    'type' => $f['type'],
-    'title' => $f['titulo'],
-    'poster_path' => $f['poster_path'] ?? null,
-    'origen' => 'local',
-], $this->repo->contenidoParaCatalogo($tipo, $generosInternos, 20, $offset, $busqueda));
+    $items = Normalizador::lista(
+        $this->repo->contenidoParaCatalogo($tipo, $generosInternos, 20, $offset, $busqueda)
+    );
 
     $generos = GenerosTmdb::LISTA;
     $totalPaginas = 1; // paginacion simple: si devolvio 20 probablemente hay ma  hs
     $csrf = Session::generarCsrf();
 
     require ROOT . '/views/catalogo/index.php';
-  }
-
-  public function registrarVista(): void
-  {
-    header('Content-Type: application/json');
-
-    if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-      http_response_code(403);
-      echo json_encode(['error' => 'CSRF invalido']);
-
-      return;
-    }
-
-    echo json_encode(['ok' => true]);
   }
 }

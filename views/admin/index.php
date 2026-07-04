@@ -3,6 +3,8 @@
 /** @var string|null $okMsg */
 /** @var string|null $errorMsg */
 /** @var list<array<string,mixed>> $contenidoLocal */
+/** @var list<array{nombre:string, vistas:int}> $generosMasVistos */
+$generosMasVistos = $generosMasVistos ?? [];
 $okMsg = $okMsg ?? null;
 $errorMsg = $errorMsg ?? null;
 $total = count($contenidoLocal);
@@ -46,6 +48,19 @@ $series = count(array_filter($contenidoLocal, fn ($c) => ($c['type'] ?? '') === 
         <div><dt>Películas</dt><dd><?= $peliculas ?></dd></div>
         <div><dt>Series</dt><dd><?= $series ?></dd></div>
     </dl>
+</section>
+
+<section aria-label="generos mas vistos">
+    <h2>Géneros más vistos</h2>
+    <?php if ($generosMasVistos === []): ?>
+        <p>Sin datos de vistas todavía.</p>
+    <?php else: ?>
+        <ol>
+        <?php foreach ($generosMasVistos as $g): ?>
+            <li><?= htmlspecialchars((string) $g['nombre'], ENT_QUOTES, 'UTF-8') ?> — <?= (int) $g['vistas'] ?> vistas</li>
+        <?php endforeach; ?>
+        </ol>
+    <?php endif; ?>
 </section>
 
 <section aria-label="listado contenido">

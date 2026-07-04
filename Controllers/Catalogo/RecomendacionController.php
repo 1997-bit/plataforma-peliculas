@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Catalogo;
 
 use App\Core\Session;
+use App\Helpers\Normalizador;
 use App\Models\AdminContenidoRepo;
 use App\Models\UserRepo;
 
@@ -40,7 +41,9 @@ final class RecomendacionController
             $totalPaginas = 1;
         } else {
             $generosInternos = $this->repo->idsInternosPorTmdbId($generosFavoritos);
-            $items = $this->repo->contenidoParaCatalogo($tipo, $generosInternos, 20, $offset);
+            $items = Normalizador::lista(
+                $this->repo->contenidoParaCatalogo($tipo, $generosInternos, 20, $offset)
+            );
             $totalPaginas = 1;
         }
 

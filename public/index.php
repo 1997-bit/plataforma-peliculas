@@ -93,10 +93,8 @@ $router->registrarGet('/onboarding', function () use ($onboardingController) { A
 $router->registrarPost('/onboarding', function () use ($onboardingController) { AuthMiddleware::bloquearRol('admin'); $onboardingController->procesar(); });
 
 // Admin
-$adminController = new AdminController($adminContenidoRepo);
+$adminController = new AdminController($adminContenidoRepo, $contenidoRepo);
 $router->registrarGet('/admin', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->index(); });
-$router->registrarGet('/admin/xml/exportar', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->exportarXml(); });
-$router->registrarPost('/admin/xml/importar', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->importarXml(); });
 $router->registrarGet('/admin/contenido/nuevo', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->nuevo(); });
 $router->registrarPost('/admin/contenido/nuevo', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->guardar(); });
 $router->registrarGet('/admin/contenido/editar', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->editar(); });

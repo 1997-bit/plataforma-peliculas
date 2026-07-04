@@ -6,13 +6,16 @@ namespace App\Controllers\Admin;
 
 use App\Core\Session;
 use App\Models\AdminContenidoRepo;
+use App\Models\ContenidoRepo;
 use App\Services\ContenidoValidator;
 use App\Services\PosterUploader;
 
 final class AdminController
 {
-    public function __construct(private AdminContenidoRepo $adminContenidoRepo)
-    {
+    public function __construct(
+        private AdminContenidoRepo $adminContenidoRepo,
+        private ContenidoRepo $contenidoRepo,
+    ) {
     }
 
     public function index(): void
@@ -21,6 +24,7 @@ final class AdminController
         $okMsg = $this->mensajeOk();
         $errorMsg = null;
         $contenidoLocal = $this->adminContenidoRepo->listarContenidoLocal(50);
+        $generosMasVistos = $this->contenidoRepo->generosMasVistos(10);
 
         require ROOT . '/views/admin/index.php';
     }
