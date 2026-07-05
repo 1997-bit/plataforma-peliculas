@@ -40,6 +40,7 @@ final class ContenidoController
         ];
         $cast = [];
         $backdropPath = $detalle['backdrop_path'];
+        $recomendados = $this->adminContenidoRepo->similaresPorGeneros($contentId, 5);
         $csrf = Session::generarCsrf();
         require ROOT . '/views/catalogo/detalle.php';
     }
@@ -71,7 +72,7 @@ final class ContenidoController
         }
 
         try {
-            $this->contenidoRepo->calificar($idUsuario, $contentId, $estrellas * 2);
+            $this->contenidoRepo->calificar($idUsuario, $contentId, $estrellas);
             $this->json(200, ['ok' => true]);
         } catch (\Throwable $e) {
             error_log('ContenidoController::calificar - ' . $e->getMessage());

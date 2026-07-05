@@ -9,6 +9,7 @@ use App\Helpers\TmdbImagen;
 /** @var list<array<string,mixed>> $cast */
 /** @var string|null $backdropPath */
 /** @var string $csrf */
+/** @var list<array<string,mixed>> $recomendados */
 
 $tema = $_COOKIE['tema'] ?? null;
 
@@ -24,8 +25,8 @@ $poster = TmdbImagen::poster($detalle['poster_path'] ?? null, 'md');
 
 $ratingAvg = $infoLocal['rating_avg'] ?? 0.0;
 $ratingCount = $infoLocal['rating_count'] ?? 0;
-$estrellasPromedio = $ratingAvg > 0 ? round($ratingAvg / 2, 1) : 0;
-$miEstrellas = $miCalificacion !== null ? (int) round($miCalificacion / 2) : 0;
+$estrellasPromedio = $ratingAvg > 0 ? round($ratingAvg, 1) : 0;
+$miEstrellas = $miCalificacion ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="es" <?= $tema ? 'data-tema="' . htmlspecialchars($tema, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
@@ -71,7 +72,11 @@ $miEstrellas = $miCalificacion !== null ? (int) round($miCalificacion / 2) : 0;
 
                 <p class="detalle-sinopsis"><?= htmlspecialchars($sinopsis, ENT_QUOTES, 'UTF-8') ?></p>
 
-                <section class="detalle-calificacion" data-content-id="<?= htmlspecialchars($contentId, ENT_QUOTES, 'UTF-8') ?>">
+                <section class="detalle-calificacion"
+                    data-content-id="<?= htmlspecialchars($contentId, ENT_QUOTES, 'UTF-8') ?>"
+                    data-mis-estrellas="<?= $miEstrellas ?>"
+                    data-csrf="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"
+                >
                     <h2 class="detalle-subtitulo">Tu calificación</h2>
                     <div class="detalle-estrellas" role="radiogroup" aria-label="Calificar de 1 a 5 estrellas">
                         <?php for ($i = 1; $i <= 5; $i++): ?>
@@ -97,6 +102,7 @@ $miEstrellas = $miCalificacion !== null ? (int) round($miCalificacion / 2) : 0;
                     <p class="detalle-calificacion-mensaje" aria-live="polite"></p>
 
                     <?php if ($ratingCount > 0): ?>
+                        <p class="detalle-promedio-titulo">Calificación general</p>
                         <div class="detalle-promedio">
                             <div class="detalle-estrellas detalle-estrellas-promedio" aria-hidden="true">
                                 <?php for ($i = 1; $i <= 5; $i++): ?>
@@ -123,6 +129,7 @@ $miEstrellas = $miCalificacion !== null ? (int) round($miCalificacion / 2) : 0;
                             </span>
                         </div>
                     <?php else: ?>
+                        <p class="detalle-promedio-titulo">Calificación general</p>
                         <p class="detalle-promedio">Aún no hay calificaciones de la comunidad.</p>
                     <?php endif; ?>
                 </section>
@@ -137,66 +144,24 @@ $miEstrellas = $miCalificacion !== null ? (int) round($miCalificacion / 2) : 0;
                         </div>
                     </section>
                 <?php endif; ?>
+
+                <?php if ($recomendados !== []): ?>
+                    <section class="detalle-recomendados">
+                        <h2 class="detalle-subtitulo">Recomendados para ti</h2>
+                        <div class="detalle-cast-grid">
+                            <?php foreach ($recomendados as $item): ?>
+                                <a class="chip chip--simple" href="/contenido?id=<?= htmlspecialchars((string) $item['id'], ENT_QUOTES, 'UTF-8') ?>&tipo=<?= $item['type'] === 'series' ? 'series' : 'movie' ?>">
+                                    <?= htmlspecialchars((string) $item['titulo'], ENT_QUOTES, 'UTF-8') ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
             </div>
         </div>
     </main>
 
-    <script>
-        (function () {
-            const seccion = document.querySelector('.detalle-calificacion');
-            if (!seccion) return;
-
-            const contentId = seccion.dataset.contentId;
-            const estrellas = seccion.querySelectorAll('.detalle-estrellas:not(.detalle-estrellas-promedio) .detalle-estrella');
-            const mensaje = seccion.querySelector('.detalle-calificacion-mensaje');
-            let valorGuardado = <?= $miEstrellas ?>;
-
-            function pintarHasta(valor) {
-                estrellas.forEach(function (b, idx) {
-                    b.classList.toggle('detalle-estrella-activa', idx < valor);
-                });
-            }
-
-            estrellas.forEach(function (boton) {
-                boton.addEventListener('mouseenter', function () {
-                    pintarHasta(parseInt(boton.dataset.valor, 10));
-                });
-
-                boton.addEventListener('mouseleave', function () {
-                    pintarHasta(valorGuardado);
-                });
-
-                boton.addEventListener('click', function () {
-                    const valor = parseInt(boton.dataset.valor, 10);
-
-                    pintarHasta(valor);
-                    estrellas.forEach(function (b, idx) {
-                        b.setAttribute('aria-checked', idx + 1 === valor ? 'true' : 'false');
-                    });
-
-                    fetch('/contenido/calificar', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            content_id: contentId,
-                            estrellas: String(valor),
-                            _csrf: '<?= htmlspecialchars($csrf, ENT_QUOTES, "UTF-8") ?>',
-                        }),
-                    })
-                        .then(function (r) { return r.json(); })
-                        .then(function (data) {
-                            mensaje.textContent = data.ok ? 'Calificación guardada.' : 'No se pudo guardar.';
-                            if (data.ok) {
-                                valorGuardado = valor;
-                            }
-                        })
-                        .catch(function () {
-                            mensaje.textContent = 'Error de conexión.';
-                        });
-                });
-            });
-        })();
-    </script>
+    <script src="/assets/js/detalle-calificacion.js" defer></script>
 
     <?php require ROOT . '/views/partials/footer.php'; ?>
 </body>

@@ -99,7 +99,7 @@ final class ContenidoRepo
     }
 
     /**
-     * Inserta o actualiza la calificación del usuario (1-10) y recalcula
+     * Inserta o actualiza la calificación del usuario (1-5) y recalcula
      * rating_avg/rating_count de forma atomica.
      */
     public function calificar(string $idUsuario, string $contentId, int $score): void

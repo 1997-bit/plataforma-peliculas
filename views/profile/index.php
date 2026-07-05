@@ -93,7 +93,7 @@ $calificaciones = $calificaciones ?? [];
                             $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                             $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
                             $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'xs');
-                            $estrellas = (int) round(((int) $item['score']) / 2);
+                            $estrellas = (int) $item['score'];
                         ?>
                         <li class="perfil-item">
                             <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrl ?>" class="perfil-item-link">
