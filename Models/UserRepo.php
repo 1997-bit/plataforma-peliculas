@@ -18,30 +18,24 @@ class UserRepo
 
     public function buscarPorCorreo(string $email): ?User
     {
-        $stmt = $this->pdo->prepare(
-            'SELECT id, correo, password_hash, nombre_usuario, rol, is_active, preferencias
-             FROM usuarios WHERE correo_hash = :hash LIMIT 1'
-        );
-        $stmt->execute([':hash' => $this->hmacEmail($email)]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!is_array($row)) {
-            return null;
-        }
-        return $this->hidratar($row);
+        return $this->buscarPorColumna('correo_hash', $this->hmacEmail($email));
     }
 
     public function buscarPorId(string $id): ?User
     {
+        return $this->buscarPorColumna('id', UuidHelper::uuidABinario($id));
+    }
+
+    private function buscarPorColumna(string $columna, string $valor): ?User
+    {
         $stmt = $this->pdo->prepare(
-            'SELECT id, correo, password_hash, nombre_usuario, rol, is_active, preferencias
-             FROM usuarios WHERE id = :id LIMIT 1'
+            "SELECT id, correo, password_hash, nombre_usuario, rol, is_active, preferencias
+             FROM usuarios WHERE {$columna} = :v LIMIT 1"
         );
-        $stmt->execute([':id' => UuidHelper::uuidABinario($id)]);
+        $stmt->execute([':v' => $valor]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!is_array($row)) {
-            return null;
-        }
-        return $this->hidratar($row);
+
+        return is_array($row) ? $this->hidratar($row) : null;
     }
 
     /**

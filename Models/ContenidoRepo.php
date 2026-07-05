@@ -172,12 +172,7 @@ final class ContenidoRepo
         $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
         $stmt->execute();
 
-        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($filas as &$fila) {
-            $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
-        }
-
-        return $filas;
+        return UuidHelper::mapearIds($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**

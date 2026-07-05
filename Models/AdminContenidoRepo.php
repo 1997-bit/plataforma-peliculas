@@ -60,8 +60,7 @@ final class AdminContenidoRepo
     ): string {
         $idBinario = UuidHelper::v7();
 
-        $this->pdo->beginTransaction();
-        try {
+        $this->transaccion(function () use ($idBinario, $tipo, $titulo, $descripcion, $posterPath, $backdropPath, $anio, $generoIdsLocales, $creadoPorIdUsuario, $tmdbId) {
             $stmt = $this->pdo->prepare(
                 "INSERT INTO contenido
                     (id, tmdb_id, origen, created_by, type, titulo, descripcion, poster_path, backdrop_path, anio_lanzamiento)
@@ -81,11 +80,7 @@ final class AdminContenidoRepo
             ]);
 
             $this->sincronizarGeneros($idBinario, $generoIdsLocales);
-            $this->pdo->commit();
-        } catch (\Throwable $e) {
-            $this->pdo->rollBack();
-            throw $e;
-        }
+        });
 
         return UuidHelper::binarioAUuid($idBinario);
     }
@@ -111,8 +106,7 @@ final class AdminContenidoRepo
             throw new \RuntimeException('Solo se puede editar contenido local.');
         }
 
-        $this->pdo->beginTransaction();
-        try {
+        $this->transaccion(function () use ($idBinario, $titulo, $descripcion, $posterPath, $anio, $generoIdsLocales) {
             $stmt = $this->pdo->prepare(
                 'UPDATE contenido SET titulo=:titulo, descripcion=:descripcion,
                     poster_path=:poster_path, anio_lanzamiento=:anio
@@ -127,6 +121,14 @@ final class AdminContenidoRepo
             ]);
 
             $this->sincronizarGeneros($idBinario, $generoIdsLocales);
+        });
+    }
+
+    private function transaccion(callable $fn): void
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $fn();
             $this->pdo->commit();
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
@@ -154,12 +156,7 @@ final class AdminContenidoRepo
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
-        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-        foreach ($filas as &$fila) {
-            $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
-        }
-
-        return $filas;
+        return UuidHelper::mapearIds($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
     public function contenidoParaCatalogo(string $tipo, array $generoIdsLocales = [], int $limite = 20, int $offset = 0, string $busqueda = ''): array
@@ -199,12 +196,7 @@ final class AdminContenidoRepo
         }
         $stmt->execute();
 
-        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-        foreach ($filas as &$fila) {
-            $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
-        }
-
-        return $filas;
+        return UuidHelper::mapearIds($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
     public function buscarPorId(string $contentId): ?array
@@ -262,13 +254,7 @@ final class AdminContenidoRepo
 
     public function existenPorTmdbId(array $tmdbIds): array
     {
-        if ($tmdbIds === []) {
-            return [];
-        }
-        $m = implode(',', array_fill(0, count($tmdbIds), '?'));
-        $stmt = $this->pdo->prepare("SELECT tmdb_id FROM contenido WHERE tmdb_id IN ({$m})");
-        $stmt->execute(array_values($tmdbIds));
-        return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
+        return $this->columnaPorTmdbIds('contenido', 'tmdb_id', $tmdbIds);
     }
 
     public function listarGeneros(): array
@@ -291,12 +277,17 @@ final class AdminContenidoRepo
 
     public function idsInternosPorTmdbId(array $tmdbIds): array
     {
+        return $this->columnaPorTmdbIds('generos', 'id', $tmdbIds);
+    }
+
+    private function columnaPorTmdbIds(string $tabla, string $columna, array $tmdbIds): array
+    {
         if ($tmdbIds === []) {
             return [];
         }
 
         $m = implode(',', array_fill(0, count($tmdbIds), '?'));
-        $stmt = $this->pdo->prepare("SELECT id FROM generos WHERE tmdb_id IN ({$m})");
+        $stmt = $this->pdo->prepare("SELECT {$columna} FROM {$tabla} WHERE tmdb_id IN ({$m})");
         $stmt->execute(array_values($tmdbIds));
 
         return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);

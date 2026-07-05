@@ -56,4 +56,15 @@ class UuidHelper
             substr($hex, 20)
         );
     }
+
+    /** Convierte la columna binaria $campo de cada fila a UUID string. Repetido antes en varios Repo. */
+    public static function mapearIds(array $filas, string $campo = 'id'): array
+    {
+        foreach ($filas as &$fila) {
+            $fila[$campo] = self::binarioAUuid($fila[$campo]);
+        }
+        unset($fila);
+
+        return $filas;
+    }
 }
