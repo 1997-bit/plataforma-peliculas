@@ -49,10 +49,6 @@ $router->registrarGet('/catalogo', function () use ($catalogoController) {
     AuthMiddleware::bloquearRol('admin');
     $catalogoController->index();
 });
-$router->registrarPost('/catalogo/vista', function () use ($catalogoController) {
-    AuthMiddleware::bloquearRol('admin');
-    $catalogoController->registrarVista();
-});
 
 $contenidoController = new ContenidoController($contenidoRepo, $adminContenidoRepo);
 $router->registrarGet('/contenido', function () use ($contenidoController) {

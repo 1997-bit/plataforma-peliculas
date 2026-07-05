@@ -28,9 +28,4 @@ class User
     {
         return $this->isActive;
     }
-
-    public function verificarPassword(string $password): bool
-    {
-        return password_verify($password, $this->passwordHash);
-    }
 }

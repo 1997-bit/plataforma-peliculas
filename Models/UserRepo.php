@@ -107,19 +107,4 @@ class UserRepo
     {
         return hash_hmac('sha256', strtolower(trim($email)), (string)($_ENV['APP_HMAC_KEY'] ?? ''));
     }
-
-    public function existeAlgunAdmin(): bool
-    {
-        $stmt = $this->pdo->query("SELECT 1 FROM usuarios WHERE rol = 'admin' LIMIT 1");
-        return (bool) $stmt->fetchColumn();
-    }
-
-    public function asignarRol(string $idUsuario, string $rol): void
-    {
-        $stmt = $this->pdo->prepare('UPDATE usuarios SET rol = :rol WHERE id = :id');
-        $stmt->execute([
-            ':rol' => $rol,
-            ':id' => UuidHelper::uuidABinario($idUsuario),
-        ]);
-    }
 }

@@ -143,13 +143,6 @@
 	opacity: 0.7;
 }
 
-.feed-nota {
-	margin: 0;
-	font-size: var(--text-sm);
-	font-weight: 600;
-	color: oklch(80% 0.16 80);
-}
-
 .feed-sinopsis {
 	margin: 0;
 	font-size: var(--text-sm);

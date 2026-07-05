@@ -23,72 +23,6 @@ final class ContenidoRepo
     }
 
     /**
-     * @param list<int> $generoIdsTmdb
-     */
-    public function upsertDesdeTmdb(
-        int $tmdbId,
-        string $tipo,
-        string $titulo,
-        ?string $descripcion,
-        ?string $posterPath,
-        ?int $anio,
-        array $generoIdsTmdb
-    ): string {
-        $tipoDb = $tipo === 'tv' ? 'series' : 'movie';
-
-        $busca = $this->pdo->prepare('SELECT id FROM contenido WHERE tmdb_id = :tmdb_id');
-        $busca->execute([':tmdb_id' => $tmdbId]);
-        $idExistente = $busca->fetchColumn();
-
-        $idBinario = $idExistente !== false ? $idExistente : UuidHelper::v7();
-
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO contenido (id, tmdb_id, type, titulo, descripcion, poster_path, anio_lanzamiento)
-             VALUES (:id, :tmdb_id, :type, :titulo, :descripcion, :poster_path, :anio_lanzamiento)
-             ON DUPLICATE KEY UPDATE
-                titulo = VALUES(titulo),
-                descripcion = VALUES(descripcion),
-                poster_path = VALUES(poster_path),
-                anio_lanzamiento = VALUES(anio_lanzamiento)'
-        );
-        $stmt->execute([
-            ':id' => $idBinario,
-            ':tmdb_id' => $tmdbId,
-            ':type' => $tipoDb,
-            ':titulo' => $titulo,
-            ':descripcion' => $descripcion,
-            ':poster_path' => $posterPath,
-            ':anio_lanzamiento' => $anio,
-        ]);
-
-        $this->sincronizarGeneros($idBinario, $generoIdsTmdb);
-
-        return UuidHelper::binarioAUuid($idBinario);
-    }
-
-    /**
-     * @return array{id:string, rating_avg:float, rating_count:int}|null
-     */
-    public function buscarPorTmdbId(int $tmdbId): ?array
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT id, rating_avg, rating_count FROM contenido WHERE tmdb_id = :tmdb_id AND is_active = 1'
-        );
-        $stmt->execute([':tmdb_id' => $tmdbId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!is_array($row)) {
-            return null;
-        }
-
-        return [
-            'id' => UuidHelper::binarioAUuid($row['id']),
-            'rating_avg' => (float) $row['rating_avg'],
-            'rating_count' => (int) $row['rating_count'],
-        ];
-    }
-
-    /**
      * Verifica que un content_id (UUID string) exista realmente antes de
      * usarlo en ratings/historial_vistas. Evita PDOException por FK con un
      * UUID bien formado pero inexistente.
@@ -107,19 +41,8 @@ final class ContenidoRepo
         return $stmt->fetchColumn() !== false;
     }
 
-    public function registrarVista(string $idUsuario, string $contentId): void
-    {
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO historial_vistas (user_id, content_id) VALUES (:user_id, :content_id)'
-        );
-        $stmt->execute([
-            ':user_id' => UuidHelper::uuidABinario($idUsuario),
-            ':content_id' => UuidHelper::uuidABinario($contentId),
-        ]);
-    }
-
     /**
-     * Igual que registrarVista, pero evita insertar una nueva fila si el
+     * Inserta una vista, pero evita insertar una nueva fila si el
      * mismo usuario ya vio el mismo contenido en los últimos N segundos
      * (recarga de página, doble click, etc.). Sin esto, historial_vistas
      * se infla y distorsiona "géneros más vistos" en el panel de admin.

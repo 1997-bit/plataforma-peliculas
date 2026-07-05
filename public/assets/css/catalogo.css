@@ -1,7 +1,6 @@
 /* catalogo.css
    layout del catalogo: filtros, grid responsivo y paginacion.
-   Reusa .card, .card-poster-marco, .card-poster, .card-info, .card-titulo
-   ya definidos en home.css */
+   Reusa .card, .card-info, .card-titulo ya definidos en home.css */
 
 :root {
   --catalogo-grid-min: 140px;

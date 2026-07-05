@@ -57,11 +57,6 @@ class Session
         return isset($_SESSION[$clave]);
     }
 
-    public static function eliminar(string $clave): void
-    {
-        unset($_SESSION[$clave]);
-    }
-
     public static function generarCsrf(): string
     {
         if (!empty($_SESSION['_csrf_token'])) {
