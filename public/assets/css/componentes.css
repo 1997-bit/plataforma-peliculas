@@ -2,7 +2,7 @@
 /* piezas de UI reusables entre paginas: poster, boton, chip.
    requiere tokens.css cargado antes (usa sus variables --poster-*). */
 
-/* ============ poster ============
+/* poster
    marco: contenedor con la proporcion 2:3 fija y el recorte.
    imagen: el <img> de adentro, siempre cubre el marco entero.
    modificador de tamaño: .poster-marco--xs/--sm/--md/--lg
@@ -63,7 +63,7 @@
 	border-radius: var(--poster-radio-lg);
 }
 
-/* ============ boton ============
+/* boton
    .boton es la base; .boton--primario y .boton--secundario son los dos
    estilos que ya existian repetidos en perfil.css/catalogo.css/etc,
    ahora centralizados aqui.
@@ -119,7 +119,7 @@
 	background: transparent;
 }
 
-/* ============ chip ============
+/* chip
    chip generico tipo pastilla, usado para generos, tags, filtros activos.
 */
 .chip {

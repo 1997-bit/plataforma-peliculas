@@ -128,7 +128,7 @@
   align-self: flex-start;
 }
 
-/* ============ secciones genericas ============ */
+/* secciones genericas */
 .perfil-seccion {
   display: flex;
   flex-direction: column;
@@ -148,7 +148,7 @@
   opacity: 0.65;
 }
 
-/* ============ datos de cuenta ============ */
+/* datos de cuenta */
 .perfil-datos {
   display: flex;
   flex-direction: column;
@@ -200,7 +200,7 @@
   color: var(--color-primario-claro);
 }
 
-/* ============ selector de tema ============ */
+/* selector de tema */
 .perfil-tema-selector {
   display: flex;
   align-items: center;
@@ -244,7 +244,7 @@
   background: var(--color-primario-hover);
 }
 
-/* ============ listas de historial y calificaciones ============ */
+/* listas de historial y calificaciones */
 .perfil-lista {
   display: flex;
   flex-direction: column;
@@ -296,7 +296,7 @@
   color: oklch(75% 0.15 80);
 }
 
-/* ============ exportar / importar (placeholder, ver TODO en la vista) ============ */
+/* exportar / importar (placeholder, ver TODO en la vista) */
 .perfil-export-acciones {
   display: flex;
   gap: 0.75rem;

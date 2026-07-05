@@ -131,7 +131,7 @@
   opacity: 0.6;
 }
 
-/* ============ backdrop logo overlay ============
+/* backdrop logo overlay
    logo del titulo superpuesto en la esquina inferior izquierda del
    backdrop, estilo tile de Netflix. fallback a titulo en texto si
    no hay logo disponible. */
@@ -184,7 +184,7 @@
   pointer-events: none;
 }
 
-/* ============ hero ============
+/* hero
    carrousel 16:9, cover con position top (no recorta arriba).
    degradado fuerte abajo + izquierda. .hero-slide es la diapositiva
    completa (imagen+texto), controlada via opacity + .hero-slide--activo. */

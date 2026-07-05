@@ -53,8 +53,13 @@ final class ContenidoController
             return;
         }
 
-        $contentId = (string) ($_POST['content_id'] ?? '');
-        $estrellas = (int) ($_POST['estrellas'] ?? 0);
+        if (!is_scalar($_POST['content_id'] ?? null) || !is_scalar($_POST['estrellas'] ?? null)) {
+            $this->json(400, ['error' => 'Datos invalidos']);
+            return;
+        }
+
+        $contentId = (string) $_POST['content_id'];
+        $estrellas = (int) $_POST['estrellas'];
         if ($contentId === '' || $estrellas < 1 || $estrellas > 5) {
             $this->json(400, ['error' => 'Datos invalidos']);
             return;

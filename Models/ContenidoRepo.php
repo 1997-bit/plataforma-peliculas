@@ -156,12 +156,12 @@ final class ContenidoRepo
      * Todas las calificaciones del usuario, con datos del contenido, para
      * mostrar en /profile. Ordenadas por más reciente primero.
      *
-     * @return list<array{tmdb_id:int,type:string,title:string,poster_path:?string,score:int,created_at:string}>
+     * @return list<array{id:string,tmdb_id:int,type:string,title:string,poster_path:?string,score:int,created_at:string}>
      */
     public function calificacionesDeUsuario(string $idUsuario, int $limite = 50): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT c.tmdb_id, c.type, c.titulo AS title, c.poster_path, r.score, r.created_at
+            'SELECT c.id, c.tmdb_id, c.type, c.titulo AS title, c.poster_path, r.score, r.created_at
              FROM ratings r
              INNER JOIN contenido c ON c.id = r.content_id
              WHERE r.user_id = :user_id
@@ -172,7 +172,7 @@ final class ContenidoRepo
         $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return UuidHelper::mapearIds($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
     /**
