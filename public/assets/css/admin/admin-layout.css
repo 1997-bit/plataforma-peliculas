@@ -12,7 +12,7 @@
   flex-wrap: wrap;
   gap: var(--espacio-md);
   padding: var(--espacio-md) var(--page-px, 1.5rem);
-  border-bottom: 1px solid oklch(60% 0 0 / 18%);
+  border-bottom: 1px solid var(--borde-color);
 }
 
 .admin-nav {
@@ -36,17 +36,17 @@
 
 .admin-nav a:hover {
   opacity: 1;
-  background: oklch(60% 0 0 / 8%);
+  background: var(--borde-color-sutil);
 }
 
 .admin-nav a[aria-current="page"] {
   opacity: 1;
   background: oklch(55% 0.18 250 / 15%);
-  color: oklch(55% 0.18 250);
+  color: var(--color-primario);
 }
 
 :root[data-tema="dark"] .admin-nav a[aria-current="page"] {
-  color: oklch(75% 0.15 250);
+  color: var(--color-primario-claro);
 }
 
 /* --- layout principal --- */
@@ -96,27 +96,27 @@
 
 .admin-aviso--error {
   background: oklch(80% 0.15 25 / 20%);
-  color: oklch(35% 0.15 25);
+  color: var(--color-error-texto);
 }
 
 :root[data-tema="dark"] .admin-aviso--error {
-  color: oklch(85% 0.15 25);
+  color: var(--color-error-texto-dark);
 }
 
 .admin-aviso--ok {
-  background: oklch(85% 0.12 145 / 25%);
-  color: oklch(35% 0.12 145);
+  background: var(--color-ok-bg);
+  color: var(--color-ok-texto);
 }
 
 :root[data-tema="dark"] .admin-aviso--ok {
-  color: oklch(85% 0.12 145);
+  color: var(--color-ok-texto-dark);
 }
 
 .admin-aviso--warning {
-  background: oklch(88% 0.12 80 / 30%);
-  color: oklch(38% 0.12 80);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-texto);
 }
 
 :root[data-tema="dark"] .admin-aviso--warning {
-  color: oklch(82% 0.12 80);
+  color: var(--color-warning-texto-dark);
 }

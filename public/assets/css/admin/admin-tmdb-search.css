@@ -4,8 +4,8 @@
    en el <head>; reusa .chip/.poster-marco de componentes.css. */
 
 .admin-tmdb-card-existe {
-  color: oklch(38% 0.12 80);
-  background: oklch(88% 0.12 80 / 30%);
+  color: var(--color-warning-texto);
+  background: var(--color-warning-bg);
 }
 
 /* --- split layout agregar contenido --- */
@@ -76,7 +76,7 @@
 }
 
 .admin-tmdb-card-noposter {
-  background: oklch(60% 0 0 / 8%);
+  background: var(--borde-color-sutil);
   flex-shrink: 0;
 }
 
