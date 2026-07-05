@@ -1,0 +1,114 @@
+/* admin-forms.css
+   form generico de admin (campos, filas, generos, acciones) y el form
+   inline reusado por la busqueda TMDB y por el alta rapida de generos.
+   Depende de las variables de tokens.css, cargado antes en el <head>. */
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* "hidden" empata en especificidad con .admin-campo (0,1,0); se refuerza
+   para que campos como #backdrop-campo se oculten de verdad. */
+.admin-campo[hidden] {
+  display: none;
+}
+
+.admin-campo > label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.admin-campo input:not([type="checkbox"]),
+.admin-campo select,
+.admin-campo textarea {
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid oklch(60% 0 0 / 28%);
+  background: oklch(60% 0 0 / 4%);
+  color: var(--texto);
+  width: 100%;
+}
+
+.admin-campo input:not([type="checkbox"]):focus,
+.admin-campo select:focus,
+.admin-campo textarea:focus {
+  outline: none;
+  border-color: oklch(55% 0.18 250);
+  box-shadow: 0 0 0 3px oklch(55% 0.18 250 / 12%);
+}
+
+.admin-campo textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.admin-campo input[type="file"] {
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+}
+
+.admin-campo-hint {
+  font-size: var(--text-xs);
+  opacity: 0.55;
+}
+
+.admin-form-fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espacio-md);
+}
+
+.admin-generos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.admin-form-acciones {
+  display: flex;
+  gap: var(--espacio-sm);
+  flex-wrap: wrap;
+  padding-top: var(--espacio-sm);
+  border-top: 1px solid oklch(60% 0 0 / 12%);
+}
+
+/* --- form inline (alta de generos, busqueda TMDB) --- */
+
+.admin-tmdb-form {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.admin-tmdb-form input,
+.admin-tmdb-form select {
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid oklch(60% 0 0 / 28%);
+  background: oklch(60% 0 0 / 4%);
+  color: var(--texto);
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-tmdb-form input:focus,
+.admin-tmdb-form select:focus {
+  outline: none;
+  border-color: oklch(55% 0.18 250);
+  box-shadow: 0 0 0 3px oklch(55% 0.18 250 / 12%);
+}

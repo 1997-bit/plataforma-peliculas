@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controllers\Admin;
 
 use App\Core\Session;
+use App\Helpers\GenerosTmdb;
+use App\Helpers\TmdbTipo;
 use App\Models\AdminContenidoRepo;
 use App\Services\TmdbClient;
 
@@ -18,15 +20,11 @@ final class TmdbImportController
 
     public function importar(): void
     {
-        if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
-            exit;
-        }
+        Session::exigirCsrfOFallar();
 
         $tmdbId = (int) ($_POST['tmdb_id'] ?? 0);
-        $tipo = ($_POST['tipo'] ?? 'movie') === 'series' ? 'series' : 'movie';
-        $recurso = $tipo === 'series' ? 'tv' : 'movie';
+        $tipo = TmdbTipo::normalizar($_POST['tipo'] ?? null);
+        $recurso = TmdbTipo::aRecursoTmdb($tipo);
 
         if ($tmdbId <= 0) {
             header('Location: /admin/tmdb/buscar?error=id_invalido');
@@ -52,7 +50,7 @@ final class TmdbImportController
         $generoIdsLocales = [];
         foreach ($detalle['genres'] ?? [] as $g) {
             $tmdbGenreId = (int) $g['id'];
-            $nombre = \App\Helpers\GenerosTmdb::LISTA[$tmdbGenreId] ?? (string) ($g['name'] ?? '');
+            $nombre = GenerosTmdb::LISTA[$tmdbGenreId] ?? (string) ($g['name'] ?? '');
             if ($nombre === '') {
                 continue;
             }

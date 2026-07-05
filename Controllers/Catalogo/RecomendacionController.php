@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controllers\Catalogo;
 
 use App\Core\Session;
+use App\Helpers\Http;
 use App\Helpers\Normalizador;
+use App\Helpers\TmdbTipo;
 use App\Models\AdminContenidoRepo;
 use App\Models\UserRepo;
 
@@ -23,17 +25,14 @@ final class RecomendacionController
         $usuario = $idUsuario !== '' ? $this->userRepo->buscarPorId($idUsuario) : null;
 
         if ($usuario === null) {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-
-            return;
+            Http::error404();
         }
 
         $generosFavoritos = $usuario->preferences['generos'] ?? [];
         $sinGenerosElegidos = $generosFavoritos === [];
 
-        $tipo = ($_GET['tipo'] ?? 'movie') === 'series' ? 'series' : 'movie';
-        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $tipo = TmdbTipo::normalizar($_GET['tipo'] ?? null);
+        $page = TmdbTipo::pagina($_GET['page'] ?? null);
         $offset = ($page - 1) * 20;
 
         if ($sinGenerosElegidos) {

@@ -1,0 +1,8 @@
+/* admin-utils.css
+   utilidades pequenas compartidas por todas las vistas admin (usado por
+   admin-nav.php en todas las paginas). Depende de --text-xs de tokens.css. */
+
+.boton--sm {
+  padding: 0.3rem 0.75rem;
+  font-size: var(--text-xs);
+}

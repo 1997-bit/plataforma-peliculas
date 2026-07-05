@@ -10,22 +10,35 @@
         if (el) el.value = val;
     }
 
+    var posterField = window.AdminPosterField.crear({
+        imgId: 'poster-preview',
+        placeholderId: 'poster-placeholder',
+        fileInputId: 'poster',
+        hintId: 'poster-hint',
+        hintArchivo: 'Se usará el archivo que subiste.',
+    });
+    var backdropField = window.AdminPosterField.crear({
+        imgId: 'backdrop-preview',
+        placeholderId: 'backdrop-placeholder',
+    });
+
+    function mostrarBtnQuitar(visible) {
+        var btn = elems('btn-quitar-poster');
+        if (btn) btn.hidden = !visible;
+    }
+
     function mostrarPoster(path) {
-        var wrap = elems('poster-preview-wrap');
-        var img = elems('poster-preview');
         var hint = elems('poster-hint');
-        if (img) img.src = 'https://image.tmdb.org/t/p/w300' + path;
-        if (wrap) wrap.hidden = false;
+        posterField.mostrarImagen('https://image.tmdb.org/t/p/w300' + path);
+        mostrarBtnQuitar(true);
         if (hint) hint.textContent = 'Sube un archivo para reemplazar el poster de TMDB.';
     }
 
     function ocultarPoster() {
-        var wrap = elems('poster-preview-wrap');
-        var img = elems('poster-preview');
         var hint = elems('poster-hint');
         var file = elems('poster');
-        if (wrap) wrap.hidden = true;
-        if (img) img.src = '';
+        posterField.mostrarPlaceholder();
+        mostrarBtnQuitar(false);
         if (hint) hint.textContent = 'Requerido. Sube un archivo o selecciona un resultado de TMDB.';
         if (file) file.value = '';
         setVal('field-tmdb-poster', '');
@@ -33,8 +46,7 @@
 
     function mostrarBackdrop(path) {
         var campo = elems('backdrop-campo');
-        var img = elems('backdrop-preview');
-        if (img) img.src = 'https://image.tmdb.org/t/p/w780' + path;
+        backdropField.mostrarImagen('https://image.tmdb.org/t/p/w780' + path);
         if (campo) campo.hidden = false;
     }
 
@@ -94,12 +106,7 @@
     if (fileInput) {
         fileInput.addEventListener('change', function () {
             if (fileInput.files && fileInput.files[0]) {
-                var img = elems('poster-preview');
-                var wrap = elems('poster-preview-wrap');
-                var hint = elems('poster-hint');
-                if (img) img.src = URL.createObjectURL(fileInput.files[0]);
-                if (wrap) wrap.hidden = false;
-                if (hint) hint.textContent = 'Se usará el archivo que subiste.';
+                mostrarBtnQuitar(true);
                 setVal('field-tmdb-poster', '');
             }
         });

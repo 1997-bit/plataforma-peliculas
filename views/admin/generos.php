@@ -13,7 +13,10 @@ $okMsg = $okMsg ?? null;
     <link rel="stylesheet" href="/assets/css/base.css" />
     <link rel="stylesheet" href="/assets/css/tokens.css" />
     <link rel="stylesheet" href="/assets/css/componentes.css" />
-    <link rel="stylesheet" href="/assets/css/admin.css" />
+    <link rel="stylesheet" href="/assets/css/admin/admin-layout.css" />
+    <link rel="stylesheet" href="/assets/css/admin/admin-forms.css" />
+    <link rel="stylesheet" href="/assets/css/admin/admin-dashboard.css" />
+    <link rel="stylesheet" href="/assets/css/admin/admin-utils.css" />
 </head>
 <body>
 <?php require ROOT . '/views/partials/admin-nav.php'; ?>

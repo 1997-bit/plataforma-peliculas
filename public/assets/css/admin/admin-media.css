@@ -1,0 +1,65 @@
+/* admin-media.css
+   preview de poster/backdrop en los formularios de contenido, incluido
+   el placeholder SVG mostrado cuando no hay imagen o la carga falla.
+   Depende de --poster-ratio/--poster-w-sm de tokens.css. */
+
+.admin-img-preview-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-sm);
+}
+
+.admin-poster-preview {
+  width: 110px;
+  aspect-ratio: var(--poster-ratio);
+  object-fit: cover;
+  border-radius: var(--poster-radio-md);
+  display: block;
+  flex-shrink: 0;
+}
+
+.backdrop-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+
+/* --- placeholder mostrado sin imagen seleccionada o ante fallo de carga --- */
+
+.admin-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  aspect-ratio: var(--poster-ratio);
+  border-radius: var(--poster-radio-md);
+  background: oklch(60% 0 0 / 6%);
+  color: oklch(60% 0 0 / 45%);
+  flex-shrink: 0;
+}
+
+.admin-img-placeholder svg {
+  width: 40%;
+  height: 40%;
+}
+
+.admin-img-preview-wrap--backdrop {
+  width: 100%;
+}
+
+.admin-img-placeholder--backdrop {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+}
+
+/* [hidden] empata en especificidad con estas clases (ambas 0,1,0) y,
+   al cargarse despues de la hoja UA del navegador, ganaria la cascada
+   dejando "hidden" sin efecto. Se refuerza explicitamente aqui. */
+.admin-poster-preview[hidden],
+.backdrop-preview[hidden],
+.admin-img-placeholder[hidden] {
+  display: none;
+}

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace App\Controllers\Catalogo;
 use App\Core\Session;
+use App\Helpers\Http;
 use App\Models\AdminContenidoRepo;
 use App\Models\ContenidoRepo;
 final class ContenidoController
@@ -15,15 +16,11 @@ final class ContenidoController
     {
         $contentId = (string) ($_GET['id'] ?? '');
         if ($contentId === '') {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-            return;
+            Http::error404();
         }
         $detalle = $this->adminContenidoRepo->buscarPorId($contentId);
         if ($detalle === null) {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-            return;
+            Http::error404();
         }
         $idUsuario = (string) Session::obtener('user_id');
         $this->contenidoRepo->registrarVistaConThrottle($idUsuario, $contentId);
@@ -49,36 +46,42 @@ final class ContenidoController
     public function calificar(): void
     {
         header('Content-Type: application/json');
+
         if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            echo json_encode(['error' => 'CSRF invalido']);
+            $this->json(403, ['error' => 'CSRF invalido']);
             return;
         }
+
         $contentId = (string) ($_POST['content_id'] ?? '');
         $estrellas = (int) ($_POST['estrellas'] ?? 0);
         if ($contentId === '' || $estrellas < 1 || $estrellas > 5) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Datos invalidos']);
+            $this->json(400, ['error' => 'Datos invalidos']);
             return;
         }
+
         $idUsuario = (string) Session::obtener('user_id', '');
         if ($idUsuario === '') {
-            http_response_code(401);
-            echo json_encode(['error' => 'No autenticado']);
+            $this->json(401, ['error' => 'No autenticado']);
             return;
         }
+
+        if (!$this->contenidoRepo->existeContenido($contentId)) {
+            $this->json(404, ['error' => 'Contenido no encontrado']);
+            return;
+        }
+
         try {
-            if (!$this->contenidoRepo->existeContenido($contentId)) {
-                http_response_code(404);
-                echo json_encode(['error' => 'Contenido no encontrado']);
-                return;
-            }
             $this->contenidoRepo->calificar($idUsuario, $contentId, $estrellas * 2);
-            echo json_encode(['ok' => true]);
+            $this->json(200, ['ok' => true]);
         } catch (\Throwable $e) {
             error_log('ContenidoController::calificar - ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['error' => 'Error interno']);
+            $this->json(500, ['error' => 'Error interno']);
         }
+    }
+
+    private function json(int $codigo, array $datos): void
+    {
+        http_response_code($codigo);
+        echo json_encode($datos);
     }
 }

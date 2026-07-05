@@ -64,12 +64,30 @@ class Session
 
     public static function generarCsrf(): string
     {
-        return (new \App\Services\ManejadorCsrf())->generarTokenCsrf();
+        if (!empty($_SESSION['_csrf_token'])) {
+            return (string) $_SESSION['_csrf_token'];
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $_SESSION['_csrf_token'] = $token;
+        return $token;
     }
 
     public static function validarCsrf(string $token): bool
     {
-        return (new \App\Services\ManejadorCsrf())->validarTokenCsrf($token);
+        return hash_equals((string) ($_SESSION['_csrf_token'] ?? ''), $token);
+    }
+
+    /** Valida el CSRF del POST actual o corta la ejecucion con un 403. */
+    public static function exigirCsrfOFallar(): void
+    {
+        if (self::validarCsrf($_POST['_csrf'] ?? '')) {
+            return;
+        }
+
+        http_response_code(403);
+        require ROOT . '/views/errors/403.php';
+        exit;
     }
 
     private static function configurarCookie(): void

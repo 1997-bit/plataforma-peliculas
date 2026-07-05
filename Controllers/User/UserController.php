@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\User;
 
 use App\Core\Session;
+use App\Helpers\Http;
 use App\Models\ContenidoRepo;
 use App\Services\User\PerfilService;
 
@@ -27,9 +28,7 @@ final class UserController
         $usuario = $this->perfilService->obtenerPerfil($idUsuario);
 
         if ($usuario === null) {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-            return;
+            Http::error404();
         }
 
         $historial = $this->contenidoRepo->historialReciente($idUsuario, 10);

@@ -7,6 +7,7 @@ namespace App\Controllers\Catalogo;
 use App\Core\Session;
 use App\Helpers\GenerosTmdb;
 use App\Helpers\Normalizador;
+use App\Helpers\TmdbTipo;
 use App\Models\AdminContenidoRepo;
 
 final class CatalogoController
@@ -17,10 +18,10 @@ final class CatalogoController
 
   public function index(): void
   {
-    $tipo = ($_GET['tipo'] ?? 'movie') === 'series' ? 'series' : 'movie';
+    $tipo = TmdbTipo::normalizar($_GET['tipo'] ?? null);
     $generoId = isset($_GET['genero']) && $_GET['genero'] !== '' ? (int) $_GET['genero'] : null;
     $busqueda = trim((string) ($_GET['q'] ?? ''));
-    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $page = TmdbTipo::pagina($_GET['page'] ?? null);
     $offset = ($page - 1) * 20;
 
     $generosInternos = $generoId !== null

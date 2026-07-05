@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Controllers\Admin;
 
 use App\Core\Session;
+use App\Helpers\GenerosTmdb;
+use App\Helpers\Http;
+use App\Helpers\TmdbTipo;
 use App\Models\AdminContenidoRepo;
 use App\Models\ContenidoRepo;
 use App\Services\ContenidoValidator;
@@ -34,13 +37,14 @@ final class AdminController
     public function nuevo(): void
     {
         $csrf = Session::generarCsrf();
+        $okMsg = $this->mensajeOk();
 
         $q = trim((string) ($_GET['q'] ?? ''));
-        $tipoBusqueda = ($_GET['tipo'] ?? 'movie') === 'series' ? 'series' : 'movie';
+        $tipoBusqueda = TmdbTipo::normalizar($_GET['tipo'] ?? null);
         $resultados = [];
 
         if ($q !== '') {
-            $recurso = $tipoBusqueda === 'series' ? 'tv' : 'movie';
+            $recurso = TmdbTipo::aRecursoTmdb($tipoBusqueda);
             $data = $this->tmdbClient->fetch("/search/{$recurso}", [
                 'query' => $q,
                 'language' => 'es-MX',
@@ -53,7 +57,7 @@ final class AdminController
 
             foreach ($resultados as &$res) {
                 $res['_generos'] = array_values(array_filter(array_map(
-                    fn($id) => \App\Helpers\GenerosTmdb::LISTA[$id] ?? null,
+                    fn($id) => GenerosTmdb::LISTA[$id] ?? null,
                     (array) ($res['genre_ids'] ?? [])
                 )));
                 $res['_existe'] = in_array((int) ($res['id'] ?? 0), $existentes, true);
@@ -74,11 +78,7 @@ final class AdminController
 
     public function guardar(): void
     {
-        if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
-            exit;
-        }
+        Session::exigirCsrfOFallar();
 
         $tmdbPosterId = trim((string) ($_POST['tmdb_poster_path'] ?? ''));
         $tmdbBackdropId = trim((string) ($_POST['tmdb_backdrop_path'] ?? ''));
@@ -93,6 +93,7 @@ final class AdminController
 
         if ($datos['errores'] !== []) {
             $csrf = Session::generarCsrf();
+            $okMsg = null;
             $q = '';
             $tipoBusqueda = 'movie';
             $resultados = [];
@@ -127,7 +128,7 @@ final class AdminController
             $backdropFinal,
         );
 
-        header('Location: /admin?contenido_creado=1');
+        header('Location: /admin/contenido/nuevo?contenido_creado=1');
         exit;
     }
 
@@ -138,20 +139,15 @@ final class AdminController
 
         $csrf = Session::generarCsrf();
         $generos = $this->adminContenidoRepo->listarGeneros();
-        $modo = 'editar';
         $generoIdsSeleccionados = $item['genero_ids'];
         $errorMsg = null;
 
-        require ROOT . '/views/admin/form.php';
+        require ROOT . '/views/admin/contenido/editar.php';
     }
 
     public function actualizar(): void
     {
-        if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
-            exit;
-        }
+        Session::exigirCsrfOFallar();
 
         $id = (string) ($_GET['id'] ?? $_POST['id'] ?? '');
         $itemActual = $this->cargarItemOFallar($id);
@@ -166,12 +162,11 @@ final class AdminController
         if ($datos['errores'] !== []) {
             $csrf = Session::generarCsrf();
             $generos = $this->adminContenidoRepo->listarGeneros();
-            $modo = 'editar';
             $item = array_merge($itemActual, $_POST, ['id' => $itemActual['id']]);
             $generoIdsSeleccionados = $datos['generoIds'];
             $errorMsg = implode(' ', $datos['errores']);
 
-            require ROOT . '/views/admin/form.php';
+            require ROOT . '/views/admin/contenido/editar.php';
             return;
         }
 
@@ -192,14 +187,12 @@ final class AdminController
 
     public function eliminar(): void
     {
-        if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
-            exit;
-        }
+        Session::exigirCsrfOFallar();
 
         $id = (string) ($_POST['id'] ?? '');
-        $this->cargarItemOFallar($id);
+        if ($id === '') {
+            Http::error404();
+        }
         $this->adminContenidoRepo->eliminarContenidoLocal($id);
 
         header('Location: /admin?contenido_eliminado=1');
@@ -221,11 +214,7 @@ final class AdminController
 
     public function crearGenero(): void
     {
-        if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
-            exit;
-        }
+        Session::exigirCsrfOFallar();
 
         $nombre = trim((string) ($_POST['nombre'] ?? ''));
         if ($nombre !== '') {
@@ -238,11 +227,7 @@ final class AdminController
 
     public function eliminarGenero(): void
     {
-        if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
-            exit;
-        }
+        Session::exigirCsrfOFallar();
 
         $id = (int) ($_POST['id'] ?? 0);
         if ($id > 0) {
@@ -256,9 +241,7 @@ final class AdminController
     private function cargarItemOFallar(string $id): array
     {
         if ($id === '') {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-            exit;
+            Http::error404();
         }
 
         try {
@@ -268,9 +251,7 @@ final class AdminController
         }
 
         if ($item === null) {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-            exit;
+            Http::error404();
         }
 
         return $item;
@@ -278,10 +259,11 @@ final class AdminController
 
     private function mensajeOk(): ?string
     {
-        if (isset($_GET['contenido_creado']))      return 'Contenido creado correctamente.';
-        if (isset($_GET['contenido_actualizado'])) return 'Contenido actualizado correctamente.';
-        if (isset($_GET['contenido_eliminado']))   return 'Contenido eliminado.';
-
-        return null;
+        return match (true) {
+            isset($_GET['contenido_creado']) => 'Contenido creado correctamente.',
+            isset($_GET['contenido_actualizado']) => 'Contenido actualizado correctamente.',
+            isset($_GET['contenido_eliminado']) => 'Contenido eliminado.',
+            default => null,
+        };
     }
 }

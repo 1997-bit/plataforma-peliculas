@@ -7,10 +7,12 @@
 /** @var list<int> $generoIdsSeleccionados */
 /** @var array<string,mixed>|null $item */
 /** @var string|null $errorMsg */
+/** @var string|null $okMsg */
 /** @var string $tmdbPosterId */
 /** @var string $tmdbBackdropId */
 /** @var string $tmdbId */
 
+$okMsg = $okMsg ?? null;
 $q = $q ?? '';
 $tipoBusqueda = $tipoBusqueda ?? 'movie';
 $resultados = $resultados ?? [];
@@ -38,12 +40,21 @@ $hasBackdrop = $tmdbBackdropId !== '';
     <link rel="stylesheet" href="/assets/css/base.css">
     <link rel="stylesheet" href="/assets/css/tokens.css">
     <link rel="stylesheet" href="/assets/css/componentes.css">
-    <link rel="stylesheet" href="/assets/css/admin.css">
+    <link rel="stylesheet" href="/assets/css/admin/admin-layout.css">
+    <link rel="stylesheet" href="/assets/css/admin/admin-forms.css">
+    <link rel="stylesheet" href="/assets/css/admin/admin-media.css">
+    <link rel="stylesheet" href="/assets/css/admin/admin-tmdb-search.css">
+    <link rel="stylesheet" href="/assets/css/admin/admin-utils.css">
 </head>
 <body>
 <?php require ROOT . '/views/partials/admin-nav.php'; ?>
 
 <main class="admin-main admin-main--wide">
+
+<?php if ($okMsg): ?>
+    <p class="admin-aviso admin-aviso--ok" role="status"><?= htmlspecialchars($okMsg, ENT_QUOTES, 'UTF-8') ?></p>
+<?php endif; ?>
+
 <div class="admin-agregar">
 
     <!-- PANEL IZQUIERDO: búsqueda TMDB -->
@@ -186,11 +197,14 @@ $hasBackdrop = $tmdbBackdropId !== '';
 
             <div class="admin-campo">
                 <label for="poster">Poster</label>
-                <div id="poster-preview-wrap" class="admin-img-preview-wrap" <?= $hasPoster ? '' : 'hidden' ?>>
-                    <img id="poster-preview"
+                <div id="poster-preview-wrap" class="admin-img-preview-wrap">
+                    <img id="poster-preview" data-fallback-skip
                          src="<?= $hasPoster ? 'https://image.tmdb.org/t/p/w300' . htmlspecialchars($tmdbPosterId, ENT_QUOTES, 'UTF-8') : '' ?>"
-                         alt="" class="admin-poster-preview">
-                    <button type="button" id="btn-quitar-poster" class="boton boton--secundario boton--sm">Quitar</button>
+                         alt="" class="admin-poster-preview" <?= $hasPoster ? '' : 'hidden' ?>>
+                    <span id="poster-placeholder" class="admin-img-placeholder" aria-hidden="true" <?= $hasPoster ? 'hidden' : '' ?>>
+                        <?php require ROOT . '/views/partials/admin-img-placeholder.php'; ?>
+                    </span>
+                    <button type="button" id="btn-quitar-poster" class="boton boton--secundario boton--sm" <?= $hasPoster ? '' : 'hidden' ?>>Quitar</button>
                 </div>
                 <input type="file" id="poster" name="poster"
                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
@@ -203,9 +217,14 @@ $hasBackdrop = $tmdbBackdropId !== '';
 
             <div id="backdrop-campo" class="admin-campo" <?= $hasBackdrop ? '' : 'hidden' ?>>
                 <label>Backdrop <small class="admin-campo-hint">desde TMDB</small></label>
-                <img id="backdrop-preview"
-                     src="<?= $hasBackdrop ? 'https://image.tmdb.org/t/p/w780' . htmlspecialchars($tmdbBackdropId, ENT_QUOTES, 'UTF-8') : '' ?>"
-                     alt="" class="backdrop-preview">
+                <div class="admin-img-preview-wrap admin-img-preview-wrap--backdrop">
+                    <img id="backdrop-preview" data-fallback-skip
+                         src="<?= $hasBackdrop ? 'https://image.tmdb.org/t/p/w780' . htmlspecialchars($tmdbBackdropId, ENT_QUOTES, 'UTF-8') : '' ?>"
+                         alt="" class="backdrop-preview" <?= $hasBackdrop ? '' : 'hidden' ?>>
+                    <span id="backdrop-placeholder" class="admin-img-placeholder admin-img-placeholder--backdrop" aria-hidden="true" <?= $hasBackdrop ? 'hidden' : '' ?>>
+                        <?php require ROOT . '/views/partials/admin-img-placeholder.php'; ?>
+                    </span>
+                </div>
             </div>
 
             <div class="admin-form-acciones">
@@ -218,6 +237,7 @@ $hasBackdrop = $tmdbBackdropId !== '';
 </div>
 </main>
 
+<script src="/assets/js/admin-poster-field.js"></script>
 <script src="/assets/js/admin-agregar.js"></script>
 </body>
 </html>

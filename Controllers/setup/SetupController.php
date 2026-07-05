@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Setup;
 
 use App\Core\Session;
+use App\Helpers\Http;
 use App\Models\User;
 use App\Models\UserRepo;
 
@@ -24,9 +25,7 @@ final class SetupController
 
     public function mostrar(): void
     {
-        if ($this->bloquearSiYaHayAdmin()) {
-            return;
-        }
+        $this->bloquearSiYaHayAdmin();
 
         $csrf = Session::generarCsrf();
         require ROOT . '/views/setup/admin.php';
@@ -34,15 +33,8 @@ final class SetupController
 
     public function crear(): void
     {
-        if ($this->bloquearSiYaHayAdmin()) {
-            return;
-        }
-
-        if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
-            return;
-        }
+        $this->bloquearSiYaHayAdmin();
+        Session::exigirCsrfOFallar();
 
         $email = trim((string) ($_POST['email'] ?? ''));
         $username = trim((string) ($_POST['username'] ?? ''));
@@ -91,15 +83,11 @@ final class SetupController
         return null;
     }
 
-    /** true + responde 403 si ya existe un admin (mostrar()/crear() deben cortar ahi). */
-    private function bloquearSiYaHayAdmin(): bool
+    /** Corta con 403 si ya existe un admin. */
+    private function bloquearSiYaHayAdmin(): void
     {
-        if (!$this->usuarios->existeAlgunAdmin()) {
-            return false;
+        if ($this->usuarios->existeAlgunAdmin()) {
+            Http::error403();
         }
-
-        http_response_code(403);
-        require ROOT . '/views/errors/403.php';
-        return true;
     }
 }
