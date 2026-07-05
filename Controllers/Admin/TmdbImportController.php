@@ -16,26 +16,6 @@ final class TmdbImportController
     ) {
     }
 
-    public function buscar(): void
-    {
-        $q = trim((string) ($_GET['q'] ?? ''));
-        $tipo = ($_GET['tipo'] ?? 'movie') === 'series' ? 'series' : 'movie';
-        $recurso = $tipo === 'series' ? 'tv' : 'movie';
-
-        $resultados = [];
-        if ($q !== '') {
-            $data = $this->tmdb->fetch("/search/{$recurso}", [
-                'query' => $q,
-                'language' => 'es-MX',
-                'include_adult' => 'false',
-            ]);
-            $resultados = $data['results'] ?? [];
-        }
-
-        $csrf = Session::generarCsrf();
-        require ROOT . '/views/admin/tmdb-buscar.php';
-    }
-
     public function importar(): void
     {
         if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
@@ -55,7 +35,6 @@ final class TmdbImportController
 
         $detalle = $this->tmdb->fetch("/{$recurso}/{$tmdbId}", [
             'language' => 'es-MX',
-            'append_to_response' => 'credits,images',
         ]);
 
         if (empty($detalle['id'])) {
@@ -83,18 +62,6 @@ final class TmdbImportController
         $posterLocal = $posterTmdb !== '' ? $this->repo->descargarImagenTmdb($posterTmdb, 'w500') : null;
         $backdropLocal = $backdropTmdb !== '' ? $this->repo->descargarImagenTmdb($backdropTmdb, 'w1280') : null;
 
-        $logos = $detalle['images']['logos'] ?? [];
-        $logoElegido = null;
-        foreach (['es', 'en', null] as $lang) {
-            foreach ($logos as $l) {
-                if (($l['iso_639_1'] ?? null) === $lang) {
-                    $logoElegido = $l['file_path'];
-                    break 2;
-                }
-            }
-        }
-        $logoLocal = $logoElegido !== null ? $this->repo->descargarImagenTmdb($logoElegido, 'w300') : null;
-
         $this->repo->crearContenidoLocal(
             $tipo,
             $titulo,
@@ -105,7 +72,6 @@ final class TmdbImportController
             (string) Session::obtener('user_id'),
             $tmdbId,
             $backdropLocal,
-            $logoLocal,
         );
 
         header('Location: /admin?contenido_creado=1');

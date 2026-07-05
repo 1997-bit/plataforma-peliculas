@@ -27,6 +27,22 @@
 	display: block;
 }
 
+.img-fallback {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	background: oklch(60% 0 0 / 6%);
+	color: oklch(60% 0 0 / 22%);
+}
+
+.img-fallback svg {
+	width: 38%;
+	height: 38%;
+	max-width: 2.5rem;
+	max-height: 2.5rem;
+	flex-shrink: 0;
+}
+
 .poster-marco--xs {
 	width: var(--poster-w-xs);
 	border-radius: var(--poster-radio-sm);

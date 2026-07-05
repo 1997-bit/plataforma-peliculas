@@ -1,3 +1,4 @@
+<script src="/assets/js/img-fallback.js" defer></script>
 <footer class="footer">
 	<div class="footer-grid">
 		<div class="footer-marca">

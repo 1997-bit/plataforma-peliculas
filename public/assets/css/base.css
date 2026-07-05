@@ -86,6 +86,12 @@ figcaption {
 	font-size: var(--text-sm);
 }
 
+textarea {
+  field-sizing: content;
+  resize: none;
+  scrollbar-width: none;
+  max-width: 100%;
+}
 /* accesibilidad, anillo de foco visible en toda la app */
 :focus-visible {
 	outline: 2px solid oklch(70% 0.15 250);

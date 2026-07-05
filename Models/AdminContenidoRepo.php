@@ -57,7 +57,6 @@ final class AdminContenidoRepo
         string $creadoPorIdUsuario,
         ?int $tmdbId = null,
         ?string $backdropPath = null,
-        ?string $logoPath = null,
     ): string {
         $idBinario = UuidHelper::v7();
 
@@ -65,9 +64,9 @@ final class AdminContenidoRepo
         try {
             $stmt = $this->pdo->prepare(
                 "INSERT INTO contenido
-                    (id, tmdb_id, origen, created_by, type, titulo, descripcion, poster_path, backdrop_path, logo_path, anio_lanzamiento)
+                    (id, tmdb_id, origen, created_by, type, titulo, descripcion, poster_path, backdrop_path, anio_lanzamiento)
                  VALUES
-                    (:id, :tmdb_id, 'local', :created_by, :type, :titulo, :descripcion, :poster_path, :backdrop_path, :logo_path, :anio)"
+                    (:id, :tmdb_id, 'local', :created_by, :type, :titulo, :descripcion, :poster_path, :backdrop_path, :anio)"
             );
             $stmt->execute([
                 ':id' => $idBinario,
@@ -78,7 +77,6 @@ final class AdminContenidoRepo
                 ':descripcion' => $descripcion,
                 ':poster_path' => $posterPath,
                 ':backdrop_path' => $backdropPath,
-                ':logo_path' => $logoPath,
                 ':anio' => $anio,
             ]);
 
@@ -138,15 +136,15 @@ final class AdminContenidoRepo
 
     public function eliminarContenidoLocal(string $contentId): void
     {
-        $stmt = $this->pdo->prepare("UPDATE contenido SET is_active=0 WHERE id=:id AND origen='local'");
+        $stmt = $this->pdo->prepare("DELETE FROM contenido WHERE id=:id AND origen='local'");
         $stmt->execute([':id' => UuidHelper::uuidABinario($contentId)]);
     }
 
     public function listarContenidoLocal(int $limite = 50, int $offset = 0): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT id, type, titulo, descripcion, poster_path, backdrop_path, logo_path,
-                    anio_lanzamiento, rating_avg, rating_count, is_active, created_at
+            "SELECT id, type, titulo, descripcion, poster_path, backdrop_path,
+                    anio_lanzamiento, rating_avg, rating_count, created_at
              FROM contenido
              WHERE origen='local'
              ORDER BY created_at DESC
@@ -262,10 +260,33 @@ final class AdminContenidoRepo
         return $fila;
     }
 
+    public function existenPorTmdbId(array $tmdbIds): array
+    {
+        if ($tmdbIds === []) {
+            return [];
+        }
+        $m = implode(',', array_fill(0, count($tmdbIds), '?'));
+        $stmt = $this->pdo->prepare("SELECT tmdb_id FROM contenido WHERE tmdb_id IN ({$m})");
+        $stmt->execute(array_values($tmdbIds));
+        return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
+    }
+
     public function listarGeneros(): array
     {
         return $this->pdo->query('SELECT id, nombre, tmdb_id FROM generos ORDER BY nombre ASC')
             ->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function crearGenero(string $nombre): void
+    {
+        $stmt = $this->pdo->prepare('INSERT IGNORE INTO generos (nombre) VALUES (:nombre)');
+        $stmt->execute([':nombre' => trim($nombre)]);
+    }
+
+    public function eliminarGenero(int $id): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM generos WHERE id = :id');
+        $stmt->execute([':id' => $id]);
     }
 
     public function idsInternosPorTmdbId(array $tmdbIds): array

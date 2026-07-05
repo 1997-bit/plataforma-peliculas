@@ -8,7 +8,6 @@ require_once dirname(__DIR__) . '/config/container.php';
 use App\Core\Router;
 use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\RegistroController;
-use App\Controllers\Setup\SetupController;
 use App\Middleware\AuthMiddleware;
 use App\Controllers\Home\HomeController;
 use App\Controllers\Catalogo\CatalogoController;
@@ -37,11 +36,6 @@ $router->registrarPost('/login', [$loginController, 'login']);
 $router->registrarPost('/logout', [$loginController, 'logout']);
 $router->registrarGet('/register', [$registroController, 'mostrarFormulario']);
 $router->registrarPost('/register', [$registroController, 'procesarRegistro']);
-
-// --- Setup ---
-$setupController = new SetupController($usuarioRepo);
-$router->registrarGet('/setup/admin',  [$setupController, 'mostrar']);
-$router->registrarPost('/setup/admin', [$setupController, 'crear']);
 
 // --- User ---
 $homeController = new HomeController($contenidoRepo, $usuarioRepo, $adminContenidoRepo);
@@ -93,17 +87,19 @@ $router->registrarGet('/onboarding', function () use ($onboardingController) { A
 $router->registrarPost('/onboarding', function () use ($onboardingController) { AuthMiddleware::bloquearRol('admin'); $onboardingController->procesar(); });
 
 // Admin
-$adminController = new AdminController($adminContenidoRepo, $contenidoRepo);
+$adminController = new AdminController($adminContenidoRepo, $contenidoRepo, $tmdbClient);
 $router->registrarGet('/admin', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->index(); });
+$router->registrarGet('/admin/generos', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->indexGeneros(); });
+$router->registrarPost('/admin/generos/crear', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->crearGenero(); });
+$router->registrarPost('/admin/generos/eliminar', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->eliminarGenero(); });
 $router->registrarGet('/admin/contenido/nuevo', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->nuevo(); });
 $router->registrarPost('/admin/contenido/nuevo', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->guardar(); });
 $router->registrarGet('/admin/contenido/editar', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->editar(); });
 $router->registrarPost('/admin/contenido/editar', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->actualizar(); });
 $router->registrarPost('/admin/contenido/eliminar', function () use ($adminController) { AuthMiddleware::requerirRol('admin'); $adminController->eliminar(); });
 
-// TMDB
+// TMDB import (solo POST, el buscar vive en /admin/contenido/nuevo)
 $tmdbImportController = new TmdbImportController($tmdbClient, $adminContenidoRepo);
-$router->registrarGet('/admin/tmdb/buscar', function () use ($tmdbImportController) { AuthMiddleware::requerirRol('admin'); $tmdbImportController->buscar(); });
 $router->registrarPost('/admin/tmdb/importar', function () use ($tmdbImportController) { AuthMiddleware::requerirRol('admin'); $tmdbImportController->importar(); });
 
 // API REST
