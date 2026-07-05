@@ -102,8 +102,22 @@
   border: 1px solid var(--borde-color-input);
   background: var(--fondo-input);
   color: var(--texto);
+}
+
+.admin-tmdb-form input {
   flex: 1;
   min-width: 0;
+}
+
+.admin-tmdb-form select {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+/* buscador de TMDB vive en un aside angosto (320px, admin-tmdb-search.css):
+   el input necesita su propia fila para no quedar aplastado junto a select+boton */
+.admin-agregar-buscador .admin-tmdb-form input {
+  flex-basis: 100%;
 }
 
 .admin-tmdb-form input:focus,
