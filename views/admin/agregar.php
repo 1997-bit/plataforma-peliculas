@@ -45,6 +45,7 @@ $hasBackdrop = $tmdbBackdropId !== '';
     <link rel="stylesheet" href="/assets/css/admin/admin-media.css">
     <link rel="stylesheet" href="/assets/css/admin/admin-tmdb-search.css">
     <link rel="stylesheet" href="/assets/css/admin/admin-utils.css">
+    <link rel="stylesheet" href="/assets/css/admin/admin-custom-select.css">
 </head>
 <body>
 <?php require ROOT . '/views/partials/admin-nav.php'; ?>
@@ -66,7 +67,7 @@ $hasBackdrop = $tmdbBackdropId !== '';
                    value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>"
                    placeholder="Título..."
                    <?= $q === '' ? 'autofocus' : '' ?>>
-            <select name="tipo">
+            <select name="tipo" data-custom-select>
                 <option value="movie" <?= $tipoBusqueda === 'movie' ? 'selected' : '' ?>>Película</option>
                 <option value="series" <?= $tipoBusqueda === 'series' ? 'selected' : '' ?>>Serie</option>
             </select>
@@ -164,7 +165,7 @@ $hasBackdrop = $tmdbBackdropId !== '';
             <div class="admin-form-fila">
                 <div class="admin-campo">
                     <label for="tipo">Tipo</label>
-                    <select id="tipo" name="tipo">
+                    <select id="tipo" name="tipo" data-custom-select>
                         <option value="movie" <?= $tipoActual === 'movie' ? 'selected' : '' ?>>Película</option>
                         <option value="series" <?= $tipoActual === 'series' ? 'selected' : '' ?>>Serie</option>
                     </select>

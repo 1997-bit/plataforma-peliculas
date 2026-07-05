@@ -1,0 +1,51 @@
+/* admin-custom-select.css
+   Dropdown de <select> estilizado 100% CSS via "appearance: base-select"
+   (customizable select API). Sin JS. Soporte: Chrome/Edge 135+.
+   Donde no esta soportado (Firefox estable, Safari), la regla appearance
+   se ignora y el select vuelve a su render nativo normal: no rompe nada,
+   solo pierde el estilo del menu. Depende de tokens.css. */
+
+select[data-custom-select],
+::picker(select) {
+  appearance: base-select;
+}
+
+select[data-custom-select]::picker-icon {
+  color: var(--texto);
+  opacity: 0.7;
+  transition: rotate 0.15s ease;
+}
+
+select[data-custom-select]:open::picker-icon {
+  rotate: 180deg;
+}
+
+::picker(select) {
+  margin-top: 4px;
+  padding: 0.3rem;
+  border: 1px solid var(--borde-color-fuerte);
+  border-radius: 8px;
+  background: var(--color-superficie-oscura);
+  box-shadow: 0 8px 24px oklch(0% 0 0 / 40%);
+}
+
+select[data-custom-select] option {
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  color: oklch(95% 0 0);
+  font-size: var(--text-sm);
+}
+
+select[data-custom-select] option:hover,
+select[data-custom-select] option:focus {
+  background: oklch(100% 0 0 / 12%);
+}
+
+select[data-custom-select] option:checked {
+  color: var(--color-primario-claro);
+  font-weight: 600;
+}
+
+select[data-custom-select] option::checkmark {
+  display: none;
+}
