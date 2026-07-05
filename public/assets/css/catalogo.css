@@ -1,7 +1,6 @@
 /* catalogo.css
    layout del catalogo: filtros, grid responsivo y paginacion.
-   Reusa .card, .card-poster-marco, .card-poster, .card-info, .card-titulo
-   ya definidos en home.css */
+   Reusa .card, .card-info, .card-titulo ya definidos en home.css */
 
 :root {
   --catalogo-grid-min: 140px;
@@ -49,14 +48,14 @@
   padding: 0.6rem 1rem;
   border-radius: 8px;
   border: none;
-  background: oklch(55% 0.18 250);
+  background: var(--color-primario);
   color: white;
   font-weight: 600;
   cursor: pointer;
 }
 
 .filtro-boton:hover {
-  background: oklch(48% 0.18 250);
+  background: var(--color-primario-hover);
 }
 
 /* grid de tarjetas, mismo --card-ancho que usa home.css */

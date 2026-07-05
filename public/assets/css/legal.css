@@ -11,14 +11,6 @@
 	border-bottom: 1px solid oklch(50% 0 0 / 0.15);
 }
 
-.legal-eyebrow {
-	font-size: var(--text-sm);
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
-	color: oklch(from var(--texto) calc(l - 0.3) c h);
-	margin-block-end: 0.5rem;
-}
-
 .legal-meta {
 	font-size: var(--text-sm);
 	color: oklch(from var(--texto) calc(l - 0.2) c h);

@@ -1,12 +1,9 @@
 <?php
-
 use App\Helpers\TmdbImagen;
-
 /** @var string $csrf */
 /** @var list<array<string,mixed>> $items */
 /** @var int $totalPaginas */
 /** @var array<int,string> $generos */
-
 $tema = $_COOKIE['tema'] ?? null;
 $tipoActual = $_GET['tipo'] ?? 'movie';
 $generoActual = $_GET['genero'] ?? '';
@@ -29,24 +26,14 @@ $paginaActual = max(1, (int) ($_GET['page'] ?? 1));
 </head>
 <body>
     <?php require ROOT . '/views/partials/nav.php'; ?>
-
     <main class="catalogo">
         <h1 class="catalogo-titulo">Catálogo</h1>
-
         <form method="get" action="/catalogo" class="catalogo-filtros">
-            <input
-                type="text"
-                name="q"
-                placeholder="Buscar por título..."
-                value="<?= htmlspecialchars($busquedaActual, ENT_QUOTES, 'UTF-8') ?>"
-                class="filtro-busqueda"
-            >
-
+            <input type="text" name="q" placeholder="Buscar por título..." value="<?= htmlspecialchars($busquedaActual, ENT_QUOTES, 'UTF-8') ?>" class="filtro-busqueda">
             <select name="tipo" class="filtro-select">
                 <option value="movie" <?= $tipoActual === 'movie' ? 'selected' : '' ?>>Películas</option>
                 <option value="series" <?= $tipoActual === 'series' ? 'selected' : '' ?>>Series</option>
             </select>
-
             <select name="genero" class="filtro-select">
                 <option value="">Todos los géneros</option>
                 <?php foreach ($generos as $id => $nombre): ?>
@@ -55,7 +42,6 @@ $paginaActual = max(1, (int) ($_GET['page'] ?? 1));
                     </option>
                 <?php endforeach; ?>
             </select>
-
             <button type="submit" class="filtro-boton">Filtrar</button>
         </form>
 
@@ -65,13 +51,12 @@ $paginaActual = max(1, (int) ($_GET['page'] ?? 1));
             <div class="catalogo-grid" role="list">
                 <?php foreach ($items as $item): ?>
                     <?php
-                        $tmdbId = $item['id'] ?? null;
-                        $titulo = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                        $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                         $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
-                        $origenUrl = ($item['origen'] ?? 'tmdb') === 'local' ? '&origen=local' : '';
+                        $tipoUrlItem = $item['type'] === 'series' ? 'series' : 'movie';
                     ?>
                     <article class="card catalogo-card" role="listitem">
-                        <a href="/contenido?id=<?= urlencode((string) $tmdbId) ?>&tipo=<?= htmlspecialchars($tipoActual, ENT_QUOTES, 'UTF-8') ?><?= $origenUrl ?>" class="catalogo-card-link">
+                        <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlItem ?>" class="catalogo-card-link">
                             <div class="poster-marco poster-marco--md">
                                 <img class="poster-img" src="<?= $poster ?>" alt="<?= $titulo ?>" loading="lazy" draggable="false">
                             </div>
@@ -82,35 +67,18 @@ $paginaActual = max(1, (int) ($_GET['page'] ?? 1));
                     </article>
                 <?php endforeach; ?>
             </div>
-
             <div class="catalogo-paginacion">
                 <?php if ($paginaActual > 1): ?>
-                    <?php
-                        $paramsAnterior = array_filter([
-                            'tipo' => $tipoActual, 'genero' => $generoActual,
-                            'q' => $busquedaActual, 'page' => $paginaActual - 1,
-                        ]);
-                    ?>
-                    <a href="/catalogo?<?= htmlspecialchars(http_build_query($paramsAnterior), ENT_QUOTES, 'UTF-8') ?>" class="catalogo-siguiente">
-                        ← Anterior
-                    </a>
+                    <?php $paramsAnterior = array_filter(['tipo' => $tipoActual, 'genero' => $generoActual, 'q' => $busquedaActual, 'page' => $paginaActual - 1]); ?>
+                    <a href="/catalogo?<?= htmlspecialchars(http_build_query($paramsAnterior), ENT_QUOTES, 'UTF-8') ?>" class="catalogo-siguiente">← Anterior</a>
                 <?php endif; ?>
-
                 <?php if ($paginaActual < $totalPaginas): ?>
-                    <?php
-                        $paramsSiguiente = array_filter([
-                            'tipo' => $tipoActual, 'genero' => $generoActual,
-                            'q' => $busquedaActual, 'page' => $paginaActual + 1,
-                        ]);
-                    ?>
-                    <a href="/catalogo?<?= htmlspecialchars(http_build_query($paramsSiguiente), ENT_QUOTES, 'UTF-8') ?>" class="catalogo-siguiente">
-                        Siguiente →
-                    </a>
+                    <?php $paramsSiguiente = array_filter(['tipo' => $tipoActual, 'genero' => $generoActual, 'q' => $busquedaActual, 'page' => $paginaActual + 1]); ?>
+                    <a href="/catalogo?<?= htmlspecialchars(http_build_query($paramsSiguiente), ENT_QUOTES, 'UTF-8') ?>" class="catalogo-siguiente">Siguiente →</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
     </main>
-
     <?php require ROOT . '/views/partials/footer.php'; ?>
 </body>
 </html>

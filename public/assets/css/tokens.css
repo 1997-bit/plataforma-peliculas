@@ -28,6 +28,35 @@
 	--espacio-md: 1rem;
 	--espacio-lg: 1.5rem;
 	--espacio-xl: 2rem;
+
+	/* azul de marca, repetido antes literal en componentes/catalogo/perfil/admin */
+	--color-primario: oklch(55% 0.18 250);
+	--color-primario-hover: oklch(48% 0.18 250);
+	--color-primario-claro: oklch(75% 0.15 250);
+	--color-anillo-foco: oklch(70% 0.15 250);
+
+	/* grises de borde, mismo valor en admin-dashboard/admin-layout/perfil/componentes */
+	--borde-color: oklch(60% 0 0 / 18%);
+	--borde-color-fuerte: oklch(60% 0 0 / 30%);
+	--borde-color-sutil: oklch(60% 0 0 / 8%);
+
+	/* superficie oscura fija (dropdown/dialog), independiente del tema claro/oscuro de --bg */
+	--color-superficie-oscura: oklch(18% 0.03 231);
+
+	/* colores de aviso (ok/error/warning), mismo valor repetido en perfil.css y admin-layout.css */
+	--color-ok-bg: oklch(85% 0.12 145 / 25%);
+	--color-ok-texto: oklch(35% 0.12 145);
+	--color-ok-texto-dark: oklch(85% 0.12 145);
+	--color-error-texto: oklch(35% 0.15 25);
+	--color-error-texto-dark: oklch(85% 0.15 25);
+	--color-warning-bg: oklch(88% 0.12 80 / 30%);
+	--color-warning-texto: oklch(38% 0.12 80);
+	--color-warning-texto-dark: oklch(82% 0.12 80);
+
+	/* input de formulario, repetido igual en admin-forms.css (campo normal y form inline TMDB) */
+	--borde-color-input: oklch(60% 0 0 / 28%);
+	--fondo-input: oklch(60% 0 0 / 4%);
+	--anillo-primario: oklch(55% 0.18 250 / 12%);
 }
 
 /* tablet: md y lg crecen, xs y sm se quedan igual (no necesitan crecer) */

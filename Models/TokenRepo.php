@@ -23,7 +23,6 @@ class TokenRepo
     public function crear(string $uuidUsuario): void
     {
         $token = bin2hex(random_bytes(32));
-        $expiraEn = date('Y-m-d H:i:s', time() + (self::DIAS_VIDA * 24 * 3600));
 
         $stmt = $this->pdo->prepare(
             'INSERT INTO remember_tokens (user_id, token_hash, expires_at)
@@ -31,8 +30,8 @@ class TokenRepo
         );
         $stmt->execute([
             ':user_id' => UuidHelper::uuidABinario($uuidUsuario),
-            ':token_hash' => hash('sha256', $token),
-            ':expires_at' => $expiraEn,
+            ':token_hash' => self::hash($token),
+            ':expires_at' => self::expiracion(),
         ]);
 
         CookieManejador::establecer(self::NOMBRE_COOKIE, $this->crypto->cifrar($token), self::DIAS_VIDA);
@@ -45,7 +44,7 @@ class TokenRepo
             'SELECT user_id FROM remember_tokens
              WHERE token_hash = :token_hash AND expires_at > NOW() LIMIT 1'
         );
-        $stmt->execute([':token_hash' => hash('sha256', $token)]);
+        $stmt->execute([':token_hash' => self::hash($token)]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return is_array($row) ? $row : null;
     }
@@ -53,8 +52,6 @@ class TokenRepo
     public function rotar(string $hashViejo, string $uuidUsuario): void
     {
         $nuevoToken = bin2hex(random_bytes(32));
-        $nuevoHash = hash('sha256', $nuevoToken);
-        $expiraEn = date('Y-m-d H:i:s', time() + (self::DIAS_VIDA * 24 * 3600));
 
         $stmt = $this->pdo->prepare(
             'UPDATE remember_tokens
@@ -62,8 +59,8 @@ class TokenRepo
              WHERE token_hash = :hash_viejo'
         );
         $stmt->execute([
-            ':nuevo_hash' => $nuevoHash,
-            ':expires_at' => $expiraEn,
+            ':nuevo_hash' => self::hash($nuevoToken),
+            ':expires_at' => self::expiracion(),
             ':hash_viejo' => $hashViejo,
         ]);
 
@@ -77,7 +74,17 @@ class TokenRepo
         $stmt = $this->pdo->prepare(
             'DELETE FROM remember_tokens WHERE token_hash = :token_hash'
         );
-        $stmt->execute([':token_hash' => hash('sha256', $token)]);
+        $stmt->execute([':token_hash' => self::hash($token)]);
         CookieManejador::eliminar(self::NOMBRE_COOKIE);
+    }
+
+    private static function hash(string $token): string
+    {
+        return hash('sha256', $token);
+    }
+
+    private static function expiracion(): string
+    {
+        return date('Y-m-d H:i:s', time() + (self::DIAS_VIDA * 24 * 3600));
     }
 }

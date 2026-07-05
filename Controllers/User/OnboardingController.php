@@ -6,6 +6,7 @@ namespace App\Controllers\User;
 
 use App\Core\Session;
 use App\Helpers\GenerosTmdb;
+use App\Helpers\Http;
 use App\Services\User\PerfilService;
 
 /**
@@ -30,9 +31,7 @@ final class OnboardingController
         $usuario = $this->perfilService->obtenerPerfil($idUsuario);
 
         if ($usuario === null) {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-            return;
+            Http::error404();
         }
 
         $generosFavoritos = $usuario->preferences['generos'] ?? [];
@@ -49,19 +48,13 @@ final class OnboardingController
 
     public function procesar(): void
     {
-        if (!Session::validarCsrf($_POST['_csrf'] ?? '')) {
-            http_response_code(403);
-            require ROOT . '/views/errors/403.php';
-            exit;
-        }
+        Session::exigirCsrfOFallar();
 
         $idUsuario = (string) Session::obtener('user_id');
         $usuario = $this->perfilService->obtenerPerfil($idUsuario);
 
         if ($usuario === null) {
-            http_response_code(404);
-            require ROOT . '/views/errors/404.php';
-            return;
+            Http::error404();
         }
 
         /** @var list<string> $generosCrudos */

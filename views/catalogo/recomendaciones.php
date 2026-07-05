@@ -1,13 +1,10 @@
 <?php
-
 use App\Helpers\TmdbImagen;
-
 /** @var string $csrf */
 /** @var list<array<string,mixed>> $items */
 /** @var int $totalPaginas */
 /** @var string $tipoActual */
 /** @var bool $sinGenerosElegidos */
-
 $tema = $_COOKIE['tema'] ?? null;
 ?>
 <!DOCTYPE html>
@@ -32,7 +29,7 @@ $tema = $_COOKIE['tema'] ?? null;
         </main>
     <?php elseif ($items === []): ?>
         <main class="feed-vacio">
-            <p>No encontramos contenido reciente para tus géneros elegidos.</p>
+            <p>No encontramos contenido para tus géneros elegidos.</p>
             <a href="/profile" class="feed-vacio-link">Probar con otros géneros</a>
         </main>
     <?php else: ?>
@@ -41,49 +38,36 @@ $tema = $_COOKIE['tema'] ?? null;
                 <a href="/recomendaciones?tipo=movie" class="feed-tipo-boton <?= $tipoActual === 'movie' ? 'feed-tipo-activo' : '' ?>">Películas</a>
                 <a href="/recomendaciones?tipo=series" class="feed-tipo-boton <?= $tipoActual === 'series' ? 'feed-tipo-activo' : '' ?>">Series</a>
             </div>
-
             <?php foreach ($items as $item): ?>
                 <?php
-                    $tmdbId = $item['id'] ?? null;
-                    $titulo = htmlspecialchars($item['title'] ?? $item['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                    $fecha = $item['release_date'] ?? $item['first_air_date'] ?? '';
+                    $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+                    $fecha = $item['release_date'] ?? '';
                     $anio = $fecha !== '' ? substr($fecha, 0, 4) : '';
                     $overview = htmlspecialchars($item['overview'] ?? 'Sin descripción disponible.', ENT_QUOTES, 'UTF-8');
-                    $nota = isset($item['vote_average']) ? number_format((float) $item['vote_average'], 1) : null;
                     $backdrop = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
                     $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
+                    $tipoUrlItem = $item['type'] === 'series' ? 'series' : 'movie';
                 ?>
                 <section class="feed-slide" data-feed-slide>
                     <div class="feed-fondo" <?= $backdrop ? 'style="background-image: url(' . htmlspecialchars($backdrop, ENT_QUOTES, 'UTF-8') . ')"' : '' ?>></div>
                     <div class="feed-veladura"></div>
-
                     <div class="feed-info" data-feed-info>
                         <div class="poster-marco poster-marco--sm feed-poster">
                             <img class="poster-img" src="<?= $poster ?>" alt="" loading="lazy" draggable="false">
                         </div>
-
                         <div class="feed-texto">
                             <h2 class="feed-titulo">
                                 <?= $titulo ?>
                                 <?php if ($anio !== ''): ?><span class="feed-anio"><?= $anio ?></span><?php endif; ?>
                             </h2>
-
-                            <?php if ($nota !== null): ?>
-                                <p class="feed-nota">★ <?= $nota ?></p>
-                            <?php endif; ?>
-
                             <p class="feed-sinopsis"><?= $overview ?></p>
-
-                            <a href="/contenido?id=<?= urlencode((string) $tmdbId) ?>&tipo=<?= htmlspecialchars($tipoActual, ENT_QUOTES, 'UTF-8') ?>" class="boton boton--claro feed-boton">
-                                Ver detalle
-                            </a>
+                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlItem ?>" class="boton boton--claro feed-boton">Ver detalle</a>
                         </div>
                     </div>
                 </section>
             <?php endforeach; ?>
         </main>
     <?php endif; ?>
-
     <script src="/assets/js/feed.js" defer></script>
 </body>
 </html>

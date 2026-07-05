@@ -7,38 +7,46 @@ namespace App\Models;
 use App\Helpers\UuidHelper;
 use PDO;
 
-/**
- * Capa de datos para que un admin gestione contenido LOCAL (peliculas/series
- * creadas a mano, sin tmdb_id real) y generos locales.
- *
- * IMPORTANTE: esto es solo acceso a datos (insert/update/delete/select).
- * NO valida campos de formulario, no maneja $_FILES, no decide mensajes
- * de error de UI — eso es trabajo del controller/API que todavia no
- * existe. Quien escriba esa capa solo necesita llamar a los metodos
- * de aqui.
- *
- * Contrato esperado de uso (referencia para quien construya la API):
- *   - crearContenidoLocal(...) -> content_id (string uuid)
- *   - actualizarContenidoLocal(...) -> void (lanza si no es local o no existe)
- *   - eliminarContenidoLocal($id) -> void (soft delete, is_active = 0)
- *   - listarContenidoLocal($limite, $offset) -> list<array>
- *   - crearGeneroLocal($nombre) -> genre_id (int)
- *   - listarGeneros() -> list<array{id:int,nombre:string,tmdb_id:?int}>
- */
 final class AdminContenidoRepo
 {
     public function __construct(private PDO $pdo)
     {
     }
 
-    /**
-     * Crea una pelicula/serie local. $posterPath ya debe venir resuelto
-     * (ej. "/assets/images/posters/admin/<uuid>.webp") — esta capa no
-     * sube archivos, solo guarda el path que le pasen.
-     *
-     * @param list<int> $generoIdsLocales ids de la tabla generos (NO tmdb_id)
-     * @return string uuid del contenido creado
-     */
+    public function descargarImagenTmdb(string $tmdbPath, string $tamano = 'w500'): ?string
+    {
+        $url = "https://image.tmdb.org/t/p/{$tamano}" . $tmdbPath;
+        $ctx = stream_context_create(['http' => ['timeout' => 10]]);
+        $bin = @file_get_contents($url, false, $ctx);
+        if ($bin === false || $bin === '') {
+            return null;
+        }
+
+        $dir = ROOT . '/public/assets/images/posters/admin';
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $nombre = bin2hex(random_bytes(16)) . '.jpg';
+        file_put_contents($dir . '/' . $nombre, $bin);
+
+        return '/assets/images/posters/admin/' . $nombre;
+    }
+
+    public function upsertGenero(string $nombre, ?int $tmdbId = null): int
+    {
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO generos (nombre, tmdb_id) VALUES (:nombre, :tmdb_id)
+             ON DUPLICATE KEY UPDATE tmdb_id = COALESCE(:tmdb_id2, tmdb_id)'
+        );
+        $stmt->execute([':nombre' => $nombre, ':tmdb_id' => $tmdbId, ':tmdb_id2' => $tmdbId]);
+
+        $busca = $this->pdo->prepare('SELECT id FROM generos WHERE nombre = :nombre');
+        $busca->execute([':nombre' => $nombre]);
+
+        return (int) $busca->fetchColumn();
+    }
+
     public function crearContenidoLocal(
         string $tipo,
         string $titulo,
@@ -46,39 +54,37 @@ final class AdminContenidoRepo
         ?string $posterPath,
         ?int $anio,
         array $generoIdsLocales,
-        string $creadoPorIdUsuario
+        string $creadoPorIdUsuario,
+        ?int $tmdbId = null,
+        ?string $backdropPath = null,
     ): string {
-        $tipoDb = $tipo === 'series' ? 'series' : 'movie';
         $idBinario = UuidHelper::v7();
 
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO contenido
-                (id, tmdb_id, origen, created_by, type, titulo, descripcion, poster_path, anio_lanzamiento)
-             VALUES
-                (:id, NULL, \'local\', :created_by, :type, :titulo, :descripcion, :poster_path, :anio_lanzamiento)'
-        );
-        $stmt->execute([
-            ':id' => $idBinario,
-            ':created_by' => UuidHelper::uuidABinario($creadoPorIdUsuario),
-            ':type' => $tipoDb,
-            ':titulo' => $titulo,
-            ':descripcion' => $descripcion,
-            ':poster_path' => $posterPath,
-            ':anio_lanzamiento' => $anio,
-        ]);
+        $this->transaccion(function () use ($idBinario, $tipo, $titulo, $descripcion, $posterPath, $backdropPath, $anio, $generoIdsLocales, $creadoPorIdUsuario, $tmdbId) {
+            $stmt = $this->pdo->prepare(
+                "INSERT INTO contenido
+                    (id, tmdb_id, origen, created_by, type, titulo, descripcion, poster_path, backdrop_path, anio_lanzamiento)
+                 VALUES
+                    (:id, :tmdb_id, 'local', :created_by, :type, :titulo, :descripcion, :poster_path, :backdrop_path, :anio)"
+            );
+            $stmt->execute([
+                ':id' => $idBinario,
+                ':tmdb_id' => $tmdbId,
+                ':created_by' => UuidHelper::uuidABinario($creadoPorIdUsuario),
+                ':type' => $tipo === 'series' ? 'series' : 'movie',
+                ':titulo' => $titulo,
+                ':descripcion' => $descripcion,
+                ':poster_path' => $posterPath,
+                ':backdrop_path' => $backdropPath,
+                ':anio' => $anio,
+            ]);
 
-        $this->sincronizarGenerosLocales($idBinario, $generoIdsLocales);
+            $this->sincronizarGeneros($idBinario, $generoIdsLocales);
+        });
 
         return UuidHelper::binarioAUuid($idBinario);
     }
 
-    /**
-     * Edita un contenido local existente. No toca contenido con
-     * origen='tmdb' (lanza excepcion) para no permitir que el admin
-     * pise por error datos que vienen de la API.
-     *
-     * @param list<int> $generoIdsLocales
-     */
     public function actualizarContenidoLocal(
         string $contentId,
         string $titulo,
@@ -97,57 +103,52 @@ final class AdminContenidoRepo
             throw new \RuntimeException('Contenido no encontrado.');
         }
         if ($origen !== 'local') {
-            throw new \RuntimeException('Solo se puede editar contenido local (origen=local).');
+            throw new \RuntimeException('Solo se puede editar contenido local.');
         }
 
-        $stmt = $this->pdo->prepare(
-            'UPDATE contenido SET
-                titulo = :titulo,
-                descripcion = :descripcion,
-                poster_path = :poster_path,
-                anio_lanzamiento = :anio_lanzamiento
-             WHERE id = :id'
-        );
-        $stmt->execute([
-            ':titulo' => $titulo,
-            ':descripcion' => $descripcion,
-            ':poster_path' => $posterPath,
-            ':anio_lanzamiento' => $anio,
-            ':id' => $idBinario,
-        ]);
+        $this->transaccion(function () use ($idBinario, $titulo, $descripcion, $posterPath, $anio, $generoIdsLocales) {
+            $stmt = $this->pdo->prepare(
+                'UPDATE contenido SET titulo=:titulo, descripcion=:descripcion,
+                    poster_path=:poster_path, anio_lanzamiento=:anio
+                 WHERE id=:id'
+            );
+            $stmt->execute([
+                ':titulo' => $titulo,
+                ':descripcion' => $descripcion,
+                ':poster_path' => $posterPath,
+                ':anio' => $anio,
+                ':id' => $idBinario,
+            ]);
 
-        $this->sincronizarGenerosLocales($idBinario, $generoIdsLocales);
+            $this->sincronizarGeneros($idBinario, $generoIdsLocales);
+        });
     }
 
-    /**
-     * Soft delete: is_active=0. No se borra la fila para no perder
-     * ratings/historial_vistas que la referencian (FK ON DELETE CASCADE
-     * los borraria en cascada si se hiciera DELETE real).
-     */
+    private function transaccion(callable $fn): void
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $fn();
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
     public function eliminarContenidoLocal(string $contentId): void
     {
-        $idBinario = UuidHelper::uuidABinario($contentId);
-
-        $stmt = $this->pdo->prepare(
-            "UPDATE contenido SET is_active = 0 WHERE id = :id AND origen = 'local'"
-        );
-        $stmt->execute([':id' => $idBinario]);
+        $stmt = $this->pdo->prepare("DELETE FROM contenido WHERE id=:id AND origen='local'");
+        $stmt->execute([':id' => UuidHelper::uuidABinario($contentId)]);
     }
 
-    /**
-     * Lista contenido local para el panel admin (tabla de gestion).
-     * No filtra por is_active: el admin tiene que poder ver y reactivar
-     * lo que borro antes.
-     *
-     * @return list<array<string,mixed>>
-     */
     public function listarContenidoLocal(int $limite = 50, int $offset = 0): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT id, type, titulo, descripcion, poster_path, anio_lanzamiento,
-                    rating_avg, rating_count, is_active, created_at
+            "SELECT id, type, titulo, descripcion, poster_path, backdrop_path,
+                    anio_lanzamiento, rating_avg, rating_count, created_at
              FROM contenido
-             WHERE origen = 'local'
+             WHERE origen='local'
              ORDER BY created_at DESC
              LIMIT :limite OFFSET :offset"
         );
@@ -155,132 +156,57 @@ final class AdminContenidoRepo
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
-        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-        foreach ($filas as &$fila) {
-            $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
-        }
-
-        return $filas;
+        return UuidHelper::mapearIds($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
-    /**
-     * Contenido local activo que matchea un tipo y (opcionalmente) un set
-     * de generos. Pensado para que home/recomendaciones lo mezcle con los
-     * resultados de TMDB. El shape de salida NO es el de TMDB: quien
-     * consuma esto debe normalizarlo (eso se hace en HomeController/
-     * RecomendacionController).
-     *
-     * @param list<int> $generoIdsLocales si está vacío, no filtra por género
-     * @return list<array<string,mixed>>
-     */
-    public function contenidoLocalParaCatalogo(string $tipo, array $generoIdsLocales = [], int $limite = 20): array
+    public function contenidoParaCatalogo(string $tipo, array $generoIdsLocales = [], int $limite = 20, int $offset = 0, string $busqueda = ''): array
     {
         $tipoDb = $tipo === 'series' ? 'series' : 'movie';
+        $params = [':type' => $tipoDb, ':limite' => $limite, ':offset' => $offset];
 
-        if ($generoIdsLocales === []) {
-            $stmt = $this->pdo->prepare(
-                "SELECT c.id, c.tmdb_id, c.type, c.titulo, c.descripcion, c.poster_path,
-                        c.anio_lanzamiento, c.rating_avg, c.rating_count
-                 FROM contenido c
-                 WHERE c.origen = 'local' AND c.is_active = 1 AND c.type = :type
-                 ORDER BY c.created_at DESC
-                 LIMIT :limite"
-            );
-            $stmt->bindValue(':type', $tipoDb);
-            $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
-            $stmt->execute();
+        if ($busqueda !== '') {
+            $sql = "SELECT DISTINCT c.id, c.type, c.titulo, c.descripcion, c.poster_path, c.backdrop_path, c.logo_path,
+                           c.anio_lanzamiento, c.rating_avg, c.rating_count
+                    FROM contenido c
+                    WHERE c.is_active=1 AND c.type=:type AND c.titulo LIKE :q
+                    ORDER BY c.created_at DESC LIMIT :limite OFFSET :offset";
+            $params[':q'] = '%' . $busqueda . '%';
+        } elseif ($generoIdsLocales !== []) {
+            $marcadores = implode(',', array_map(fn ($i) => ":g{$i}", array_keys($generoIdsLocales)));
+            foreach (array_values($generoIdsLocales) as $i => $id) {
+                $params[":g{$i}"] = $id;
+            }
+            $sql = "SELECT DISTINCT c.id, c.type, c.titulo, c.descripcion, c.poster_path, c.backdrop_path, c.logo_path,
+                           c.anio_lanzamiento, c.rating_avg, c.rating_count
+                    FROM contenido c
+                    INNER JOIN contenido_generos cg ON cg.content_id=c.id
+                    WHERE c.is_active=1 AND c.type=:type AND cg.genre_id IN ({$marcadores})
+                    ORDER BY c.created_at DESC LIMIT :limite OFFSET :offset";
         } else {
-            // PDO no permite mezclar marcadores nombrados (:type) con
-            // posicionales (?) en la misma query, asi que los generos
-            // tambien van nombrados (:genero0, :genero1, ...).
-            $marcadoresGenero = [];
-            $valoresGenero = [];
-            foreach (array_values($generoIdsLocales) as $i => $genreId) {
-                $clave = ":genero{$i}";
-                $marcadoresGenero[] = $clave;
-                $valoresGenero[$clave] = $genreId;
-            }
-            $marcadores = implode(',', $marcadoresGenero);
-
-            $stmt = $this->pdo->prepare(
-                "SELECT DISTINCT c.id, c.tmdb_id, c.type, c.titulo, c.descripcion, c.poster_path,
-                        c.anio_lanzamiento, c.rating_avg, c.rating_count
-                 FROM contenido c
-                 INNER JOIN contenido_generos cg ON cg.content_id = c.id
-                 WHERE c.origen = 'local' AND c.is_active = 1 AND c.type = :type
-                   AND cg.genre_id IN ({$marcadores})
-                 ORDER BY c.created_at DESC
-                 LIMIT :limite"
-            );
-            $stmt->bindValue(':type', $tipoDb);
-            $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
-            foreach ($valoresGenero as $clave => $genreId) {
-                $stmt->bindValue($clave, $genreId, PDO::PARAM_INT);
-            }
-            $stmt->execute();
+            $sql = "SELECT id, type, titulo, descripcion, poster_path, backdrop_path, logo_path,
+                           anio_lanzamiento, rating_avg, rating_count
+                    FROM contenido
+                    WHERE is_active=1 AND type=:type
+                    ORDER BY created_at DESC LIMIT :limite OFFSET :offset";
         }
 
-        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-        foreach ($filas as &$fila) {
-            $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v, in_array($k, [':limite', ':offset'], true) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
-
-        return $filas;
-    }
-
-    /**
-     * Igual que contenidoLocalParaCatalogo(), pero filtra por titulo (LIKE)
-     * en vez de por genero. Usado cuando el catalogo tiene una busqueda
-     * activa (parametro ?q=), para que el contenido local tambien aparezca
-     * en los resultados de busqueda, no solo al navegar sin filtro.
-     *
-     * @return list<array<string,mixed>>
-     */
-    public function buscarContenidoLocal(string $tipo, string $query, int $limite = 20): array
-    {
-        $tipoDb = $tipo === 'series' ? 'series' : 'movie';
-
-        $stmt = $this->pdo->prepare(
-            "SELECT id, tmdb_id, type, titulo, descripcion, poster_path,
-                    anio_lanzamiento, rating_avg, rating_count
-             FROM contenido
-             WHERE origen = 'local' AND is_active = 1 AND type = :type
-               AND titulo LIKE :query
-             ORDER BY created_at DESC
-             LIMIT :limite"
-        );
-        $stmt->bindValue(':type', $tipoDb);
-        $stmt->bindValue(':query', '%' . $query . '%');
-        $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
         $stmt->execute();
 
-        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-        foreach ($filas as &$fila) {
-            $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
-        }
-
-        return $filas;
+        return UuidHelper::mapearIds($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
-    /**
-     * Un contenido local por id, con generos ya resueltos (para que el
-     * detalle pueda mostrar chips de genero igual que el contenido TMDB).
-     * Devuelve null si no existe o si no es local.
-     *
-     * @return array<string,mixed>|null
-     */
-    public function buscarLocalPorId(string $contentId): ?array
+    public function buscarPorId(string $contentId): ?array
     {
         $idBinario = UuidHelper::uuidABinario($contentId);
 
         $stmt = $this->pdo->prepare(
-            "SELECT id, type, titulo, descripcion, poster_path, anio_lanzamiento,
-                    rating_avg, rating_count
-             FROM contenido
-             WHERE id = :id AND origen = 'local' AND is_active = 1"
+            "SELECT id, type, titulo, descripcion, poster_path, backdrop_path, logo_path,
+                    anio_lanzamiento, rating_avg, rating_count
+             FROM contenido WHERE id=:id AND is_active=1"
         );
         $stmt->execute([':id' => $idBinario]);
         $fila = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -291,93 +217,94 @@ final class AdminContenidoRepo
 
         $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
 
-        $generos = $this->pdo->prepare(
+        $g = $this->pdo->prepare(
             'SELECT g.nombre FROM generos g
-             INNER JOIN contenido_generos cg ON cg.genre_id = g.id
-             WHERE cg.content_id = :content_id'
+             INNER JOIN contenido_generos cg ON cg.genre_id=g.id
+             WHERE cg.content_id=:id'
         );
-        $generos->execute([':content_id' => $idBinario]);
-        $fila['generos'] = $generos->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        $g->execute([':id' => $idBinario]);
+        $fila['generos'] = $g->fetchAll(PDO::FETCH_COLUMN) ?: [];
 
         return $fila;
     }
 
-    /**
-     * Traduce tmdb_id (lo que el usuario tiene guardado en
-     * preferencias.generos) a los ids INTERNOS de la tabla generos
-     * (lo que usa contenido_generos.genre_id). Necesario porque
-     * contenidoLocalParaCatalogo() filtra por id interno, no por tmdb_id.
-     *
-     * @param list<int> $tmdbIds
-     * @return list<int>
-     */
+    public function obtenerLocalPorIdParaEditar(string $contentId): ?array
+    {
+        $idBinario = UuidHelper::uuidABinario($contentId);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id, type, titulo, descripcion, poster_path, anio_lanzamiento, is_active
+             FROM contenido WHERE id=:id AND origen='local'"
+        );
+        $stmt->execute([':id' => $idBinario]);
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!is_array($fila)) {
+            return null;
+        }
+
+        $fila['id'] = UuidHelper::binarioAUuid($fila['id']);
+
+        $g = $this->pdo->prepare('SELECT genre_id FROM contenido_generos WHERE content_id=:id');
+        $g->execute([':id' => $idBinario]);
+        $fila['genero_ids'] = array_map('intval', $g->fetchAll(PDO::FETCH_COLUMN) ?: []);
+
+        return $fila;
+    }
+
+    public function existenPorTmdbId(array $tmdbIds): array
+    {
+        return $this->columnaPorTmdbIds('contenido', 'tmdb_id', $tmdbIds);
+    }
+
+    public function listarGeneros(): array
+    {
+        return $this->pdo->query('SELECT id, nombre, tmdb_id FROM generos ORDER BY nombre ASC')
+            ->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function crearGenero(string $nombre): void
+    {
+        $stmt = $this->pdo->prepare('INSERT IGNORE INTO generos (nombre) VALUES (:nombre)');
+        $stmt->execute([':nombre' => trim($nombre)]);
+    }
+
+    public function eliminarGenero(int $id): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM generos WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+    }
+
     public function idsInternosPorTmdbId(array $tmdbIds): array
+    {
+        return $this->columnaPorTmdbIds('generos', 'id', $tmdbIds);
+    }
+
+    private function columnaPorTmdbIds(string $tabla, string $columna, array $tmdbIds): array
     {
         if ($tmdbIds === []) {
             return [];
         }
 
-        $marcadores = implode(',', array_fill(0, count($tmdbIds), '?'));
-        $stmt = $this->pdo->prepare("SELECT id FROM generos WHERE tmdb_id IN ({$marcadores})");
+        $m = implode(',', array_fill(0, count($tmdbIds), '?'));
+        $stmt = $this->pdo->prepare("SELECT {$columna} FROM {$tabla} WHERE tmdb_id IN ({$m})");
         $stmt->execute(array_values($tmdbIds));
 
         return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
     }
 
-    /**
-     * Crea un genero nuevo SIN tmdb_id (genero 100% inventado por el admin).
-     * Si ya existe uno con ese nombre, devuelve el id existente (UNIQUE en
-     * nombre) en vez de fallar.
-     */
-    public function crearGeneroLocal(string $nombre): int
+    private function sincronizarGeneros(string $contentIdBin, array $generoIds): void
     {
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO generos (nombre, tmdb_id) VALUES (:nombre, NULL)
-             ON DUPLICATE KEY UPDATE nombre = nombre'
-        );
-        $stmt->execute([':nombre' => $nombre]);
+        $this->pdo->prepare('DELETE FROM contenido_generos WHERE content_id=:id')
+            ->execute([':id' => $contentIdBin]);
 
-        $busca = $this->pdo->prepare('SELECT id FROM generos WHERE nombre = :nombre');
-        $busca->execute([':nombre' => $nombre]);
-
-        return (int) $busca->fetchColumn();
-    }
-
-    /**
-     * Todos los generos (vienen de TMDB o creados localmente, da igual
-     * para mostrarlos en un <select>/checkboxes del formulario admin).
-     *
-     * @return list<array{id:int,nombre:string,tmdb_id:?int}>
-     */
-    public function listarGeneros(): array
-    {
-        $stmt = $this->pdo->query('SELECT id, nombre, tmdb_id FROM generos ORDER BY nombre ASC');
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    }
-
-    /**
-     * Vincula contenido local con generos por su id INTERNO (no tmdb_id).
-     * Distinto de ContenidoRepo::sincronizarGeneros(), que resuelve por
-     * tmdb_id porque trabaja con datos que vienen de la API.
-     *
-     * @param list<int> $generoIdsLocales
-     */
-    private function sincronizarGenerosLocales(string $contentIdBin, array $generoIdsLocales): void
-    {
-        $borrar = $this->pdo->prepare('DELETE FROM contenido_generos WHERE content_id = :content_id');
-        $borrar->execute([':content_id' => $contentIdBin]);
-
-        if ($generoIdsLocales === []) {
+        if ($generoIds === []) {
             return;
         }
 
-        $insertar = $this->pdo->prepare(
-            'INSERT IGNORE INTO contenido_generos (content_id, genre_id) VALUES (:content_id, :genre_id)'
-        );
-
-        foreach ($generoIdsLocales as $genreId) {
-            $insertar->execute([':content_id' => $contentIdBin, ':genre_id' => $genreId]);
+        $ins = $this->pdo->prepare('INSERT INTO contenido_generos (content_id, genre_id) VALUES (:c, :g)');
+        foreach ($generoIds as $gid) {
+            $ins->execute([':c' => $contentIdBin, ':g' => $gid]);
         }
     }
 }

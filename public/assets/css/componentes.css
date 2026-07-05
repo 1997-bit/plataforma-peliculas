@@ -27,6 +27,22 @@
 	display: block;
 }
 
+.img-fallback {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	background: oklch(60% 0 0 / 6%);
+	color: oklch(60% 0 0 / 22%);
+}
+
+.img-fallback svg {
+	width: 38%;
+	height: 38%;
+	max-width: 2.5rem;
+	max-height: 2.5rem;
+	flex-shrink: 0;
+}
+
 .poster-marco--xs {
 	width: var(--poster-w-xs);
 	border-radius: var(--poster-radio-sm);
@@ -67,22 +83,22 @@
 }
 
 .boton--primario {
-	background: oklch(55% 0.18 250);
+	background: var(--color-primario);
 	color: white;
 }
 
 .boton--primario:hover {
-	background: oklch(48% 0.18 250);
+	background: var(--color-primario-hover);
 }
 
 .boton--secundario {
 	background: transparent;
-	border: 1px solid oklch(60% 0 0 / 30%);
+	border: 1px solid var(--borde-color-fuerte);
 	color: var(--texto);
 }
 
 .boton--secundario:hover {
-	background: oklch(60% 0 0 / 8%);
+	background: var(--borde-color-sutil);
 }
 
 .boton--claro {
@@ -113,7 +129,7 @@
 	font-weight: 500;
 	padding: 0.5rem 1.1rem;
 	border-radius: 999px;
-	border: 1px solid oklch(60% 0 0 / 30%);
+	border: 1px solid var(--borde-color-fuerte);
 	color: var(--texto);
 	user-select: none;
 	transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
@@ -133,12 +149,6 @@
 	transform: scale(0.97);
 }
 
-.chip--activo {
-	background: oklch(55% 0.18 250);
-	border-color: oklch(55% 0.18 250);
-	color: white;
-}
-
 .chip--simple {
 	border: none;
 	background: oklch(60% 0 0 / 10%);
@@ -156,8 +166,8 @@
    esconde visualmente. el color del chip entero indica seleccionado/no.
    Ejemplo: <label class="chip"><input type="checkbox" class="chip-input">Texto</label> */
 .chip:has(input:checked) {
-	background: oklch(55% 0.18 250);
-	border-color: oklch(55% 0.18 250);
+	background: var(--color-primario);
+	border-color: var(--color-primario);
 	color: white;
 }
 
@@ -170,6 +180,6 @@
 }
 
 .chip:has(input:focus-visible) {
-	outline: 2px solid oklch(70% 0.15 250);
+	outline: 2px solid var(--color-anillo-foco);
 	outline-offset: 3px;
 }
