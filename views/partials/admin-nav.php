@@ -1,4 +1,5 @@
 <?php
+/** @var string $csrf */
 $rutaAdmin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $esActiva = static fn(string $ruta): string => str_starts_with($rutaAdmin, $ruta) ? ' aria-current="page"' : '';
 ?>
@@ -19,8 +20,11 @@ $esActiva = static fn(string $ruta): string => str_starts_with($rutaAdmin, $ruta
             <span>Agregar</span>
         </a>
     </nav>
-    <a href="/" class="boton boton--secundario boton--sm">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 19L8 12L15 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Salir
-    </a>
+    <form method="POST" action="/logout">
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+        <button type="submit" class="boton boton--secundario boton--sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 19L8 12L15 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Salir
+        </button>
+    </form>
 </header>
