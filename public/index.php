@@ -71,7 +71,7 @@ $router->registrarGet('/recomendaciones/mas', function () use ($recomendacionCon
 });
 
 $userController = new UserController($perfilService, $contenidoRepo);
-$router->registrarGet('/profile', function () use ($userController) {
+$router->registrarGet('/perfil', function () use ($userController) {
     AuthMiddleware::bloquearRol('admin');
     $userController->index();
 });

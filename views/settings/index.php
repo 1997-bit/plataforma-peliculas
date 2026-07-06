@@ -109,7 +109,7 @@ if ($errorQuery === 'importar_no_implementado') {
         <section class="perfil-seccion">
             <h2 class="perfil-subtitulo">Exportar / Importar configuración</h2>
             <p class="perfil-vacio">
-              TODO: soap api
+              Importación mediante API SOAP disponible próximamente.
             </p>
             <div class="perfil-export-acciones">
                 <a href="/settings/exportar" class="boton boton--secundario">

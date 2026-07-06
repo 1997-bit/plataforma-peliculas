@@ -155,7 +155,7 @@ final class ContenidoRepo
 
     /**
      * Todas las calificaciones del usuario, con datos del contenido, para
-     * mostrar en /profile. Ordenadas por más reciente primero.
+     * mostrar en /perfil. Ordenadas por más reciente primero.
      *
      * @return list<array{id:string,tmdb_id:int,type:string,title:string,poster_path:?string,score:int,created_at:string}>
      */

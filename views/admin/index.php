@@ -105,7 +105,7 @@ $total = $peliculas + $series;
                     </td>
                     <td class="admin-tabla-titulo"><?= htmlspecialchars((string) ($item['titulo'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                     <td><span class="chip chip--simple"><?= ($item['type'] ?? '') === 'series' ? 'Serie' : 'Película' ?></span></td>
-                    <td><?= htmlspecialchars((string) ($item['anio_lanzamiento'] ?? '—'), ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars((string) ($item['anio_lanzamiento'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                     <td>
                         <span class="admin-item-rating">
                             <?= IconoEstrella::svg('admin-item-rating-icono') ?>

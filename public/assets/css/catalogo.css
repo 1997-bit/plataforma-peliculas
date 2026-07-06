@@ -39,7 +39,7 @@
 .filtro-select {
   padding: 0.6rem 0.85rem;
   border-radius: 8px;
-  border: 1px solid oklch(60% 0 0 / 35%);
+  border: 1px solid var(--borde-color-fuerte);
   background: var(--bg);
   color: var(--texto);
 }
@@ -73,7 +73,7 @@
 
 .catalogo-vacio {
   text-align: center;
-  opacity: 0.6;
+  opacity: var(--opacidad-vacio);
   padding: 3rem 0;
   font-size: var(--text-sm);
 }
@@ -90,7 +90,7 @@
   font-weight: 600;
   padding: 0.55rem 1.1rem;
   border-radius: 8px;
-  border: 1px solid oklch(60% 0 0 / 35%);
+  border: 1px solid var(--borde-color-fuerte);
   text-decoration: none;
   color: var(--texto);
 }

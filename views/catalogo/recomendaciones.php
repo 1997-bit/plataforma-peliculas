@@ -25,12 +25,12 @@ $tema = $_COOKIE['tema'] ?? null;
     <?php if ($items === [] && $sinGenerosElegidos): ?>
         <main class="feed-vacio">
             <p>Todavía no elegiste géneros favoritos.</p>
-            <a href="/profile" class="feed-vacio-link">Elígelos en tu perfil</a>
+            <a href="/perfil" class="feed-vacio-link">Elígelos en tu perfil</a>
         </main>
     <?php elseif ($items === []): ?>
         <main class="feed-vacio">
             <p>No encontramos contenido para tus géneros elegidos.</p>
-            <a href="/profile" class="feed-vacio-link">Probar con otros géneros</a>
+            <a href="/perfil" class="feed-vacio-link">Probar con otros géneros</a>
         </main>
     <?php else: ?>
         <main class="feed" data-feed data-tipo="<?= htmlspecialchars($tipoActual, ENT_QUOTES, 'UTF-8') ?>" data-offset="<?= count($items) ?>" data-has-more="<?= $hasMore ? '1' : '0' ?>">

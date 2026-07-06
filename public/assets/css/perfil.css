@@ -145,7 +145,7 @@
 .perfil-vacio {
   margin: 0;
   font-size: var(--text-sm);
-  opacity: 0.65;
+  opacity: var(--opacidad-vacio);
 }
 
 /* datos de cuenta */
@@ -192,7 +192,7 @@
 }
 
 .perfil-badge-admin {
-  background: oklch(55% 0.18 250 / 18%);
+  background: color-mix(in oklab, var(--color-primario) 18%, transparent);
   color: var(--color-primario);
 }
 
@@ -301,12 +301,12 @@
 }
 
 .perfil-estrella-icono-relleno {
-  fill: oklch(75% 0.15 80);
+  fill: var(--color-estrella);
 }
 
 .perfil-estrella-icono-contorno {
   fill: none;
-  stroke: oklch(60% 0 0 / 35%);
+  stroke: var(--color-estrella-contorno);
   stroke-width: 1.5;
   stroke-linejoin: round;
   stroke-linecap: round;

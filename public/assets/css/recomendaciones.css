@@ -32,6 +32,7 @@
 	overflow-y: scroll;
 	-webkit-overflow-scrolling: touch;
 	scroll-snap-type: y mandatory;
+	scroll-behavior: smooth;
 	overscroll-behavior-y: contain;
 	scrollbar-width: none; /* firefox */
 	-ms-overflow-style: none; /* edge viejo */
@@ -85,7 +86,6 @@
 	justify-content: center;
 	overflow: hidden;
 	scroll-snap-align: start;
-	scroll-snap-stop: always;
 }
 
 /* fondo difuminado: backdrop_path (o poster como respaldo) a pantalla
@@ -240,6 +240,10 @@
 		transition: none;
 		opacity: 1;
 		transform: none;
+	}
+
+	.feed {
+		scroll-behavior: auto;
 	}
 }
 

@@ -259,11 +259,12 @@
   pointer-events: none;
 }
 
-/* hero
+/* home-hero
    carrousel 16:9, cover con position top (no recorta arriba).
-   degradado fuerte abajo + izquierda. .hero-slide es la diapositiva
-   completa (imagen+texto), controlada via opacity + .hero-slide--activo. */
-.hero {
+   degradado fuerte abajo + izquierda. la capa de imagen (.hero-slide) es
+   la base compartida definida en componentes.css; aqui solo se agrega el
+   fade (opacity + .home-hero-slide--activo) que necesita el carrusel. */
+.home-hero {
   position: relative;
   width: 100%;
   height: min(75vh, 700px);
@@ -272,27 +273,22 @@
   background: oklch(8% 0 0);
 }
 
-.hero-viewport {
+.home-hero-viewport {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-.hero-slide {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: top center;
-  background-color: oklch(8% 0 0);
+.home-hero-slide {
   opacity: 0;
   transition: opacity 0.6s ease;
 }
 
-.hero-slide--activo {
+.home-hero-slide--activo {
   opacity: 1;
 }
 
-.hero-veladura {
+.home-hero-veladura {
   position: absolute;
   inset: 0;
   background:
@@ -300,7 +296,7 @@
     linear-gradient(to right, oklch(0% 0 0 / 0.75) 0%, oklch(0% 0 0 / 0.35) 35%, transparent 65%);
 }
 
-.hero-contenido {
+.home-hero-contenido {
   position: absolute;
   bottom: 8%;
   left: clamp(1.5rem, 5vw, 4rem);
@@ -309,7 +305,7 @@
   color: oklch(98% 0 0);
 }
 
-.hero-titulo {
+.home-hero-titulo {
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 800;
   line-height: 1.05;
@@ -317,7 +313,7 @@
   text-shadow: 0 2px 12px oklch(0% 0 0 / 0.6);
 }
 
-.hero-descripcion {
+.home-hero-descripcion {
   font-size: var(--text-base);
   line-height: 1.5;
   margin: 0 0 1.25rem;
@@ -329,7 +325,7 @@
   text-shadow: 0 1px 6px oklch(0% 0 0 / 0.5);
 }
 
-.hero-dots {
+.home-hero-dots {
   position: absolute;
   bottom: 3%;
   left: clamp(1.5rem, 5vw, 4rem);
@@ -338,7 +334,7 @@
   z-index: 2;
 }
 
-.hero-dot {
+.home-hero-dot {
   width: 28px;
   height: 4px;
   border-radius: 2px;
@@ -349,16 +345,16 @@
   transition: background 0.2s ease;
 }
 
-.hero-dot--activo {
+.home-hero-dot--activo {
   background: oklch(100% 0 0 / 0.95);
 }
 
 @media (max-width: 600px) {
-  .hero {
+  .home-hero {
     height: 56vh;
     margin-top: -70px;
   }
-  .hero-descripcion {
+  .home-hero-descripcion {
     -webkit-line-clamp: 2;
   }
 }

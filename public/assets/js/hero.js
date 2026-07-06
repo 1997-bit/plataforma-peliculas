@@ -15,11 +15,11 @@
   let timer = null;
 
   function show(i) {
-    slides[index].classList.remove('hero-slide--activo');
-    dots[index]?.classList.remove('hero-dot--activo');
+    slides[index].classList.remove('home-hero-slide--activo');
+    dots[index]?.classList.remove('home-hero-dot--activo');
     index = (i + slides.length) % slides.length;
-    slides[index].classList.add('hero-slide--activo');
-    dots[index]?.classList.add('hero-dot--activo');
+    slides[index].classList.add('home-hero-slide--activo');
+    dots[index]?.classList.add('home-hero-dot--activo');
   }
 
   function next() {

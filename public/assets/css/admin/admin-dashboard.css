@@ -118,7 +118,7 @@
 .admin-item-rating-icono {
   width: 0.9rem;
   height: 0.9rem;
-  fill: oklch(75% 0.18 80);
+  fill: var(--color-estrella);
   flex-shrink: 0;
 }
 

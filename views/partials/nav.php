@@ -35,7 +35,7 @@ $rutaLogo = $usuarioLogueado
 
 		<menu id="menu-cuenta" popover class="nav-dropdown">
 			<li>
-				<a href="/profile" class="nav-dropdown-item">Mi perfil</a>
+				<a href="/perfil" class="nav-dropdown-item">Mi perfil</a>
 			</li>
 			<li>
 				<a href="/settings" class="nav-dropdown-item">Configuración</a>

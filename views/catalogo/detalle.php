@@ -45,7 +45,7 @@ $miEstrellas = $miCalificacion ?? 0;
     <?php require ROOT . '/views/partials/nav.php'; ?>
 
     <main class="detalle">
-        <section class="hero">
+        <section class="detalle-hero">
             <?php $heroFondoUrl = $backdrop; ?>
             <?php require ROOT . '/views/partials/hero-fondo.php'; ?>
         </section>

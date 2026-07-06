@@ -34,6 +34,6 @@ final class UserController
         $historial = $this->contenidoRepo->historialReciente($idUsuario, 10);
         $calificaciones = $this->contenidoRepo->calificacionesDeUsuario($idUsuario, 50);
 
-        require ROOT . '/views/profile/index.php';
+        require ROOT . '/views/perfil/index.php';
     }
 }

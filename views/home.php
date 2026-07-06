@@ -39,8 +39,8 @@ $renderRating = static function (mixed $avg, mixed $count): string {
     <?php require ROOT . '/views/partials/nav.php'; ?>
 
     <?php if ($hero !== []): ?>
-        <section class="hero" data-hero>
-            <div class="hero-viewport" data-hero-viewport>
+        <section class="home-hero" data-hero>
+            <div class="home-hero-viewport" data-hero-viewport>
                 <?php foreach ($hero as $i => $item): ?>
                     <?php
                         $tituloHero = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
@@ -48,12 +48,12 @@ $renderRating = static function (mixed $avg, mixed $count): string {
                         $backdropHero = TmdbImagen::backdrop($item['backdrop_path'] ?? null);
                         $tipoUrlHero = $item['type'] === 'series' ? 'series' : 'movie';
                     ?>
-                    <article class="hero-slide <?= $i === 0 ? 'hero-slide--activo' : '' ?>" data-hero-slide <?= $backdropHero ? 'style="background-image: url(' . htmlspecialchars($backdropHero, ENT_QUOTES, 'UTF-8') . ')"' : '' ?>>
-                        <div class="hero-veladura"></div>
-                        <div class="hero-contenido">
-                            <h1 class="hero-titulo"><?= $tituloHero ?></h1>
-                            <p class="hero-descripcion"><?= $overviewHero ?></p>
-                            <a href="/contenido?id=<?= urlencode((string) ($item['id'] ?? '')) ?>&tipo=<?= $tipoUrlHero ?>" class="boton boton--claro hero-boton">
+                    <article class="hero-slide home-hero-slide <?= $i === 0 ? 'home-hero-slide--activo' : '' ?>" data-hero-slide <?= $backdropHero ? 'style="background-image: url(' . htmlspecialchars($backdropHero, ENT_QUOTES, 'UTF-8') . ')"' : '' ?>>
+                        <div class="home-hero-veladura"></div>
+                        <div class="home-hero-contenido">
+                            <h1 class="home-hero-titulo"><?= $tituloHero ?></h1>
+                            <p class="home-hero-descripcion"><?= $overviewHero ?></p>
+                            <a href="/contenido?id=<?= urlencode((string) ($item['id'] ?? '')) ?>&tipo=<?= $tipoUrlHero ?>" class="boton boton--claro home-hero-boton">
                                 Ver más
                             </a>
                         </div>
@@ -61,9 +61,9 @@ $renderRating = static function (mixed $avg, mixed $count): string {
                 <?php endforeach; ?>
             </div>
             <?php if (count($hero) > 1): ?>
-                <div class="hero-dots" data-hero-dots>
+                <div class="home-hero-dots" data-hero-dots>
                     <?php foreach ($hero as $i => $item): ?>
-                        <button type="button" class="hero-dot <?= $i === 0 ? 'hero-dot--activo' : '' ?>" data-hero-dot="<?= $i ?>" aria-label="Ir a slide <?= $i + 1 ?>"></button>
+                        <button type="button" class="home-hero-dot <?= $i === 0 ? 'home-hero-dot--activo' : '' ?>" data-hero-dot="<?= $i ?>" aria-label="Ir a slide <?= $i + 1 ?>"></button>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
@@ -75,7 +75,7 @@ $renderRating = static function (mixed $avg, mixed $count): string {
             <section class="shelf">
                 <div class="shelf-header">
                     <h2 class="shelf-titulo">Visto recientemente</h2>
-                    <a href="/profile" class="shelf-ver-todo">Ver todo</a>
+                    <a href="/perfil" class="shelf-ver-todo">Ver todo</a>
                 </div>
                 <div class="shelf-viewport">
                     <div class="shelf-fila" role="list" data-carousel>

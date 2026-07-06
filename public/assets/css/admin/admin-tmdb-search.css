@@ -66,13 +66,13 @@
 }
 
 .admin-tmdb-card--activo {
-  border-color: oklch(55% 0.18 250 / 40%);
-  background: oklch(55% 0.18 250 / 8%);
+  border-color: color-mix(in oklab, var(--color-primario) 40%, transparent);
+  background: color-mix(in oklab, var(--color-primario) 8%, transparent);
 }
 
 :root[data-tema="dark"] .admin-tmdb-card--activo {
-  border-color: oklch(75% 0.15 250 / 35%);
-  background: oklch(75% 0.15 250 / 8%);
+  border-color: color-mix(in oklab, var(--color-primario-claro) 35%, transparent);
+  background: color-mix(in oklab, var(--color-primario-claro) 8%, transparent);
 }
 
 .admin-tmdb-card-noposter {
@@ -121,6 +121,6 @@
 
 .admin-vacio {
   font-size: var(--text-sm);
-  opacity: 0.6;
+  opacity: var(--opacidad-vacio);
   margin: 0;
 }
