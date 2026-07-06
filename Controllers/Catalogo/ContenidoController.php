@@ -18,7 +18,11 @@ final class ContenidoController
         if ($contentId === '') {
             Http::error404();
         }
-        $detalle = $this->adminContenidoRepo->buscarPorId($contentId);
+        try {
+            $detalle = $this->adminContenidoRepo->buscarPorId($contentId);
+        } catch (\InvalidArgumentException) {
+            $detalle = null;
+        }
         if ($detalle === null) {
             Http::error404();
         }

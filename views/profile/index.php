@@ -1,4 +1,5 @@
 <?php
+use App\Helpers\IconoEstrella;
 use App\Helpers\TmdbImagen;
 /** @var \App\Models\User $usuario */
 /** @var list<array<string,mixed>> $historial */
@@ -103,7 +104,9 @@ $calificaciones = $calificaciones ?? [];
                                 <span class="perfil-item-info">
                                     <span class="perfil-item-titulo"><?= $titulo ?></span>
                                     <span class="perfil-item-estrellas" aria-label="<?= $estrellas ?> de 5 estrellas">
-                                        <?= str_repeat('★', $estrellas) . str_repeat('☆', 5 - $estrellas) ?>
+                                        <?php for ($n = 1; $n <= 5; $n++): ?>
+                                            <?= IconoEstrella::svg($n <= $estrellas ? 'perfil-estrella-icono perfil-estrella-icono-relleno' : 'perfil-estrella-icono perfil-estrella-icono-contorno') ?>
+                                        <?php endfor; ?>
                                     </span>
                                 </span>
                             </a>

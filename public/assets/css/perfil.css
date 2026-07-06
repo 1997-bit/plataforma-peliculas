@@ -291,9 +291,23 @@
 }
 
 .perfil-item-estrellas {
-  font-size: var(--text-sm);
-  letter-spacing: 0.05em;
-  color: oklch(75% 0.15 80);
+  display: inline-flex;
+  gap: 0.1rem;
+}
+
+.perfil-estrella-icono {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.perfil-estrella-icono-relleno {
+  fill: oklch(75% 0.15 80);
+}
+
+.perfil-estrella-icono-contorno {
+  fill: none;
+  stroke: oklch(60% 0 0 / 35%);
+  stroke-width: 1.5;
 }
 
 /* exportar / importar (placeholder, ver TODO en la vista) */

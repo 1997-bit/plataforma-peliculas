@@ -139,8 +139,13 @@
 	opacity: 0;
 }
 
+/* contorno = mismo path que relleno, pero solo trazo (sin relleno) */
 .detalle-estrella-icono-contorno {
 	opacity: 1;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+	stroke-linejoin: round;
 }
 
 .detalle-estrella {
@@ -206,7 +211,7 @@
 	inset: 0;
 	width: 100%;
 	height: 100%;
-	fill: oklch(60% 0 0 / 35%);
+	color: oklch(60% 0 0 / 35%);
 }
 
 .detalle-estrella-icono-relleno-parcial {

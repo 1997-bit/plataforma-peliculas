@@ -18,10 +18,46 @@
   padding-inline: var(--page-px, 1.5rem);
 }
 
+.shelf-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
 .shelf-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   font-size: var(--text-lg);
   font-weight: 700;
-  margin: 0 0 1rem;
+  margin: 0;
+}
+
+/* acento de marca al lado del titulo, para que cada estanteria se
+   sienta mas "diseñada" y no un h2 suelto */
+.shelf-titulo::before {
+  content: '';
+  width: 4px;
+  height: 1.1em;
+  border-radius: 2px;
+  background: var(--color-primario);
+  flex-shrink: 0;
+}
+
+.shelf-ver-todo {
+  flex-shrink: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-anillo-foco);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.shelf-ver-todo:hover,
+.shelf-ver-todo:focus-visible {
+  text-decoration: underline;
 }
 
 .shelf-viewport {
@@ -104,6 +140,45 @@
 .poster-img,
 .backdrop-img {
   transition: transform 0.3s ease;
+}
+
+/* profundidad al hover/foco: el marco (no la imagen) es lo que
+   levanta, para que la sombra no quede recortada por overflow:hidden */
+.card .poster-marco,
+.card .backdrop-marco {
+  transition: box-shadow 0.25s ease;
+}
+
+.card:hover .poster-marco,
+.card:focus-visible .poster-marco,
+.card:hover .backdrop-marco,
+.card:focus-visible .backdrop-marco {
+  box-shadow: 0 14px 28px oklch(0% 0 0 / 32%);
+}
+
+/* badge de rating, superpuesto en la esquina del poster/backdrop.
+   mismo patron que .feed-rating/.admin-item-rating (estrella + numero) */
+.card-rating {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: oklch(10% 0 0 / 65%);
+  color: oklch(98% 0 0);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.card-rating-icono {
+  width: 0.85em;
+  height: 0.85em;
+  fill: oklch(80% 0.15 85);
+  flex-shrink: 0;
 }
 
 .card-info {

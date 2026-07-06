@@ -83,11 +83,12 @@ final class ContenidoRepo
     public function historialReciente(string $idUsuario, int $limite = 10): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT c.id, c.tmdb_id, c.origen, c.type, c.titulo AS title, c.poster_path, MAX(vh.viewed_at) AS viewed_at
+            'SELECT c.id, c.tmdb_id, c.origen, c.type, c.titulo AS title, c.poster_path,
+                    c.rating_avg, c.rating_count, MAX(vh.viewed_at) AS viewed_at
              FROM historial_vistas vh
              INNER JOIN contenido c ON c.id = vh.content_id
              WHERE vh.user_id = :user_id
-             GROUP BY vh.content_id, c.id, c.tmdb_id, c.origen, c.type, c.titulo, c.poster_path
+             GROUP BY vh.content_id, c.id, c.tmdb_id, c.origen, c.type, c.titulo, c.poster_path, c.rating_avg, c.rating_count
              ORDER BY viewed_at DESC
              LIMIT :limite'
         );

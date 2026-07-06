@@ -1,4 +1,5 @@
 <?php
+use App\Helpers\IconoEstrella;
 /**
  * Partial de una tarjeta del feed de recomendaciones (100vh, poster centrado).
  * Se usa tanto en el render inicial (recomendaciones.php) como en el HTML
@@ -6,7 +7,6 @@
  * (misma estructura de clases, ver assets/js/recomendaciones.js).
  *
  * @var array<string,mixed> $item shape de RecomendacionController::prepararItem()
- * @var callable $renderEstrella
  */
 
 $titulo = htmlspecialchars((string) $item['titulo'], ENT_QUOTES, 'UTF-8');
@@ -35,7 +35,7 @@ $tipoUrlItem = $item['tipo'] === 'series' ? 'series' : 'movie';
             <p class="feed-sinopsis"><?= $overview ?></p>
             <div class="feed-rating">
                 <?php if ($ratingCount > 0): ?>
-                    <?= $renderEstrella() ?>
+                    <?= IconoEstrella::svg('feed-estrella-icono') ?>
                     <span><?= number_format($ratingAvg, 1) ?> · <?= $ratingCount ?> calificación<?= $ratingCount === 1 ? '' : 'es' ?></span>
                 <?php else: ?>
                     <span>Sin calificaciones</span>

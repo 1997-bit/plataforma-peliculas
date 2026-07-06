@@ -1,4 +1,5 @@
 <?php
+use App\Helpers\IconoEstrella;
 use App\Helpers\TmdbImagen;
 /** @var string $username */
 /** @var string $csrf */
@@ -7,6 +8,19 @@ use App\Helpers\TmdbImagen;
 /** @var list<array<string,mixed>> $recomendaciones */
 /** @var list<array<string,mixed>> $vistoReciente */
 $tema = $_COOKIE['tema'] ?? null;
+
+/** Badge de rating reusado en las 3 estanterias (poster y backdrop). Vacio si nadie califico todavia. */
+$renderRating = static function (mixed $avg, mixed $count): string {
+    $count = (int) $count;
+    if ($count <= 0) {
+        return '';
+    }
+
+    return '<span class="card-rating">'
+        . IconoEstrella::svg('card-rating-icono')
+        . number_format((float) $avg, 1)
+        . '</span>';
+};
 ?>
 <!DOCTYPE html>
 <html lang="es" <?= $tema ? 'data-tema="' . htmlspecialchars($tema, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
@@ -59,19 +73,23 @@ $tema = $_COOKIE['tema'] ?? null;
     <main class="home">
         <?php if ($vistoReciente !== []): ?>
             <section class="shelf">
-                <h2 class="shelf-titulo">Visto recientemente</h2>
+                <div class="shelf-header">
+                    <h2 class="shelf-titulo">Visto recientemente</h2>
+                    <a href="/profile" class="shelf-ver-todo">Ver todo</a>
+                </div>
                 <div class="shelf-viewport">
                     <div class="shelf-fila" role="list" data-carousel>
-                        <?php foreach ($vistoReciente as $item): ?>
+                        <?php foreach ($vistoReciente as $i => $item): ?>
                             <?php
                                 $title = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                                 $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
                                 $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
                             ?>
-                            <article class="card" role="listitem">
+                            <article class="card" role="listitem" style="--card-i: <?= min($i, 12) ?>">
                                 <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrl ?>" class="card-link">
                                     <div class="poster-marco poster-marco--md">
                                         <img class="poster-img" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
+                                        <?= $renderRating($item['rating_avg'] ?? 0, $item['rating_count'] ?? 0) ?>
                                     </div>
                                     <div class="card-info">
                                         <p class="card-titulo"><?= $title ?></p>
@@ -85,10 +103,13 @@ $tema = $_COOKIE['tema'] ?? null;
         <?php endif; ?>
 
         <section class="shelf">
-            <h2 class="shelf-titulo">Populares</h2>
+            <div class="shelf-header">
+                <h2 class="shelf-titulo">Populares</h2>
+                <a href="/catalogo?tipo=movie" class="shelf-ver-todo">Ver todo</a>
+            </div>
             <div class="shelf-viewport">
                 <div class="shelf-fila" role="list" data-carousel>
-                    <?php foreach ($populares as $item): ?>
+                    <?php foreach ($populares as $i => $item): ?>
                         <?php
                             $title = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                             $fecha = $item['release_date'] ?? '';
@@ -96,10 +117,11 @@ $tema = $_COOKIE['tema'] ?? null;
                             $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'sm');
                             $tipoUrlItem = $item['type'] === 'series' ? 'series' : 'movie';
                         ?>
-                        <article class="card" role="listitem">
+                        <article class="card" role="listitem" style="--card-i: <?= min($i, 12) ?>">
                             <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrlItem ?>" class="card-link">
                                 <div class="poster-marco poster-marco--md">
                                     <img class="poster-img" src="<?= $poster ?>" alt="<?= $title ?>" loading="lazy" draggable="false">
+                                    <?= $renderRating($item['rating_avg'] ?? 0, $item['rating_count'] ?? 0) ?>
                                 </div>
                                 <div class="card-info">
                                     <p class="card-titulo"><?= $title ?></p>
@@ -114,7 +136,10 @@ $tema = $_COOKIE['tema'] ?? null;
 
         <?php if ($recomendaciones !== []): ?>
             <section class="shelf">
-                <h2 class="shelf-titulo">Recomendado para ti</h2>
+                <div class="shelf-header">
+                    <h2 class="shelf-titulo">Recomendado para ti</h2>
+                    <a href="/recomendaciones" class="shelf-ver-todo">Ver todo</a>
+                </div>
                 <div class="shelf-viewport">
                     <div class="shelf-fila shelf-fila--backdrop" role="list" data-carousel>
                         <?php foreach ($recomendaciones as $i => $item): ?>
@@ -137,6 +162,7 @@ $tema = $_COOKIE['tema'] ?? null;
                                         <?php else: ?>
                                             <span class="backdrop-titulo-overlay"><?= $title ?></span>
                                         <?php endif; ?>
+                                        <?= $renderRating($item['rating_avg'] ?? 0, $item['rating_count'] ?? 0) ?>
                                     </div>
                                     <div class="card-info">
                                         <p class="card-titulo"><?= $title ?></p>
