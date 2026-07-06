@@ -102,8 +102,24 @@
 
 .admin-item-meta {
   display: flex;
+  align-items: center;
   gap: 0.4rem;
   flex-wrap: wrap;
+}
+
+.admin-item-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--text-xs);
+  opacity: 0.8;
+}
+
+.admin-item-rating-icono {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: oklch(75% 0.18 80);
+  flex-shrink: 0;
 }
 
 .admin-item-acciones {

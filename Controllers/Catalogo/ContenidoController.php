@@ -40,6 +40,7 @@ final class ContenidoController
         ];
         $cast = [];
         $backdropPath = $detalle['backdrop_path'];
+        $recomendados = $this->adminContenidoRepo->similaresPorGeneros($contentId, 5);
         $csrf = Session::generarCsrf();
         require ROOT . '/views/catalogo/detalle.php';
     }
@@ -52,8 +53,13 @@ final class ContenidoController
             return;
         }
 
-        $contentId = (string) ($_POST['content_id'] ?? '');
-        $estrellas = (int) ($_POST['estrellas'] ?? 0);
+        if (!is_scalar($_POST['content_id'] ?? null) || !is_scalar($_POST['estrellas'] ?? null)) {
+            $this->json(400, ['error' => 'Datos invalidos']);
+            return;
+        }
+
+        $contentId = (string) $_POST['content_id'];
+        $estrellas = (int) $_POST['estrellas'];
         if ($contentId === '' || $estrellas < 1 || $estrellas > 5) {
             $this->json(400, ['error' => 'Datos invalidos']);
             return;
@@ -71,7 +77,7 @@ final class ContenidoController
         }
 
         try {
-            $this->contenidoRepo->calificar($idUsuario, $contentId, $estrellas * 2);
+            $this->contenidoRepo->calificar($idUsuario, $contentId, $estrellas);
             $this->json(200, ['ok' => true]);
         } catch (\Throwable $e) {
             error_log('ContenidoController::calificar - ' . $e->getMessage());

@@ -199,6 +199,36 @@ final class AdminContenidoRepo
         return UuidHelper::mapearIds($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
+    /**
+     * Contenido con al menos un genero en comun al content actual (tags),
+     * ordenado por mejor calificado. Matching simple: overlap via IN.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function similaresPorGeneros(string $contentId, int $limite = 5): array
+    {
+        $idBin = UuidHelper::uuidABinario($contentId);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT DISTINCT c.id, c.type, c.titulo, c.poster_path, c.rating_avg, c.rating_count
+             FROM contenido c
+             INNER JOIN contenido_generos cg ON cg.content_id = c.id
+             WHERE c.is_active = 1
+               AND c.id != :content_id
+               AND cg.genre_id IN (
+                   SELECT genre_id FROM contenido_generos WHERE content_id = :content_id_2
+               )
+             ORDER BY c.rating_avg DESC
+             LIMIT :limite"
+        );
+        $stmt->bindValue(':content_id', $idBin);
+        $stmt->bindValue(':content_id_2', $idBin);
+        $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return UuidHelper::mapearIds($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
+    }
+
     public function buscarPorId(string $contentId): ?array
     {
         $idBinario = UuidHelper::uuidABinario($contentId);
