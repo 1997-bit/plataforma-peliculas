@@ -4,12 +4,14 @@
 /** @var string|null $errorMsg */
 /** @var list<array<string,mixed>> $contenidoLocal */
 /** @var list<array{nombre:string, vistas:int}> $generosMasVistos */
+/** @var array{movie:int, series:int} $conteoPorTipo */
 $generosMasVistos = $generosMasVistos ?? [];
+$conteoPorTipo = $conteoPorTipo ?? ['movie' => 0, 'series' => 0];
 $okMsg = $okMsg ?? null;
 $errorMsg = $errorMsg ?? null;
-$total = count($contenidoLocal);
-$peliculas = count(array_filter($contenidoLocal, fn ($c) => ($c['type'] ?? '') === 'movie'));
-$series = count(array_filter($contenidoLocal, fn ($c) => ($c['type'] ?? '') === 'series'));
+$peliculas = $conteoPorTipo['movie'];
+$series = $conteoPorTipo['series'];
+$total = $peliculas + $series;
 ?>
 <!DOCTYPE html>
 <html lang="es">

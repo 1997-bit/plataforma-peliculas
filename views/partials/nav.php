@@ -49,7 +49,7 @@ $rutaLogo = $usuarioLogueado
 		</menu>
 
 		<dialog id="dialog-logout" class="dialogo-confirmar">
-			<p class="dialogo-confirmar-texto">¿Seguro que querés cerrar sesión?</p>
+			<p class="dialogo-confirmar-texto">¿Seguro que quieres cerrar sesión?</p>
 			<div class="dialogo-confirmar-acciones">
 				<button type="button" commandfor="dialog-logout" command="close" class="dialogo-confirmar-cancelar">
 					Cancelar

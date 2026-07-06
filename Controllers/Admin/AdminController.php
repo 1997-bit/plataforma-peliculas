@@ -13,6 +13,7 @@ use App\Models\ContenidoRepo;
 use App\Services\ContenidoValidator;
 use App\Services\PosterUploader;
 use App\Services\TmdbClient;
+use PDOException;
 
 final class AdminController
 {
@@ -29,6 +30,7 @@ final class AdminController
         $okMsg = $this->mensajeOk();
         $errorMsg = null;
         $contenidoLocal = $this->adminContenidoRepo->listarContenidoLocal(50);
+        $conteoPorTipo = $this->adminContenidoRepo->contarPorTipo();
         $generosMasVistos = $this->contenidoRepo->generosMasVistos(10);
 
         require ROOT . '/views/admin/index.php';
@@ -80,6 +82,8 @@ final class AdminController
     {
         Session::exigirCsrfOFallar();
 
+        $esAjax = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'XMLHttpRequest';
+
         $tmdbPosterId = trim((string) ($_POST['tmdb_poster_path'] ?? ''));
         $tmdbBackdropId = trim((string) ($_POST['tmdb_backdrop_path'] ?? ''));
         $tmdbId = trim((string) ($_POST['tmdb_id'] ?? ''));
@@ -92,6 +96,11 @@ final class AdminController
         }
 
         if ($datos['errores'] !== []) {
+            if ($esAjax) {
+                $this->responderJson(422, ['errores' => $datos['errores']]);
+                return;
+            }
+
             $csrf = Session::generarCsrf();
             $okMsg = null;
             $q = '';
@@ -116,20 +125,67 @@ final class AdminController
             $backdropFinal = $this->adminContenidoRepo->descargarImagenTmdb($tmdbBackdropId, 'w1280');
         }
 
-        $this->adminContenidoRepo->crearContenidoLocal(
-            $datos['tipo'],
-            $datos['titulo'],
-            $datos['descripcion'],
-            $posterFinal,
-            $datos['anio'],
-            $datos['generoIds'],
-            (string) Session::obtener('user_id'),
-            $tmdbId !== '' ? (int) $tmdbId : null,
-            $backdropFinal,
-        );
+        try {
+            $id = $this->adminContenidoRepo->crearContenidoLocal(
+                $datos['tipo'],
+                $datos['titulo'],
+                $datos['descripcion'],
+                $posterFinal,
+                $datos['anio'],
+                $datos['generoIds'],
+                (string) Session::obtener('user_id'),
+                $tmdbId !== '' ? (int) $tmdbId : null,
+                $backdropFinal,
+            );
+        } catch (PDOException $e) {
+            $mensaje = $this->mensajeErrorDb($e);
+
+            if ($esAjax) {
+                $this->responderJson(409, ['errores' => [$mensaje]]);
+                return;
+            }
+
+            $csrf = Session::generarCsrf();
+            $okMsg = null;
+            $q = '';
+            $tipoBusqueda = 'movie';
+            $resultados = [];
+            $generos = $this->adminContenidoRepo->listarGeneros();
+            $item = $_POST;
+            $generoIdsSeleccionados = $datos['generoIds'];
+            $errorMsg = $mensaje;
+
+            require ROOT . '/views/admin/agregar.php';
+            return;
+        }
+
+        if ($esAjax) {
+            $this->responderJson(201, ['id' => $id, 'mensaje' => 'Contenido creado correctamente.']);
+            return;
+        }
 
         header('Location: /admin/contenido/nuevo?contenido_creado=1');
         exit;
+    }
+
+    /** @param array<string,mixed> $payload */
+    private function responderJson(int $status, array $payload): void
+    {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+    }
+
+    /** Traduce el codigo de error MySQL a un mensaje legible; 1062 = UNIQUE (tmdb_id o titulo+tipo+anio duplicado). */
+    private function mensajeErrorDb(PDOException $e): string
+    {
+        $codigo = (int) ($e->errorInfo[1] ?? 0);
+
+        if ($codigo === 1062) {
+            return 'Ya existe un contenido con ese título (o el mismo ID de TMDB). Revisa el catálogo antes de crear uno nuevo.';
+        }
+
+        return 'Error al guardar en la base de datos.';
     }
 
     public function editar(): void
@@ -172,14 +228,25 @@ final class AdminController
 
         $posterFinal = $poster['path'] ?? $itemActual['poster_path'];
 
-        $this->adminContenidoRepo->actualizarContenidoLocal(
-            $itemActual['id'],
-            $datos['titulo'],
-            $datos['descripcion'],
-            $posterFinal,
-            $datos['anio'],
-            $datos['generoIds']
-        );
+        try {
+            $this->adminContenidoRepo->actualizarContenidoLocal(
+                $itemActual['id'],
+                $datos['titulo'],
+                $datos['descripcion'],
+                $posterFinal,
+                $datos['anio'],
+                $datos['generoIds']
+            );
+        } catch (PDOException $e) {
+            $csrf = Session::generarCsrf();
+            $generos = $this->adminContenidoRepo->listarGeneros();
+            $item = array_merge($itemActual, $_POST, ['id' => $itemActual['id']]);
+            $generoIdsSeleccionados = $datos['generoIds'];
+            $errorMsg = $this->mensajeErrorDb($e);
+
+            require ROOT . '/views/admin/contenido/editar.php';
+            return;
+        }
 
         header('Location: /admin?contenido_actualizado=1');
         exit;

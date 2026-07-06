@@ -159,6 +159,24 @@ final class AdminContenidoRepo
         return UuidHelper::mapearIds($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
+    /**
+     * Conteo real por tipo (no depende del LIMIT de listarContenidoLocal),
+     * para los contadores del resumen del dashboard admin.
+     *
+     * @return array{movie:int, series:int}
+     */
+    public function contarPorTipo(): array
+    {
+        $filas = $this->pdo->query(
+            "SELECT type, COUNT(*) AS total FROM contenido WHERE origen='local' GROUP BY type"
+        )->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        return [
+            'movie' => (int) ($filas['movie'] ?? 0),
+            'series' => (int) ($filas['series'] ?? 0),
+        ];
+    }
+
     public function contenidoParaCatalogo(string $tipo, array $generoIdsLocales = [], int $limite = 20, int $offset = 0, string $busqueda = ''): array
     {
         $tipoDb = $tipo === 'series' ? 'series' : 'movie';

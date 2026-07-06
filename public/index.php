@@ -65,6 +65,10 @@ $router->registrarGet('/recomendaciones', function () use ($recomendacionControl
     AuthMiddleware::bloquearRol('admin');
     $recomendacionController->index();
 });
+$router->registrarGet('/recomendaciones/mas', function () use ($recomendacionController) {
+    AuthMiddleware::bloquearRol('admin');
+    $recomendacionController->mas();
+});
 
 $userController = new UserController($perfilService, $contenidoRepo);
 $router->registrarGet('/profile', function () use ($userController) {

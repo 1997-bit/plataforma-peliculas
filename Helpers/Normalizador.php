@@ -20,6 +20,8 @@ final class Normalizador
             'logo_path' => $fila['logo_path'] ?? null,
             'release_date' => isset($fila['anio_lanzamiento']) ? $fila['anio_lanzamiento'] . '-01-01' : null,
             'first_air_date' => isset($fila['anio_lanzamiento']) ? $fila['anio_lanzamiento'] . '-01-01' : null,
+            'rating_avg' => (float) ($fila['rating_avg'] ?? 0.0),
+            'rating_count' => (int) ($fila['rating_count'] ?? 0),
             'origen' => 'local',
         ];
     }
