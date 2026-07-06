@@ -9,6 +9,17 @@ $tema = $_COOKIE['tema'] ?? null;
 $errorMsg = $errorMsg ?? null;
 $actualizado = isset($_GET['actualizado']);
 $errorQuery = $_GET['error'] ?? null;
+
+$avisos = [];
+if ($actualizado) {
+    $avisos[] = ['tipo' => 'ok', 'texto' => 'Cambios guardados correctamente.'];
+}
+if ($errorMsg) {
+    $avisos[] = ['tipo' => 'error', 'texto' => $errorMsg];
+}
+if ($errorQuery === 'importar_no_implementado') {
+    $avisos[] = ['tipo' => 'error', 'texto' => 'Importar configuración todavía no está disponible.'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="es" <?= $tema ? 'data-tema="' . htmlspecialchars($tema, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
@@ -29,17 +40,9 @@ $errorQuery = $_GET['error'] ?? null;
     <main class="perfil">
         <h1 class="perfil-titulo">Configuración</h1>
 
-        <?php if ($actualizado): ?>
-            <p class="perfil-aviso perfil-aviso-ok">Cambios guardados correctamente.</p>
-        <?php endif; ?>
-
-        <?php if ($errorMsg): ?>
-            <p class="perfil-aviso perfil-aviso-error"><?= htmlspecialchars($errorMsg, ENT_QUOTES, 'UTF-8') ?></p>
-        <?php endif; ?>
-
-        <?php if ($errorQuery === 'importar_no_implementado'): ?>
-            <p class="perfil-aviso perfil-aviso-error">Importar configuración todavía no está disponible.</p>
-        <?php endif; ?>
+        <?php foreach ($avisos as $aviso): ?>
+            <p class="perfil-aviso perfil-aviso-<?= $aviso['tipo'] ?>"><?= htmlspecialchars($aviso['texto'], ENT_QUOTES, 'UTF-8') ?></p>
+        <?php endforeach; ?>
 
         <!-- nombre de usuario + generos favoritos -->
         <section class="perfil-seccion">

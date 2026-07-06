@@ -47,6 +47,7 @@
 	--color-ok-bg: oklch(85% 0.12 145 / 25%);
 	--color-ok-texto: oklch(35% 0.12 145);
 	--color-ok-texto-dark: oklch(85% 0.12 145);
+	--color-error-bg: oklch(80% 0.15 25 / 25%);
 	--color-error-texto: oklch(35% 0.15 25);
 	--color-error-texto-dark: oklch(85% 0.15 25);
 	--color-warning-bg: oklch(88% 0.12 80 / 30%);

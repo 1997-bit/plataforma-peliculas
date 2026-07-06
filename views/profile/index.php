@@ -7,6 +7,33 @@ use App\Helpers\TmdbImagen;
 $tema = $_COOKIE['tema'] ?? null;
 $historial = $historial ?? [];
 $calificaciones = $calificaciones ?? [];
+
+/** Fila de 5 estrellas (llenas hasta $estrellas, el resto en contorno). */
+$renderEstrellas = static function (int $estrellas): string {
+    $html = '';
+    for ($n = 1; $n <= 5; $n++) {
+        $html .= IconoEstrella::svg($n <= $estrellas ? 'perfil-estrella-icono perfil-estrella-icono-relleno' : 'perfil-estrella-icono perfil-estrella-icono-contorno');
+    }
+
+    return $html;
+};
+
+/** Item de lista (poster + link + título) compartido por "Visto recientemente" y "Tus calificaciones". */
+$renderItem = static function (array $item, string $metaHtml): string {
+    $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
+    $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
+    $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'xs');
+
+    return '<li class="perfil-item">'
+        . '<a href="/contenido?id=' . urlencode((string) $item['id']) . '&tipo=' . $tipoUrl . '" class="perfil-item-link">'
+        . '<div class="poster-marco poster-marco--xs"><img class="poster-img" src="' . $poster . '" alt="" loading="lazy"></div>'
+        . '<span class="perfil-item-info">'
+        . '<span class="perfil-item-titulo">' . $titulo . '</span>'
+        . $metaHtml
+        . '</span>'
+        . '</a>'
+        . '</li>';
+};
 ?>
 <!DOCTYPE html>
 <html lang="es" <?= $tema ? 'data-tema="' . htmlspecialchars($tema, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
@@ -64,22 +91,12 @@ $calificaciones = $calificaciones ?? [];
                 <ul class="perfil-lista" role="list">
                     <?php foreach ($historial as $item): ?>
                         <?php
-                            $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                            $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
-                            $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'xs');
                             $vistoEn = !empty($item['viewed_at']) ? strtotime((string) $item['viewed_at']) : false;
                             $fecha = $vistoEn !== false ? date('d/m/Y', $vistoEn) : '';
                             $fechaIso = $vistoEn !== false ? date('Y-m-d', $vistoEn) : '';
+                            $metaHtml = '<span class="perfil-item-meta">Visto el <time datetime="' . $fechaIso . '">' . $fecha . '</time></span>';
                         ?>
-                        <li class="perfil-item">
-                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrl ?>" class="perfil-item-link">
-                                <div class="poster-marco poster-marco--xs"><img class="poster-img" src="<?= $poster ?>" alt="" loading="lazy"></div>
-                                <span class="perfil-item-info">
-                                    <span class="perfil-item-titulo"><?= $titulo ?></span>
-                                    <span class="perfil-item-meta">Visto el <time datetime="<?= $fechaIso ?>"><?= $fecha ?></time></span>
-                                </span>
-                            </a>
-                        </li>
+                        <?= $renderItem($item, $metaHtml) ?>
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
@@ -93,24 +110,10 @@ $calificaciones = $calificaciones ?? [];
                 <ul class="perfil-lista" role="list">
                     <?php foreach ($calificaciones as $item): ?>
                         <?php
-                            $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
-                            $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
-                            $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'xs');
                             $estrellas = (int) $item['score'];
+                            $metaHtml = '<span class="perfil-item-estrellas" aria-label="' . $estrellas . ' de 5 estrellas">' . $renderEstrellas($estrellas) . '</span>';
                         ?>
-                        <li class="perfil-item">
-                            <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrl ?>" class="perfil-item-link">
-                                <div class="poster-marco poster-marco--xs"><img class="poster-img" src="<?= $poster ?>" alt="" loading="lazy"></div>
-                                <span class="perfil-item-info">
-                                    <span class="perfil-item-titulo"><?= $titulo ?></span>
-                                    <span class="perfil-item-estrellas" aria-label="<?= $estrellas ?> de 5 estrellas">
-                                        <?php for ($n = 1; $n <= 5; $n++): ?>
-                                            <?= IconoEstrella::svg($n <= $estrellas ? 'perfil-estrella-icono perfil-estrella-icono-relleno' : 'perfil-estrella-icono perfil-estrella-icono-contorno') ?>
-                                        <?php endfor; ?>
-                                    </span>
-                                </span>
-                            </a>
-                        </li>
+                        <?= $renderItem($item, $metaHtml) ?>
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
