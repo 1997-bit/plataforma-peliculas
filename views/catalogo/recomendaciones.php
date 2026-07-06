@@ -54,7 +54,7 @@ $renderEstrella = static function (): string {
             <div class="feed-sentinel" data-feed-sentinel aria-hidden="true"></div>
         </main>
     <?php endif; ?>
-    <script id="feed-plantilla-estrella" type="text/plain"><?= $renderEstrella() ?></script>
+    <template id="feed-plantilla-estrella"><?= $renderEstrella() ?></template>
     <script src="/assets/js/recomendaciones.js" defer></script>
 </body>
 </html>

@@ -7,7 +7,10 @@
 	const cargandoEl = feed.querySelector("[data-feed-cargando]");
 	const finEl = feed.querySelector("[data-feed-fin]");
 	const estrellaTpl = document.getElementById("feed-plantilla-estrella");
-	const estrellaHtml = estrellaTpl ? estrellaTpl.textContent : "";
+
+	function crearEstrellaIcono() {
+		return estrellaTpl ? estrellaTpl.content.cloneNode(true) : null;
+	}
 
 	const tipo = feed.dataset.tipo || "movie";
 	let offset = parseInt(feed.dataset.offset, 10) || 0;
@@ -99,7 +102,8 @@
 		const rating = document.createElement("div");
 		rating.className = "feed-rating";
 		if (item.rating_count > 0) {
-			if (estrellaHtml) rating.insertAdjacentHTML("beforeend", estrellaHtml);
+			const icono = crearEstrellaIcono();
+			if (icono) rating.appendChild(icono);
 			const span = document.createElement("span");
 			const plural = item.rating_count === 1 ? "" : "es";
 			span.textContent = Number(item.rating_avg).toFixed(1) + " · " + item.rating_count + " calificación" + plural;
