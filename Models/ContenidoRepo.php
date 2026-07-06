@@ -105,6 +105,10 @@ final class ContenidoRepo
      */
     public function calificar(string $idUsuario, string $contentId, int $score): void
     {
+        if ($score < 1 || $score > 5) {
+            throw new \InvalidArgumentException('score fuera de rango (1-5)');
+        }
+
         $idUsuarioBin = UuidHelper::uuidABinario($idUsuario);
         $contentIdBin = UuidHelper::uuidABinario($contentId);
 

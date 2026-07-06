@@ -79,9 +79,8 @@ CREATE TABLE ratings (
   UNIQUE KEY uq_user_content (user_id, content_id),
   CONSTRAINT fk_ratings_user 
   FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_ratings_content 
+  CONSTRAINT fk_ratings_content
   FOREIGN KEY (content_id) REFERENCES contenido(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT chk_score_range CHECK (score >= 1 AND score <= 5),
   INDEX idx_content_id (content_id),
   INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
