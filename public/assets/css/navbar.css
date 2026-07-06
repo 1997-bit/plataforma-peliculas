@@ -86,11 +86,11 @@
 	color: oklch(95% 0 0);
 }
 
-.nav-link--activo {
+.nav-link[aria-current="page"] {
 	color: oklch(100% 0 0);
 }
 
-.nav-link--activo svg {
+.nav-link[aria-current="page"] svg {
 	color: oklch(70% 0.18 250);
 }
 

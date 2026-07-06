@@ -28,7 +28,7 @@ $calificaciones = $calificaciones ?? [];
     ?>
     <div class="perfil-banner" style="--banner-hue: <?= $hueBanner ?>"></div>
     <main class="perfil">
-        <div class="perfil-encabezado">
+        <header class="perfil-encabezado">
             <div class="perfil-avatar" style="--banner-hue: <?= $hueBanner ?>" aria-hidden="true">
                 <?= htmlspecialchars($iniciales, ENT_QUOTES, 'UTF-8') ?>
             </div>
@@ -38,7 +38,7 @@ $calificaciones = $calificaciones ?? [];
                     <?= $usuario->esAdmin() ? 'Administrador' : 'Usuario estándar' ?>
                 </span>
             </div>
-        </div>
+        </header>
 
         <section class="perfil-seccion">
             <h2 class="perfil-subtitulo">Datos de la cuenta</h2>
@@ -66,14 +66,16 @@ $calificaciones = $calificaciones ?? [];
                             $titulo = htmlspecialchars($item['title'] ?? 'Sin título', ENT_QUOTES, 'UTF-8');
                             $tipoUrl = $item['type'] === 'series' ? 'series' : 'movie';
                             $poster = TmdbImagen::poster($item['poster_path'] ?? null, 'xs');
-                            $fecha = !empty($item['viewed_at']) ? date('d/m/Y', strtotime((string) $item['viewed_at'])) : '';
+                            $vistoEn = !empty($item['viewed_at']) ? strtotime((string) $item['viewed_at']) : false;
+                            $fecha = $vistoEn !== false ? date('d/m/Y', $vistoEn) : '';
+                            $fechaIso = $vistoEn !== false ? date('Y-m-d', $vistoEn) : '';
                         ?>
                         <li class="perfil-item">
                             <a href="/contenido?id=<?= urlencode((string) $item['id']) ?>&tipo=<?= $tipoUrl ?>" class="perfil-item-link">
                                 <div class="poster-marco poster-marco--xs"><img class="poster-img" src="<?= $poster ?>" alt="" loading="lazy"></div>
                                 <span class="perfil-item-info">
                                     <span class="perfil-item-titulo"><?= $titulo ?></span>
-                                    <span class="perfil-item-meta">Visto el <?= $fecha ?></span>
+                                    <span class="perfil-item-meta">Visto el <time datetime="<?= $fechaIso ?>"><?= $fecha ?></time></span>
                                 </span>
                             </a>
                         </li>
