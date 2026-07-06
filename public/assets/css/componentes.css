@@ -119,6 +119,20 @@
 	background: transparent;
 }
 
+/* hero-slide
+   capa base de una diapositiva de fondo (imagen via background-image
+   inline + degradado propio de cada pagina): compartida por el hero de
+   home.css (carrusel, agrega .home-hero-slide para el fade) y el partial
+   views/partials/hero-fondo.php (usado por detalle.css, sin fade).
+*/
+.hero-slide {
+	position: absolute;
+	inset: 0;
+	background-size: cover;
+	background-position: top center;
+	background-color: oklch(8% 0 0);
+}
+
 /* chip
    chip generico tipo pastilla, usado para generos, tags, filtros activos.
 */

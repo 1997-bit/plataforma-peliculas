@@ -1,15 +1,18 @@
 <?php
+use App\Helpers\IconoEstrella;
 /** @var string $csrf */
 /** @var string|null $okMsg */
 /** @var string|null $errorMsg */
 /** @var list<array<string,mixed>> $contenidoLocal */
 /** @var list<array{nombre:string, vistas:int}> $generosMasVistos */
+/** @var array{movie:int, series:int} $conteoPorTipo */
 $generosMasVistos = $generosMasVistos ?? [];
+$conteoPorTipo = $conteoPorTipo ?? ['movie' => 0, 'series' => 0];
 $okMsg = $okMsg ?? null;
 $errorMsg = $errorMsg ?? null;
-$total = count($contenidoLocal);
-$peliculas = count(array_filter($contenidoLocal, fn ($c) => ($c['type'] ?? '') === 'movie'));
-$series = count(array_filter($contenidoLocal, fn ($c) => ($c['type'] ?? '') === 'series'));
+$peliculas = $conteoPorTipo['movie'];
+$series = $conteoPorTipo['series'];
+$total = $peliculas + $series;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -77,41 +80,54 @@ $series = count(array_filter($contenidoLocal, fn ($c) => ($c['type'] ?? '') === 
     <?php if ($contenidoLocal === []): ?>
         <p class="perfil-vacio">Sin contenido. <a href="/admin/contenido/nuevo">Crear manual</a> o <a href="/admin/contenido/nuevo?modo=tmdb">importar de TMDB</a>.</p>
     <?php else: ?>
-    <div class="admin-lista">
-    <?php foreach ($contenidoLocal as $item): ?>
-        <?php $id = (string) ($item['id'] ?? ''); ?>
-        <article class="admin-item">
-            <?php if (!empty($item['poster_path'])): ?>
-                <div class="poster-marco poster-marco--xs">
-                    <img class="poster-img" src="<?= htmlspecialchars((string) $item['poster_path'], ENT_QUOTES, 'UTF-8') ?>" alt="">
-                </div>
-            <?php endif; ?>
-            <div class="admin-item-info">
-                <span class="admin-item-titulo"><?= htmlspecialchars((string) ($item['titulo'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
-                <div class="admin-item-meta">
-                    <span class="chip chip--simple"><?= htmlspecialchars((string) ($item['type'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
-                    <span class="chip chip--simple"><?= htmlspecialchars((string) ($item['anio_lanzamiento'] ?? '—'), ENT_QUOTES, 'UTF-8') ?></span>
-                    <span class="admin-item-rating">
-                        <svg class="admin-item-rating-icono" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" aria-hidden="true">
-                            <rect width="256" height="256" fill="none"/>
-                            <path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/>
-                        </svg>
-                        <?= ((int) ($item['rating_count'] ?? 0)) > 0
-                            ? number_format((float) $item['rating_avg'], 1) . ' (' . (int) $item['rating_count'] . ')'
-                            : 'Sin calificaciones' ?>
-                    </span>
-                </div>
-            </div>
-            <div class="admin-item-acciones">
-                <a href="/admin/contenido/editar?id=<?= urlencode($id) ?>" class="boton boton--secundario">editar</a>
-                <form method="POST" action="/admin/contenido/eliminar" onsubmit="return confirm('eliminar?');">
-                    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
-                    <input type="hidden" name="id" value="<?= htmlspecialchars($id, ENT_QUOTES, 'UTF-8') ?>">
-                    <button type="submit" class="boton boton--secundario">eliminar</button>
-                </form>
-            </div>
-        </article>
-    <?php endforeach; ?>
+    <div class="admin-tabla-wrap">
+        <table class="admin-tabla">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Título</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Año</th>
+                    <th scope="col">Calificación</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($contenidoLocal as $item): ?>
+                <?php $id = (string) ($item['id'] ?? ''); ?>
+                <tr>
+                    <td>
+                        <?php if (!empty($item['poster_path'])): ?>
+                            <div class="poster-marco poster-marco--xs">
+                                <img class="poster-img" src="<?= htmlspecialchars((string) $item['poster_path'], ENT_QUOTES, 'UTF-8') ?>" alt="">
+                            </div>
+                        <?php endif; ?>
+                    </td>
+                    <td class="admin-tabla-titulo"><?= htmlspecialchars((string) ($item['titulo'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><span class="chip chip--simple"><?= ($item['type'] ?? '') === 'series' ? 'Serie' : 'Película' ?></span></td>
+                    <td><?= htmlspecialchars((string) ($item['anio_lanzamiento'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                    <td>
+                        <span class="admin-item-rating">
+                            <?= IconoEstrella::svg('admin-item-rating-icono') ?>
+                            <?= ((int) ($item['rating_count'] ?? 0)) > 0
+                                ? number_format((float) $item['rating_avg'], 1) . ' (' . (int) $item['rating_count'] . ')'
+                                : 'Sin calificaciones' ?>
+                        </span>
+                    </td>
+                    <td>
+                        <div class="admin-tabla-acciones">
+                            <a href="/admin/contenido/editar?id=<?= urlencode($id) ?>" class="boton boton--secundario boton--sm">editar</a>
+                            <form method="POST" action="/admin/contenido/eliminar" class="admin-tabla-acciones-form" onsubmit="return confirm('eliminar?');">
+                                <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
+                                <input type="hidden" name="id" value="<?= htmlspecialchars($id, ENT_QUOTES, 'UTF-8') ?>">
+                                <button type="submit" class="boton boton--secundario boton--sm">eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
     <?php endif; ?>
 </section>

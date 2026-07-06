@@ -111,4 +111,74 @@
             }
         });
     }
+
+    // envio del formulario via fetch: crear varios contenidos seguidos
+    // (buscar en TMDB -> usar resultado -> crear) sin perder la busqueda
+    // ni el scroll por un reload completo de la pagina.
+    var form = document.querySelector('.admin-form');
+    var avisoOk = elems('form-aviso-ok');
+    var avisoError = elems('form-aviso-error');
+    var existeAviso = elems('existe-aviso');
+
+    function mostrarAviso(el, mensaje) {
+        if (!el) return;
+        el.textContent = mensaje;
+        el.hidden = false;
+    }
+
+    function ocultarAviso(el) {
+        if (!el) return;
+        el.hidden = true;
+        el.textContent = '';
+    }
+
+    function resetearFormulario() {
+        form.reset();
+        ocultarPoster();
+        backdropField.mostrarPlaceholder();
+        var campoBackdrop = elems('backdrop-campo');
+        if (campoBackdrop) campoBackdrop.hidden = true;
+        if (existeAviso) existeAviso.hidden = true;
+        document.querySelectorAll('.admin-tmdb-card').forEach(function (c) {
+            c.classList.remove('admin-tmdb-card--activo');
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            ocultarAviso(avisoOk);
+            ocultarAviso(avisoError);
+
+            var btn = form.querySelector('button[type="submit"]');
+            if (btn) btn.disabled = true;
+
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            })
+                .then(function (r) {
+                    return r.json().then(function (data) {
+                        return { ok: r.ok, data: data };
+                    });
+                })
+                .then(function (res) {
+                    if (res.ok) {
+                        resetearFormulario();
+                        mostrarAviso(avisoOk, res.data.mensaje || 'Contenido creado correctamente.');
+                    } else {
+                        var errores = res.data && res.data.errores ? res.data.errores : ['No se pudo crear el contenido.'];
+                        mostrarAviso(avisoError, errores.join(' '));
+                    }
+                })
+                .catch(function () {
+                    mostrarAviso(avisoError, 'Error de conexión. Intenta de nuevo.');
+                })
+                .finally(function () {
+                    if (btn) btn.disabled = false;
+                });
+        });
+    }
 }());

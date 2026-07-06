@@ -18,7 +18,11 @@ final class ContenidoController
         if ($contentId === '') {
             Http::error404();
         }
-        $detalle = $this->adminContenidoRepo->buscarPorId($contentId);
+        try {
+            $detalle = $this->adminContenidoRepo->buscarPorId($contentId);
+        } catch (\InvalidArgumentException) {
+            $detalle = null;
+        }
         if ($detalle === null) {
             Http::error404();
         }
@@ -79,6 +83,8 @@ final class ContenidoController
         try {
             $this->contenidoRepo->calificar($idUsuario, $contentId, $estrellas);
             $this->json(200, ['ok' => true]);
+        } catch (\InvalidArgumentException) {
+            $this->json(400, ['error' => 'Datos invalidos']);
         } catch (\Throwable $e) {
             error_log('ContenidoController::calificar - ' . $e->getMessage());
             $this->json(500, ['error' => 'Error interno']);

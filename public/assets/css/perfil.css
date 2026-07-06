@@ -77,7 +77,7 @@
 }
 
 .perfil-aviso-error {
-  background: oklch(80% 0.15 25 / 25%);
+  background: var(--color-error-bg);
   color: var(--color-error-texto);
 }
 
@@ -145,7 +145,7 @@
 .perfil-vacio {
   margin: 0;
   font-size: var(--text-sm);
-  opacity: 0.65;
+  opacity: var(--opacidad-vacio);
 }
 
 /* datos de cuenta */
@@ -192,7 +192,7 @@
 }
 
 .perfil-badge-admin {
-  background: oklch(55% 0.18 250 / 18%);
+  background: color-mix(in oklab, var(--color-primario) 18%, transparent);
   color: var(--color-primario);
 }
 
@@ -291,9 +291,25 @@
 }
 
 .perfil-item-estrellas {
-  font-size: var(--text-sm);
-  letter-spacing: 0.05em;
-  color: oklch(75% 0.15 80);
+  display: inline-flex;
+  gap: 0.15rem;
+}
+
+.perfil-estrella-icono {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.perfil-estrella-icono-relleno {
+  fill: var(--color-estrella);
+}
+
+.perfil-estrella-icono-contorno {
+  fill: none;
+  stroke: var(--color-estrella-contorno);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 /* exportar / importar (placeholder, ver TODO en la vista) */

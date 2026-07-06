@@ -76,6 +76,7 @@
 								name="password"
 								autocomplete="new-password"
 								required
+								minlength="8"
 							/>
 							<button type="button" class="auth-toggle-ojo" aria-label="Mostrar u ocultar contraseña">
 								<svg class="icono-ojo-abierto" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true">
@@ -99,6 +100,7 @@
 								id="password_confirm"
 								name="password_confirm"
 								required
+								minlength="8"
 							/>
 							<button type="button" class="auth-toggle-ojo" aria-label="Mostrar u ocultar contraseña">
 								<svg class="icono-ojo-abierto" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true">

@@ -6,7 +6,7 @@
 :root {
 	/* escala de poster: 4 tamaños con nombre semantico, no arbitrarios.
 	   cada uno cubre un caso real que ya existia en el proyecto:
-	   xs  -> lista compacta (historial, calificaciones en /profile)
+	   xs  -> lista compacta (historial, calificaciones en /perfil)
 	   sm  -> feed vertical (recomendaciones)
 	   md  -> grid de catalogo y shelf de home
 	   lg  -> header de detalle de pelicula/serie */
@@ -43,10 +43,20 @@
 	/* superficie oscura fija (dropdown/dialog), independiente del tema claro/oscuro de --bg */
 	--color-superficie-oscura: oklch(18% 0.03 231);
 
+	/* dorado de estrella/calificacion, mismo valor repetido en detalle.css y admin-dashboard.css */
+	--color-estrella: oklch(75% 0.18 80);
+	/* contorno de estrella vacia (solo display, no interactiva), mismo valor repetido en perfil.css y detalle.css */
+	--color-estrella-contorno: oklch(60% 0 0 / 35%);
+
+	/* opacidad de texto atenuado en estados vacios, mismo valor repetido en
+	   catalogo.css/admin-dashboard.css (perfil.css usaba 0.65, se unifica) */
+	--opacidad-vacio: 0.6;
+
 	/* colores de aviso (ok/error/warning), mismo valor repetido en perfil.css y admin-layout.css */
 	--color-ok-bg: oklch(85% 0.12 145 / 25%);
 	--color-ok-texto: oklch(35% 0.12 145);
 	--color-ok-texto-dark: oklch(85% 0.12 145);
+	--color-error-bg: oklch(80% 0.15 25 / 25%);
 	--color-error-texto: oklch(35% 0.15 25);
 	--color-error-texto-dark: oklch(85% 0.15 25);
 	--color-warning-bg: oklch(88% 0.12 80 / 30%);

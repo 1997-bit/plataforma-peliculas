@@ -44,7 +44,7 @@ class LoginController
 
     if (!$resultado->success) {
       $error = $resultado->errorMsg;
-      $csrf  = Session::generarCsrf();
+      $csrf = Session::generarCsrf();
       if ($resultado->rateLimited) http_response_code(429);
       require ROOT . '/views/auth/login.php';
       return;

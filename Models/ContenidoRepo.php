@@ -83,11 +83,12 @@ final class ContenidoRepo
     public function historialReciente(string $idUsuario, int $limite = 10): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT c.id, c.tmdb_id, c.origen, c.type, c.titulo AS title, c.poster_path, MAX(vh.viewed_at) AS viewed_at
+            'SELECT c.id, c.tmdb_id, c.origen, c.type, c.titulo AS title, c.poster_path,
+                    c.rating_avg, c.rating_count, MAX(vh.viewed_at) AS viewed_at
              FROM historial_vistas vh
              INNER JOIN contenido c ON c.id = vh.content_id
              WHERE vh.user_id = :user_id
-             GROUP BY vh.content_id, c.id, c.tmdb_id, c.origen, c.type, c.titulo, c.poster_path
+             GROUP BY vh.content_id, c.id, c.tmdb_id, c.origen, c.type, c.titulo, c.poster_path, c.rating_avg, c.rating_count
              ORDER BY viewed_at DESC
              LIMIT :limite'
         );
@@ -104,6 +105,10 @@ final class ContenidoRepo
      */
     public function calificar(string $idUsuario, string $contentId, int $score): void
     {
+        if ($score < 1 || $score > 5) {
+            throw new \InvalidArgumentException('score fuera de rango (1-5)');
+        }
+
         $idUsuarioBin = UuidHelper::uuidABinario($idUsuario);
         $contentIdBin = UuidHelper::uuidABinario($contentId);
 
@@ -154,7 +159,7 @@ final class ContenidoRepo
 
     /**
      * Todas las calificaciones del usuario, con datos del contenido, para
-     * mostrar en /profile. Ordenadas por más reciente primero.
+     * mostrar en /perfil. Ordenadas por más reciente primero.
      *
      * @return list<array{id:string,tmdb_id:int,type:string,title:string,poster_path:?string,score:int,created_at:string}>
      */

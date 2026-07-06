@@ -71,8 +71,8 @@ $pageTitle = 'Editar · ' . ($item['titulo'] ?? 'contenido');
                 <textarea id="descripcion" name="descripcion" maxlength="2000" rows="4"><?= $descripcion ?></textarea>
             </div>
 
-            <div class="admin-campo">
-                <label>Géneros</label>
+            <fieldset class="admin-campo">
+                <legend>Géneros</legend>
                 <div class="admin-generos-grid">
                     <?php foreach ($generos as $genero): ?>
                         <?php $gid = (int) $genero['id']; ?>
@@ -83,7 +83,7 @@ $pageTitle = 'Editar · ' . ($item['titulo'] ?? 'contenido');
                         </label>
                     <?php endforeach; ?>
                 </div>
-            </div>
+            </fieldset>
 
             <div class="admin-campo">
                 <label for="poster">Poster</label>

@@ -41,7 +41,7 @@
 
 .admin-nav a[aria-current="page"] {
   opacity: 1;
-  background: oklch(55% 0.18 250 / 15%);
+  background: color-mix(in oklab, var(--color-primario) 15%, transparent);
   color: var(--color-primario);
 }
 

@@ -24,7 +24,8 @@
   display: none;
 }
 
-.admin-campo > label {
+.admin-campo > label,
+.admin-campo > legend {
   font-size: var(--text-sm);
   font-weight: 600;
 }

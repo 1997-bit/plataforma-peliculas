@@ -52,9 +52,7 @@ $hasBackdrop = $tmdbBackdropId !== '';
 
 <main class="admin-main admin-main--wide">
 
-<?php if ($okMsg): ?>
-    <p class="admin-aviso admin-aviso--ok" role="status"><?= htmlspecialchars($okMsg, ENT_QUOTES, 'UTF-8') ?></p>
-<?php endif; ?>
+<p id="form-aviso-ok" class="admin-aviso admin-aviso--ok" role="status" <?= $okMsg ? '' : 'hidden' ?>><?= htmlspecialchars((string) $okMsg, ENT_QUOTES, 'UTF-8') ?></p>
 
 <div class="admin-agregar">
 
@@ -143,9 +141,7 @@ $hasBackdrop = $tmdbBackdropId !== '';
     <section id="admin-agregar-form" class="admin-panel">
         <p class="admin-panel-titulo">Nuevo contenido</p>
 
-        <?php if ($errorMsg !== null): ?>
-            <p class="admin-aviso admin-aviso--error" role="alert"><?= htmlspecialchars($errorMsg, ENT_QUOTES, 'UTF-8') ?></p>
-        <?php endif; ?>
+        <p id="form-aviso-error" class="admin-aviso admin-aviso--error" role="alert" <?= $errorMsg !== null ? '' : 'hidden' ?>><?= htmlspecialchars((string) $errorMsg, ENT_QUOTES, 'UTF-8') ?></p>
 
         <div id="existe-aviso" class="admin-aviso admin-aviso--warning" hidden>
             Este título ya está en el catálogo. Si guardas se creará una entrada duplicada.
@@ -182,8 +178,8 @@ $hasBackdrop = $tmdbBackdropId !== '';
                 <textarea id="descripcion" name="descripcion" maxlength="2000" rows="4"><?= $descripcion ?></textarea>
             </div>
 
-            <div class="admin-campo">
-                <label>Géneros</label>
+            <fieldset class="admin-campo">
+                <legend>Géneros</legend>
                 <div class="admin-generos-grid">
                     <?php foreach ($generos as $genero): ?>
                         <?php $gid = (int) $genero['id']; ?>
@@ -194,7 +190,7 @@ $hasBackdrop = $tmdbBackdropId !== '';
                         </label>
                     <?php endforeach; ?>
                 </div>
-            </div>
+            </fieldset>
 
             <div class="admin-campo">
                 <label for="poster">Poster</label>
