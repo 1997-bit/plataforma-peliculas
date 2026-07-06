@@ -127,3 +127,57 @@
   gap: 0.5rem;
   flex-shrink: 0;
 }
+
+/* --- tabla de contenido --- */
+
+.admin-tabla-wrap {
+  overflow-x: auto;
+}
+
+.admin-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.admin-tabla th,
+.admin-tabla td {
+  padding: 0.6rem var(--espacio-sm);
+  text-align: left;
+  border-bottom: 1px solid var(--borde-color);
+  vertical-align: middle;
+}
+
+.admin-tabla thead th {
+  font-size: var(--text-xs);
+  opacity: 0.65;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-tabla tbody tr:hover {
+  background: var(--borde-color-sutil);
+}
+
+.admin-tabla-titulo {
+  font-weight: 600;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-tabla-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+/* el <form> de "eliminar" pasa a ser el flex item (no la celda), como
+   inline-flex de un solo boton, para no depender de display:contents
+   sobre un <form> (mezclado con inputs hidden da lios de render). */
+.admin-tabla-acciones-form {
+  display: inline-flex;
+  margin: 0;
+}
