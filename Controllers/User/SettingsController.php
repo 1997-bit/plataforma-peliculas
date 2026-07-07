@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Controllers\User;
 
 use App\Core\Session;
-use App\Helpers\GenerosTmdb;
 use App\Helpers\Http;
+use App\Models\AdminContenidoRepo;
 use App\Services\User\PerfilService;
 
 /**
@@ -18,6 +18,7 @@ final class SettingsController
 {
     public function __construct(
         private PerfilService $perfilService,
+        private AdminContenidoRepo $adminContenidoRepo,
     ) {
     }
 
@@ -30,7 +31,7 @@ final class SettingsController
             Http::error404();
         }
 
-        $generos = GenerosTmdb::comoLista();
+        $generos = $this->adminContenidoRepo->listarGeneros();
         $generosFavoritos = $usuario->preferences['generos'] ?? [];
         $csrf = Session::generarCsrf();
 
@@ -51,7 +52,7 @@ final class SettingsController
 
         if (!$resultado->success) {
             $usuario = $this->perfilService->obtenerPerfil($idUsuario);
-            $generos = GenerosTmdb::comoLista();
+            $generos = $this->adminContenidoRepo->listarGeneros();
             $generosFavoritos = $generosCrudos !== [] ? array_map('intval', $generosCrudos) : ($usuario->preferences['generos'] ?? []);
             $errorMsg = $resultado->primerError();
             $csrf = Session::generarCsrf();

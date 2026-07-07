@@ -76,13 +76,13 @@ $router->registrarGet('/perfil', function () use ($userController) {
     $userController->index();
 });
 
-$settingsController = new SettingsController($perfilService);
+$settingsController = new SettingsController($perfilService, $adminContenidoRepo);
 $router->registrarGet('/settings', function () use ($settingsController) { AuthMiddleware::bloquearRol('admin'); $settingsController->index(); });
 $router->registrarPost('/settings', function () use ($settingsController) { AuthMiddleware::bloquearRol('admin'); $settingsController->actualizar(); });
 $router->registrarGet('/settings/exportar', function () use ($settingsController) { AuthMiddleware::bloquearRol('admin'); $settingsController->exportar(); });
 $router->registrarPost('/settings/importar', function () use ($settingsController) { AuthMiddleware::bloquearRol('admin'); $settingsController->importar(); });
 
-$onboardingController = new OnboardingController($perfilService);
+$onboardingController = new OnboardingController($perfilService, $adminContenidoRepo);
 $router->registrarGet('/onboarding', function () use ($onboardingController) { AuthMiddleware::bloquearRol('admin'); $onboardingController->mostrar(); });
 $router->registrarPost('/onboarding', function () use ($onboardingController) { AuthMiddleware::bloquearRol('admin'); $onboardingController->procesar(); });
 
