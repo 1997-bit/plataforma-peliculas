@@ -323,11 +323,6 @@ final class AdminContenidoRepo
         $stmt->execute([':id' => $id]);
     }
 
-    public function idsInternosPorTmdbId(array $tmdbIds): array
-    {
-        return $this->columnaPorTmdbIds('generos', 'id', $tmdbIds);
-    }
-
     private function columnaPorTmdbIds(string $tabla, string $columna, array $tmdbIds): array
     {
         if ($tmdbIds === []) {

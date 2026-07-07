@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Controllers\User;
 
 use App\Core\Session;
-use App\Helpers\GenerosTmdb;
 use App\Helpers\Http;
+use App\Models\AdminContenidoRepo;
 use App\Services\User\PerfilService;
 
 /**
@@ -22,6 +22,7 @@ final class OnboardingController
 {
     public function __construct(
         private PerfilService $perfilService,
+        private AdminContenidoRepo $adminContenidoRepo,
     ) {
     }
 
@@ -40,7 +41,7 @@ final class OnboardingController
             exit;
         }
 
-        $generos = GenerosTmdb::comoLista();
+        $generos = $this->adminContenidoRepo->listarGeneros();
         $csrf = Session::generarCsrf();
 
         require ROOT . '/views/onboarding/step1.php';
@@ -63,7 +64,7 @@ final class OnboardingController
         $resultado = $this->perfilService->actualizarPerfil($idUsuario, $usuario->username, $generosCrudos);
 
         if (!$resultado->success) {
-            $generos = GenerosTmdb::comoLista();
+            $generos = $this->adminContenidoRepo->listarGeneros();
             $generosFavoritos = $generosCrudos !== [] ? array_map('intval', $generosCrudos) : [];
             $errorMsg = $resultado->primerError();
             $csrf = Session::generarCsrf();

@@ -78,12 +78,11 @@ final class RecomendacionController
         echo json_encode(['items' => $items, 'hasMore' => $hasMore], JSON_UNESCAPED_UNICODE);
     }
 
-    /** @param list<int|string> $generosFavoritos @return array{0: list<array<string,mixed>>, 1: bool} */
+    /** @param list<int> $generosFavoritos @return array{0: list<array<string,mixed>>, 1: bool} */
     private function obtenerPagina(string $tipo, array $generosFavoritos, int $offset): array
     {
-        $generosInternos = $this->repo->idsInternosPorTmdbId($generosFavoritos);
         $filas = Normalizador::lista(
-            $this->repo->contenidoParaCatalogo($tipo, $generosInternos, self::LIMITE, $offset)
+            $this->repo->contenidoParaCatalogo($tipo, $generosFavoritos, self::LIMITE, $offset)
         );
         $items = array_map($this->prepararItem(...), $filas);
 

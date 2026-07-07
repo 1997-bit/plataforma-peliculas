@@ -25,18 +25,15 @@ final class HomeController
         $usuario = $idUsuario !== '' ? $this->userRepo->buscarPorId($idUsuario) : null;
 
         $generosFavoritos = $usuario?->preferences['generos'] ?? [];
-        $generosInternos = $generosFavoritos !== []
-            ? $this->adminContenidoRepo->idsInternosPorTmdbId($generosFavoritos)
-            : [];
 
         $populares = Normalizador::lista(
-            $this->adminContenidoRepo->contenidoParaCatalogo('movie', $generosInternos, 20)
+            $this->adminContenidoRepo->contenidoParaCatalogo('movie', $generosFavoritos, 20)
         );
         $series = Normalizador::lista(
-            $this->adminContenidoRepo->contenidoParaCatalogo('series', $generosInternos, 20)
+            $this->adminContenidoRepo->contenidoParaCatalogo('series', $generosFavoritos, 20)
         );
 
-        $recomendaciones = $generosInternos !== [] ? array_merge($populares, $series) : [];
+        $recomendaciones = $generosFavoritos !== [] ? array_merge($populares, $series) : [];
         $hero = array_slice($recomendaciones !== [] ? $recomendaciones : $populares, 0, 8);
         $vistoReciente = $this->contenidoRepo->historialReciente($idUsuario, 10);
 
