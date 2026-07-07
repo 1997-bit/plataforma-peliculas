@@ -9,6 +9,13 @@
     const originals = Array.from(row.children);
     if (originals.length === 0) return;
 
+    // Si los items ya caben enteros en el viewport (pocos items, ej. el
+    // historial de "visto recientemente" recién estrenado) no hay nada que
+    // recorrer: clonar igual mostraría el mismo item repetido 3 veces
+    // seguidas sin necesidad de scroll.
+    const viewport = row.parentElement;
+    if (viewport && row.scrollWidth <= viewport.clientWidth + 1) return;
+
     // Clona el set completo antes y después para loop continuo.
     const cloneSet = () =>
       originals.map((node) => {
