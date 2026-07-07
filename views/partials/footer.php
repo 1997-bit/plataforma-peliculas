@@ -2,7 +2,7 @@
 <footer class="footer">
 	<div class="footer-grid">
 		<div class="footer-marca">
-			<span class="footer-logo">CineApp</span>
+			<span class="footer-logo">Movify</span>
 			<p>Tu cine, tu historia.</p>
 		</div>
 		<nav class="footer-col" aria-label="Producto">
@@ -25,6 +25,6 @@
 		</div>
 	</div>
 	<div class="footer-bottom">
-		<p>&copy; <?= date('Y') ?> CineApp</p>
+		<p>&copy; <?= date('Y') ?> Movify</p>
 	</div>
 </footer>

@@ -11,7 +11,7 @@ $rutaLogo = $usuarioLogueado
 	<a href="<?= $rutaLogo ?>" class="nav-logo">
 		<img
 			src="/assets/images/logo_peliculas.png"
-			alt="CineApp"
+			alt="Movify"
 			class="nav-logo-img">
 	</a>
 	<nav aria-label="Navegación principal">
