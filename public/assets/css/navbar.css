@@ -238,3 +238,36 @@
 .dialogo-confirmar-aceptar:hover {
 	background: oklch(50% 0.22 25);
 }
+
+/* claro */
+
+
+:root[data-tema="light"] .nav-link {
+	color: oklch(45% 0.18 25);
+}
+
+:root[data-tema="light"] .nav-link:hover {
+	color: oklch(35% 0.20 25);
+}
+
+:root[data-tema="light"] .nav-link[aria-current="page"] {
+	color: oklch(30% 0.22 25);
+}
+
+:root[data-tema="light"] .nav-link[aria-current="page"] svg {
+	color: oklch(50% 0.20 25);
+}
+
+:root[data-tema="light"] .nav-logo {
+	color: oklch(30% 0.22 25);
+}
+
+:root[data-tema="light"] .nav-cuenta-boton {
+	color: oklch(45% 0.18 25);
+}
+
+:root[data-tema="light"] .nav-cuenta-boton:hover,
+:root[data-tema="light"] .nav-cuenta-boton:open,
+:root[data-tema="light"] .nav-cuenta-boton[aria-expanded="true"] {
+	color: oklch(88.443% 0.03595 17.7);
+}
