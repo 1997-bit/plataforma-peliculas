@@ -10,7 +10,7 @@
 		<title>Privacidad</title>
 		<link
 			rel="icon"
-			href="/assets/images/favicon.svg"
+			href="/assets/images/logo_peliculas.ico"
 			type="image/svg+xml"
 		/>
 		<link rel="stylesheet" href="/assets/css/base.css" />

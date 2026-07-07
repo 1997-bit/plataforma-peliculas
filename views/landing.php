@@ -10,7 +10,7 @@
 		<title>CineApp</title>
 		<link
 			rel="icon"
-			href="/assets/images/favicon.svg"
+			href="/assets/images/logo_peliculas.ico"
 			type="image/svg+xml"
 		/>
 
