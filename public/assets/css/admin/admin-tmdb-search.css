@@ -4,8 +4,13 @@
    en el <head>; reusa .chip/.poster-marco de componentes.css. */
 
 .admin-tmdb-card-existe {
-  color: var(--color-warning-texto);
   background: var(--color-warning-bg);
+  color: var(--color-warning-texto);
+  font-weight: 600;
+}
+
+:root[data-tema="dark"] .admin-tmdb-card-existe {
+  color: var(--color-warning-texto-dark);
 }
 
 /* --- split layout agregar contenido --- */
@@ -119,8 +124,6 @@
   margin-top: 0.3rem;
 }
 
-.admin-vacio {
-  font-size: var(--text-sm);
-  opacity: var(--opacidad-vacio);
-  margin: 0;
-}
+
+
+

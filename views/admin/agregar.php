@@ -1,4 +1,5 @@
 <?php
+$tema = $_COOKIE['tema'] ?? null;
 /** @var string $csrf */
 /** @var string $q */
 /** @var string $tipoBusqueda */
@@ -32,8 +33,7 @@ $hasPoster = $tmdbPosterId !== '';
 $hasBackdrop = $tmdbBackdropId !== '';
 ?>
 <!DOCTYPE html>
-<html lang="es">
-<head>
+<html lang="es" <?= $tema ? 'data-tema="' . htmlspecialchars($tema, ENT_QUOTES, 'UTF-8') . '"' : '' ?>><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin · Agregar contenido</title>
