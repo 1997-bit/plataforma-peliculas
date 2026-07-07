@@ -4,10 +4,32 @@
    Depende de --poster-ratio/--poster-w-sm de tokens.css. */
 
 .admin-img-preview-wrap {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--espacio-sm);
+  position: relative;
 }
+
+
+/* Nuevo */
+#btn-quitar-poster {
+  position: absolute;
+  top: -8px;
+  left: 96px; 
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0;
+  background: var(--color-superficie-oscura);
+  border: 1px solid var(--borde-color-fuerte);
+}
+
+#btn-quitar-poster::before {
+  content: "×";
+  font-size: 16px;
+  color: white;
+  line-height: 1;
+}
+/* no-Nuevo */
+
 
 .admin-poster-preview {
   width: 110px;

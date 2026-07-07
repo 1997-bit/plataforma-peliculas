@@ -83,7 +83,7 @@
   gap: var(--espacio-sm);
   flex-wrap: wrap;
   padding-top: var(--espacio-sm);
-  border-top: 1px solid oklch(60% 0 0 / 12%);
+  border-top: 1px solid var(--borde-color);
 }
 
 /* --- form inline (alta de generos, busqueda TMDB) --- */

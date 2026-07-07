@@ -8,7 +8,7 @@ $rutaLogo = $usuarioLogueado
 	: '/';
 ?>
 <header class="nav">
-	<a href="<?= $rutaLogo ?>" class="nav-logo">PANCONQUESO</a>
+	<a href="<?= $rutaLogo ?>" class="nav-logo">CINEAPP</a>
 	<nav aria-label="Navegación principal">
 		<?php if ($usuarioLogueado): ?>
 		<div class="nav-links">

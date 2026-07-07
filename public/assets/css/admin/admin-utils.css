@@ -6,3 +6,9 @@
   padding: 0.3rem 0.75rem;
   font-size: var(--text-xs);
 }
+
+.admin-vacio {
+  font-size: var(--text-sm);
+  opacity: var(--opacidad-vacio);
+  margin: 0;
+}
