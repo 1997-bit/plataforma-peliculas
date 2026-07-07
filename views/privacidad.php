@@ -10,7 +10,7 @@
 		<title>Privacidad</title>
 		<link
 			rel="icon"
-			href="/assets/images/logo_peliculas.ico"
+			href="/assets/images/favicon.svg"
 			type="image/svg+xml"
 		/>
 		<link rel="stylesheet" href="/assets/css/base.css" />
@@ -34,11 +34,11 @@
 			<ol class="legal-lista">
 				<li>
 					<p>
-						<strong>Quiénes somos.</strong> Movify es una
+						<strong>Quiénes somos.</strong> CineApp es una
 						plataforma para descubrir, registrar y compartir
 						películas, operada desde la República de Panamá. Para
 						consultas de privacidad:
-						<strong>contacto@Movify.com.pa</strong>
+						<strong>contacto@cineapp.com.pa</strong>
 					</p>
 				</li>
 
@@ -146,7 +146,7 @@
 						</li>
 					</ul>
 					<p>
-						Escríbenos a <strong>contacto@Movify.com.pa</strong>,
+						Escríbenos a <strong>contacto@cineapp.com.pa</strong>,
 						respondemos en máximo 10 días hábiles. Si no recibes
 						respuesta, puedes acudir a la
 						<a
@@ -196,7 +196,7 @@
 				<li>
 					<p>
 						<strong>Contacto.</strong>
-						<strong>contacto@Movify.com.pa</strong>. Respuesta en
+						<strong>contacto@cineapp.com.pa</strong>. Respuesta en
 						máximo 10 días hábiles.
 					</p>
 				</li>
