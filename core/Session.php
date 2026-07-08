@@ -34,6 +34,20 @@ class Session
         session_regenerate_id(true);
     }
 
+    /**
+     * Suelta el lock del archivo de sesion sin perder los datos ya leidos en
+     * memoria. Llamar antes de operaciones largas (ej. peticiones HTTP a
+     * servicios externos) para no bloquear otras peticiones concurrentes del
+     * mismo usuario, que de otro modo esperan este lock hasta agotar
+     * max_execution_time.
+     */
+    public static function liberarBloqueo(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+    }
+
     public static function destruir(): void
     {
         $_SESSION = [];

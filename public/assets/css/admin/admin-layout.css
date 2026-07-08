@@ -95,7 +95,7 @@
 }
 
 .admin-aviso--error {
-  background: oklch(80% 0.15 25 / 20%);
+  background: var(--color-error-bg);
   color: var(--color-error-texto);
 }
 

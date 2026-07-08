@@ -84,3 +84,16 @@
 		--poster-w-lg: 210px;
 	}
 }
+
+/* mismo fallback que --bg/--texto en base.css: si el usuario no eligio tema
+   explicitamente (sin data-tema) pero el sistema esta en oscuro, los avisos
+   ok/error/warning deben usar su variante de texto oscura tambien. sin esto
+   el texto quedaba con la luminosidad clara (pensada para --bg claro) sobre
+   un --bg oscuro, dando texto verde oscuro sobre fondo verde oscuro */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-tema]) {
+		--color-ok-texto: oklch(85% 0.12 145);
+		--color-error-texto: oklch(85% 0.15 25);
+		--color-warning-texto: oklch(82% 0.12 80);
+	}
+}

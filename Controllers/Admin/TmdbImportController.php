@@ -31,6 +31,9 @@ final class TmdbImportController
             exit;
         }
 
+        $userId = (string) Session::obtener('user_id');
+        Session::liberarBloqueo();
+
         $detalle = $this->tmdb->fetch("/{$recurso}/{$tmdbId}", [
             'language' => 'es-MX',
         ]);
@@ -67,7 +70,7 @@ final class TmdbImportController
             $posterLocal,
             $anio,
             $generoIdsLocales,
-            (string) Session::obtener('user_id'),
+            $userId,
             $tmdbId,
             $backdropLocal,
         );

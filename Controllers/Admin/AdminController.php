@@ -46,6 +46,8 @@ final class AdminController
         $resultados = [];
 
         if ($q !== '') {
+            Session::liberarBloqueo();
+
             $recurso = TmdbTipo::aRecursoTmdb($tipoBusqueda);
             $data = $this->tmdbClient->fetch("/search/{$recurso}", [
                 'query' => $q,
