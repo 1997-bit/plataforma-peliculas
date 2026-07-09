@@ -20,3 +20,11 @@
 # Imágenes descargadas de TMDB
 public/assets/images/posters/admin/
 
+
+
+/public/assets/images/posters/*.jpg
+/public/assets/images/posters/*.jpeg
+/public/assets/images/posters/*.png
+/app/
+*.log
+.php-cs-fixer.cache
