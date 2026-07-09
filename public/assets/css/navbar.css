@@ -4,11 +4,35 @@
 	inset-inline: 0;
 	z-index: 100;
 	display: flex;
+	flex-wrap: nowrap;
 	align-items: center;
 	justify-content: space-between;
-	padding-block: 1rem;
-	padding-inline: clamp(1rem, 5vw, 4rem);
-	background: linear-gradient(to bottom, oklch(0% 0 0 / 0.6), transparent);
+	gap: 2rem;
+	padding-block: 1.1rem;
+	padding-inline: clamp(1.5rem, 6vw, 5rem);
+	background: linear-gradient(to bottom, oklch(0% 0 0 / 0.65), transparent);
+}
+
+/* scroll-driven animation nativa CSS: ata transform a la posicion
+   absoluta de scroll de la pagina (no a entrada/salida del propio
+   elemento, que no aplica bien a un nav fixed). Se oculta tras los
+   primeros ~600px de scroll y no vuelve a aparecer hasta el tope.
+   No distingue subir/bajar (eso requiere JS), por eso no reaparece
+   a mitad de pagina. Soporte: Chrome/Edge 115+. Sin soporte, el nav
+   queda fijo y siempre visible (degradacion segura). */
+@supports (animation-timeline: scroll()) {
+	.nav {
+		animation-name: nav-ocultar;
+		animation-timeline: scroll(root block);
+		animation-range: 0px 600px;
+		animation-fill-mode: both;
+	}
+
+	@keyframes nav-ocultar {
+		to {
+			transform: translateY(-100%);
+		}
+	}
 }
 
 .nav-logo {
@@ -16,12 +40,58 @@
 	font-weight: 700;
 	color: oklch(95% 0 0);
 	letter-spacing: -0.02em;
+	flex-shrink: 0;
+}
+
+.nav nav {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: clamp(1rem, 3vw, 2rem);
+}
+
+.nav-links,
+.nav-cuenta-boton {
+	flex-shrink: 0;
 }
 
 .nav a {
 	color: oklch(85% 0 0);
 	text-decoration: none;
 	font-size: var(--text-sm);
+}
+
+/* links principales: icono y texto en fila, separacion generosa
+   entre links para que no se vean pegados */
+.nav-links {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.nav-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	color: oklch(75% 0 0);
+	font-size: var(--text-sm);
+	font-weight: 500;
+	text-decoration: none;
+	white-space: nowrap;
+	transition: color 0.15s ease;
+}
+
+.nav-link:hover {
+	color: oklch(95% 0 0);
+}
+
+.nav-link[aria-current="page"] {
+	color: oklch(100% 0 0);
+}
+
+.nav-link[aria-current="page"] svg {
+	color: oklch(70% 0.18 250);
 }
 
 .btn-nav {
@@ -33,4 +103,171 @@
 
 .btn-nav:hover {
 	background: oklch(100% 0 0 / 0.1);
+}
+
+/* boton que abre el dropdown de cuenta (perfil/configuracion/logout) */
+.nav-cuenta-boton {
+	anchor-name: --nav-cuenta;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	font: inherit;
+	font-size: var(--text-sm);
+	color: oklch(85% 0 0);
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.nav-cuenta-flecha {
+	transition: transform 0.15s ease;
+}
+
+.nav-cuenta-boton:open,
+.nav-cuenta-boton[aria-expanded="true"] {
+	color: oklch(100% 0 0);
+}
+
+/* dropdown anclado al boton de cuenta, sin JS de posicionamiento.
+   position-area es mas robusto que calcular anchor() a mano: ubica el
+   dropdown en la celda "abajo-derecha" de la grilla implicita del boton */
+.nav-dropdown {
+	position: fixed;
+	position-anchor: --nav-cuenta;
+	position-area: bottom span-left;
+	margin: 0;
+	margin-top: 0.5rem;
+	min-width: 180px;
+	padding: 0.4rem;
+	list-style: none;
+	border: none;
+	border-radius: 8px;
+	background: oklch(18% 0.03 231);
+	box-shadow: 0 12px 32px oklch(0% 0 0 / 35%);
+	position-try-fallbacks: flip-block;
+}
+
+/* fallback para navegadores sin soporte de anchor positioning: el
+   dropdown se posiciona fijo arriba a la derecha (debajo del navbar),
+   en vez de caer al comportamiento default del popover (centrado) */
+@supports not (position-area: bottom span-left) {
+	.nav-dropdown {
+		top: 4rem;
+		right: clamp(1.5rem, 6vw, 5rem);
+	}
+}
+
+.nav-dropdown-item {
+	display: block;
+	width: 100%;
+	padding: 0.55rem 0.75rem;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	color: oklch(95% 0 0);
+	font: inherit;
+	font-size: var(--text-sm);
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.nav-dropdown-item:hover {
+	background: oklch(100% 0 0 / 0.08);
+}
+
+.nav-dropdown-item-peligro {
+	color: oklch(70% 0.18 25);
+}
+
+.nav-dropdown-separador {
+	height: 1px;
+	margin: 0.4rem 0.2rem;
+	background: oklch(100% 0 0 / 0.12);
+}
+
+/* dialog nativo de confirmacion (logout, etc), abierto via Invoker
+   Commands (commandfor/command en el button), sin JS */
+.dialogo-confirmar {
+	border: none;
+	border-radius: 10px;
+	padding: 1.5rem;
+	max-width: 320px;
+	background: oklch(18% 0.03 231);
+	color: oklch(95% 0 0);
+	box-shadow: 0 20px 50px oklch(0% 0 0 / 35%);
+}
+
+.dialogo-confirmar::backdrop {
+	background: oklch(0% 0 0 / 55%);
+}
+
+.dialogo-confirmar-texto {
+	margin: 0 0 1.25rem;
+	font-size: var(--text-base);
+}
+
+.dialogo-confirmar-acciones {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.6rem;
+}
+
+.dialogo-confirmar-cancelar,
+.dialogo-confirmar-aceptar {
+	font: inherit;
+	font-size: var(--text-sm);
+	padding: 0.5rem 1rem;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.dialogo-confirmar-cancelar {
+	background: transparent;
+	border: 1px solid oklch(85% 0 0 / 0.35);
+	color: oklch(95% 0 0);
+}
+
+.dialogo-confirmar-aceptar {
+	background: oklch(58% 0.22 25);
+	border: none;
+	color: white;
+}
+
+.dialogo-confirmar-aceptar:hover {
+	background: oklch(50% 0.22 25);
+}
+
+/* claro */
+
+
+:root[data-tema="light"] .nav-link {
+	color: oklch(45% 0.18 25);
+}
+
+:root[data-tema="light"] .nav-link:hover {
+	color: oklch(35% 0.20 25);
+}
+
+:root[data-tema="light"] .nav-link[aria-current="page"] {
+	color: oklch(30% 0.22 25);
+}
+
+:root[data-tema="light"] .nav-link[aria-current="page"] svg {
+	color: oklch(50% 0.20 25);
+}
+
+:root[data-tema="light"] .nav-logo {
+	color: oklch(30% 0.22 25);
+}
+
+:root[data-tema="light"] .nav-cuenta-boton {
+	color: oklch(45% 0.18 25);
+}
+
+:root[data-tema="light"] .nav-cuenta-boton:hover,
+:root[data-tema="light"] .nav-cuenta-boton:open,
+:root[data-tema="light"] .nav-cuenta-boton[aria-expanded="true"] {
+	color: oklch(88.443% 0.03595 17.7);
 }

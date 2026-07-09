@@ -1,0 +1,291 @@
+/* admin-dashboard.css
+   stats del panel, ranking de generos y listado de contenido/generos.
+   Depende de las variables de tokens.css, cargado antes en el <head>. */
+
+/* --- stats (dashboard) --- */
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--espacio-sm);
+  margin: 0;
+}
+
+.admin-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: var(--espacio-sm) var(--espacio-md);
+  border: 1px solid var(--borde-color);
+  border-radius: 10px;
+}
+
+.admin-stat-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.45;
+  flex-shrink: 0;
+}
+
+.admin-stat-card dt {
+  margin: 0;
+  font-size: var(--text-xs);
+  opacity: 0.65;
+}
+
+.admin-stat-card dd {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+/* --- ranking generos --- */
+
+.admin-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-ranking li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  font-size: var(--text-sm);
+  padding: 0.5rem var(--espacio-md);
+  border: 1px solid var(--borde-color);
+  border-radius: 8px;
+}
+
+.admin-ranking-vistas {
+  font-weight: 600;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+/* --- lista de contenido / generos --- */
+
+.admin-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.admin-item {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-sm);
+  border: 1px solid var(--borde-color);
+  border-radius: 10px;
+}
+
+.admin-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-item-titulo {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.admin-item-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--text-xs);
+  opacity: 0.8;
+}
+
+.admin-item-rating-icono {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: var(--color-estrella);
+  flex-shrink: 0;
+}
+
+.admin-item-acciones .boton {
+  border-color: color-mix(in oklab, var(--color-error-texto) 40%, transparent);
+  color: var(--color-error-texto);
+}
+
+:root[data-tema="dark"] .admin-item-acciones .boton {
+  border-color: color-mix(in oklab, var(--color-error-texto-dark) 40%, transparent);
+  color: var(--color-error-texto-dark);
+}
+
+.admin-item-acciones .boton:hover {
+  background: var(--color-error-bg);
+}
+
+/* --- tabla de contenido --- */
+
+.admin-tabla-wrap {
+  overflow-x: auto;
+}
+
+.admin-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.admin-tabla th,
+.admin-tabla td {
+  padding: 0.6rem var(--espacio-sm);
+  text-align: left;
+  border-bottom: 1px solid var(--borde-color);
+  vertical-align: middle;
+}
+
+.admin-tabla thead th {
+  font-size: var(--text-xs);
+  opacity: 0.65;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-tabla tbody tr:hover {
+  background: var(--borde-color-sutil);
+}
+
+.admin-tabla-titulo {
+  font-weight: 600;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- acciones de tabla como link, no boton con caja --- */
+
+.admin-tabla-acciones a.boton,
+.admin-tabla-acciones button.boton {
+  background: none;
+  border: none;
+  padding: 0.2rem 0;
+  font-weight: 600;
+  font-size: var(--text-xs);
+}
+
+.admin-tabla-acciones a.boton {
+  color: var(--color-primario);
+}
+
+.admin-tabla-acciones a.boton:hover {
+  color: var(--color-primario-hover);
+  text-decoration: underline;
+}
+
+.admin-tabla-acciones button.boton {
+  color: var(--color-error-texto);
+}
+
+:root[data-tema="dark"] .admin-tabla-acciones button.boton {
+  color: var(--color-error-texto-dark);
+}
+
+.admin-tabla-acciones button.boton:hover {
+  text-decoration: underline;
+}
+
+/* el <form> de "eliminar" pasa a ser el flex item (no la celda), como
+   inline-flex de un solo boton, para no depender de display:contents
+   sobre un <form> (mezclado con inputs hidden da lios de render). */
+.admin-tabla-acciones-form {
+  display: inline-flex;
+  margin: 0;
+}
+
+/* Nuevo agregado*/
+
+/* --- stat card destacado (total) --- */
+
+.admin-stat-card--total {
+  background: color-mix(in oklab, var(--color-primario) 8%, transparent);
+  border-color: color-mix(in oklab, var(--color-primario) 35%, transparent);
+}
+
+.admin-stat-card--total .admin-stat-icon {
+  color: var(--color-primario-claro);
+  opacity: 1;
+}
+
+.admin-stat-card--total dd {
+  color: var(--color-primario-claro);
+}
+
+/* --- barra de proporcion peliculas/series --- */
+
+.admin-proporcion-barra {
+  display: flex;
+  height: 6px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.admin-proporcion-segmento--peliculas {
+  background: var(--color-primario);
+}
+
+.admin-proporcion-segmento--series {
+  background: var(--color-estrella);
+}
+
+.admin-proporcion-leyenda {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  opacity: 0.6;
+}
+
+/* --- posicion numerada en ranking --- */
+
+.admin-ranking-pos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--borde-color-sutil);
+}
+
+.admin-ranking li:first-child .admin-ranking-pos {
+  background: color-mix(in oklab, var(--color-primario) 18%, transparent);
+  color: var(--color-primario-claro);
+}
+
+/* --- chip de tipo con color --- */
+
+.chip--pelicula {
+  background: color-mix(in oklab, var(--color-primario) 14%, transparent);
+  color: var(--color-primario-claro);
+}
+
+.chip--serie {
+  background: color-mix(in oklab, var(--color-estrella) 18%, transparent);
+  color: var(--color-estrella);
+}

@@ -6,37 +6,35 @@ namespace App\Services\Auth;
 
 use App\Models\TokenRepo;
 use App\Models\IntentosLoginRepo;
-use App\Services\SessionManager;
+use App\Core\Session;
 use App\Services\CookieManejador;
 use App\Services\CryptoServicio;
 
 class CerrarSesion
 {
     public function __construct(
-        private SessionManager $session,
         private TokenRepo $tokens,
-        private CookieManejador $cookie,
         private IntentosLoginRepo $intentos,
     ) {
     }
 
-    public function cerrarSesion(string $ip, ?string $userId): void
+    public function cerrarSesion(string $ip, ?string $idUsuario): void
     {
         // 1. Log
-        $this->intentos->registrarEvento('LOGOUT', $ip, $userId, []);
+        $this->intentos->registrarEvento('LOGOUT', $ip, $idUsuario, []);
 
         // 2. Limpiar remember token si existe
-        if ($this->cookie->existe('remember_token')) {
+        if (CookieManejador::existe('remember_token')) {
             try {
-                $tokenCifrado = $this->cookie->obtener('remember_token');
+                $tokenCifrado = CookieManejador::obtener('remember_token');
                 $token = (new CryptoServicio())->descifrar($tokenCifrado);
                 $this->tokens->eliminar($token);
             } catch (\Exception $e) {
-                $this->cookie->eliminar('remember_token');
+                CookieManejador::eliminar('remember_token');
             }
         }
 
         // 3. Destruir sesión
-        $this->session->destruir();
+        Session::destruir();
     }
 }

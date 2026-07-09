@@ -17,12 +17,12 @@ class IntentosLoginRepo
     public function registrarIntento(string $ip, string $email, bool $exito): void
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO login_attempts (ip, email, success)
-      VALUES (:ip, :email, :success)'
+            'INSERT INTO login_attempts (ip, correo, success)
+      VALUES (:ip, :correo, :success)'
         );
         $stmt->execute([
             ':ip' => $ip,
-            ':email' => $email,
+            ':correo' => $email,
             ':success' => $exito ? 1 : 0,
         ]);
     }

@@ -1,0 +1,229 @@
+/* auth.css
+   estilos para login y register
+   mismos tokens que landing.css y base.css */
+
+/* transicion nativa entre paginas, fade automatico del navegador */
+@view-transition {
+	navigation: auto;
+}
+
+.auth-pagina {
+	min-height: 100svh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: clamp(1rem, 5vw, 3rem);
+	position: relative;
+	overflow: hidden;
+	background: var(--bg);
+}
+
+/* la misma foto y el mismo mask que usa landing.css, sin blur */
+.auth-pagina::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: var(--bg);
+	background-image: url("/assets/images/hero.webp");
+	background-size: cover;
+	background-position: center;
+	mask-image:
+		linear-gradient(
+			to right,
+			transparent 0%,
+			black 15%,
+			black 85%,
+			transparent 100%
+		),
+		linear-gradient(to bottom, black 60%, transparent 100%);
+	mask-composite: intersect;
+	z-index: 0;
+}
+
+.auth-pagina > * {
+	position: relative;
+	z-index: 1;
+}
+
+.auth-card {
+	width: 100%;
+	max-width: 400px;
+	padding: clamp(2rem, 5vw, 2.5rem);
+	border-radius: 12px;
+	border: 1px solid oklch(50% 0 0 / 0.15);
+	background: oklch(from var(--bg) calc(l + 0.02) c h / 0.92);
+	backdrop-filter: blur(10px);
+}
+
+.auth-titulo {
+	margin: 0 0 0.5rem;
+	text-align: center;
+}
+
+.auth-subtitulo {
+	margin: 0 0 2rem;
+	text-align: center;
+	font-size: var(--text-sm);
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+}
+
+.auth-error {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
+	margin: 0 0 1.5rem;
+	padding: 0.75rem 1rem;
+	border-radius: 6px;
+	background: oklch(55% 0.18 25 / 0.12);
+	border: 1px solid oklch(55% 0.18 25 / 0.3);
+	color: oklch(55% 0.18 25);
+	font-size: var(--text-sm);
+}
+
+.auth-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.auth-campo {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.auth-campo label {
+	font-size: var(--text-sm);
+	font-weight: 500;
+}
+
+/* campo con icono. izq para email, izq y der para password */
+.auth-campo-con-icono {
+	position: relative;
+}
+
+.auth-campo-con-icono input {
+	width: 100%;
+}
+
+.auth-icono-izq {
+	position: absolute;
+	left: 0.75rem;
+	top: 50%;
+	transform: translateY(-50%);
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+	pointer-events: none;
+}
+
+/* el icono del ojo es un boton, alterna mostrar y ocultar password */
+.auth-toggle-ojo {
+	position: absolute;
+	right: 0.75rem;
+	top: 50%;
+	transform: translateY(-50%);
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+	display: flex;
+}
+
+.auth-toggle-ojo:hover {
+	color: var(--texto);
+}
+
+.auth-campo input[type="text"],
+.auth-campo input[type="email"],
+.auth-campo input[type="password"] {
+	font-family: var(--fuente);
+	font-size: var(--text-base);
+	color: var(--texto);
+	background: var(--bg);
+	padding: 0.65rem 0.9rem;
+	border: 1px solid oklch(50% 0 0 / 0.25);
+	border-radius: 6px;
+	transition: border-color 0.2s;
+}
+
+/* estas van despues del padding base, asi gana el padding con espacio para el icono */
+.auth-campo-con-icono.tiene-icono-izq input {
+	padding-left: 2.5rem;
+}
+
+.auth-campo-con-icono.tiene-icono-der input {
+	padding-right: 2.5rem;
+}
+
+.auth-campo input:focus {
+	outline: none;
+	border-color: oklch(70% 0.15 250);
+}
+
+.auth-campo input:user-invalid {
+	border-color: oklch(55% 0.18 25);
+}
+
+.auth-hint {
+	display: block;
+	margin-top: 0.4rem;
+	font-size: var(--text-sm);
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+}
+
+.auth-checkbox {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: var(--text-sm);
+}
+
+.auth-checkbox input {
+	width: 1rem;
+	height: 1rem;
+}
+
+.auth-checkbox a {
+	color: var(--texto);
+	text-decoration: underline;
+}
+
+.auth-boton {
+	display: block;
+	width: 100%;
+	padding: 0.75rem 1.5rem;
+	background: oklch(95% 0 0);
+	color: oklch(10% 0 0);
+	font-weight: 600;
+	font-size: var(--text-base);
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.auth-boton:hover {
+	background: oklch(85% 0 0);
+}
+
+.auth-boton:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.auth-pie {
+	margin: 1.5rem 0 0;
+	text-align: center;
+	font-size: var(--text-sm);
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+}
+
+.auth-pie a {
+	color: var(--texto);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.auth-pie a:hover {
+	text-decoration: underline;
+}

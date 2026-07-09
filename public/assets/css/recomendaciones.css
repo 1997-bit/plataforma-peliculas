@@ -1,0 +1,263 @@
+/* recomendaciones.css */
+/* feed vertical full-screen tipo TikTok/Reels: cada tarjeta ocupa 100vh,
+   poster centrado, fondo con backdrop desenfocado, scroll infinito.
+   requiere tokens.css + componentes.css cargados antes. */
+
+.cuerpo-feed {
+	margin: 0;
+}
+
+/* estado vacio (sin generos elegidos, o sin resultados) */
+.feed-vacio {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	text-align: center;
+	padding: 0 1.5rem;
+}
+
+.feed-vacio-link {
+	color: var(--color-anillo-foco);
+	font-weight: 600;
+	text-decoration: underline;
+}
+
+/* contenedor del feed: cada swipe encastra en un slide completo (snap
+   mandatorio), como TikTok/Reels, con momentum nativo */
+.feed {
+	height: 100vh;
+	overflow-y: scroll;
+	-webkit-overflow-scrolling: touch;
+	scroll-snap-type: y mandatory;
+	scroll-behavior: smooth;
+	overscroll-behavior-y: contain;
+	scrollbar-width: none; /* firefox */
+	-ms-overflow-style: none; /* edge viejo */
+}
+
+.feed::-webkit-scrollbar {
+	display: none; /* chrome, safari, edge nuevo */
+}
+
+.feed-lista {
+	display: flex;
+	flex-direction: column;
+}
+
+.feed-tipo-switch {
+	position: fixed;
+	top: 4.5rem;
+	inset-inline: 0;
+	z-index: 50;
+	display: flex;
+	justify-content: center;
+	gap: 0.5rem;
+	pointer-events: none;
+}
+
+.feed-tipo-boton {
+	pointer-events: auto;
+	font-size: var(--text-sm);
+	font-weight: 600;
+	padding: 0.4rem 1rem;
+	border-radius: 999px;
+	color: oklch(95% 0 0);
+	text-decoration: none;
+	background: oklch(20% 0 0 / 45%);
+	backdrop-filter: blur(8px);
+}
+
+.feed-tipo-activo {
+	background: oklch(100% 0 0 / 90%);
+	color: oklch(15% 0 0);
+}
+
+/* cada slide ocupa la pantalla completa; el poster va centrado y la
+   info (titulo/sinopsis/rating) debajo, todo centrado como bloque */
+.feed-slide {
+	position: relative;
+	height: 100vh;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	scroll-snap-align: start;
+}
+
+/* fondo difuminado: backdrop_path (o poster como respaldo) a pantalla
+   completa con blur fuerte, escalado para que el blur no deje bordes
+   nitidos visibles. backdrop-filter no sirve aca porque no hay nada
+   "detras" que difuminar (el fondo ES la imagen), por eso se usa
+   filter sobre la propia capa de imagen. */
+.feed-fondo {
+	position: absolute;
+	inset: 0;
+	background-color: var(--color-superficie-oscura);
+	background-size: cover;
+	background-position: center;
+	filter: blur(10px) saturate(1.08) brightness(0.65);
+	transform: scale(1.15);
+}
+
+/* dos capas: radial para viñeta (esquinas oscurecidas hasta casi negro,
+   para que no se note el borde cuadrado de la imagen) + linear para
+   legibilidad del texto arriba/abajo. "circle farthest-corner" hace que
+   el radio llegue exacto a la esquina mas lejana del slide, sea cual sea
+   el aspect ratio de la pantalla. el radial va primero porque en fondos
+   con multiples capas la primera se pinta encima. */
+.feed-veladura {
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(circle farthest-corner at 50% 50%, transparent 25%, oklch(4% 0 0 / 92%) 80%, oklch(3% 0 0 / 98%) 100%),
+		linear-gradient(
+			to top,
+			oklch(4% 0 0 / 95%) 0%,
+			oklch(6% 0 0 / 30%) 38%,
+			oklch(6% 0 0 / 30%) 62%,
+			oklch(4% 0 0 / 95%) 100%
+		);
+}
+
+/* info del slide: columna centrada, poster arriba, texto debajo */
+.feed-info {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+	max-width: 640px;
+	padding: 5.5rem 1.5rem 2.5rem;
+	color: oklch(95% 0 0);
+	text-align: center;
+	opacity: 0;
+	transform: translateY(24px);
+	transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* activada por recomendaciones.js (IntersectionObserver) cuando el
+   slide esta centrado en viewport */
+.feed-info-visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* poster centrado, protagonista de la pantalla. el ancho sale solo del
+   aspect-ratio heredado de .poster-marco (2/3) */
+.feed-poster {
+	width: auto;
+	height: min(58vh, 480px);
+	box-shadow: 0 12px 32px oklch(0% 0 0 / 55%);
+}
+
+.feed-texto {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+.feed-titulo-link {
+	color: inherit;
+	text-decoration: none;
+}
+
+.feed-titulo-link:hover .feed-titulo,
+.feed-titulo-link:focus-visible .feed-titulo {
+	text-decoration: underline;
+}
+
+.feed-titulo {
+	margin: 0;
+	font-size: var(--text-xl);
+	font-weight: 700;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: baseline;
+	gap: 0.5rem;
+	text-shadow: 0 2px 12px oklch(0% 0 0 / 40%);
+}
+
+.feed-anio {
+	font-size: var(--text-sm);
+	font-weight: 400;
+	opacity: 0.7;
+}
+
+.feed-sinopsis {
+	margin: 0;
+	font-size: var(--text-sm);
+	line-height: 1.5;
+	max-width: 60ch;
+	opacity: 0.9;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.feed-rating {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: var(--text-sm);
+	font-weight: 600;
+	opacity: 0.95;
+}
+
+.feed-estrella-icono {
+	width: 1.1em;
+	height: 1.1em;
+	fill: oklch(85% 0.15 95);
+	flex-shrink: 0;
+}
+
+/* estados del scroll infinito */
+.feed-cargando,
+.feed-fin {
+	position: relative;
+	z-index: 2;
+	text-align: center;
+	padding: 2rem 1rem;
+	color: oklch(95% 0 0 / 70%);
+	font-size: var(--text-sm);
+}
+
+.feed-sentinel {
+	height: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.feed-info {
+		transition: none;
+		opacity: 1;
+		transform: none;
+	}
+
+	.feed {
+		scroll-behavior: auto;
+	}
+}
+
+@media (min-width: 601px) {
+	.feed-titulo {
+		font-size: var(--text-2xl);
+	}
+	.feed-sinopsis {
+		font-size: var(--text-base);
+	}
+}
+
+@media (max-height: 640px) {
+	.feed-poster {
+		height: min(46vh, 360px);
+	}
+}

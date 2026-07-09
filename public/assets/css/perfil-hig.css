@@ -1,0 +1,488 @@
+/* perfil-hig.css
+   Rediseño de /perfil siguiendo Apple Human Interface Guidelines,
+   traducido a HTML/CSS puro. Todo queda scopeado bajo .hig-page para
+   no tocar el look de /settings, que sigue usando perfil.css. */
+
+.hig-page {
+  /* tipografia: SF Pro via system font, sin descargas */
+  --hig-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+
+  /* fondos (systemBackground / secondarySystemBackground) */
+  --hig-bg-primary: #ffffff;
+  --hig-bg-secondary: #f2f2f7;
+  --hig-bg-tertiary: #ffffff;
+
+  /* labels: se suaviza el negro puro (accesibilidad) en vez del rgba(0,0,0,1) literal del spec */
+  --hig-label-primary: rgba(0, 0, 0, 0.88);
+  --hig-label-secondary: rgba(60, 60, 67, 0.6);
+  --hig-label-tertiary: rgba(60, 60, 67, 0.3);
+  --hig-label-quaternary: rgba(60, 60, 67, 0.18);
+
+  /* colores de sistema */
+  --hig-blue: #007aff;
+  --hig-green: #34c759;
+  --hig-red: #ff3b30;
+  --hig-yellow: #ffcc00;
+
+  /* fills */
+  --hig-fill-secondary: rgba(120, 120, 128, 0.16);
+  --hig-fill-tertiary: rgba(118, 118, 128, 0.12);
+
+  /* separadores */
+  --hig-separator: rgba(60, 60, 67, 0.29);
+
+  /* elevacion */
+  --hig-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  --hig-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  font-family: var(--hig-font);
+  max-width: 980px;
+  margin-inline: auto;
+  padding: 0 16px 48px;
+  color: var(--hig-label-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+@media (min-width: 601px) {
+  .hig-page {
+    padding-inline: 20px;
+  }
+}
+
+:root[data-tema="dark"] .hig-page {
+  --hig-bg-primary: #000000;
+  --hig-bg-secondary: #1c1c1e;
+  --hig-bg-tertiary: #2c2c2e;
+
+  --hig-label-primary: rgba(255, 255, 255, 0.92);
+  --hig-label-secondary: rgba(235, 235, 245, 0.6);
+  --hig-label-tertiary: rgba(235, 235, 245, 0.3);
+  --hig-label-quaternary: rgba(235, 235, 245, 0.18);
+
+  --hig-blue: #0a84ff;
+  --hig-green: #30d158;
+  --hig-red: #ff453a;
+  --hig-yellow: #ffd60a;
+
+  --hig-fill-secondary: rgba(120, 120, 128, 0.32);
+  --hig-fill-tertiary: rgba(118, 118, 128, 0.24);
+  --hig-separator: rgba(84, 84, 88, 0.65);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema]) .hig-page {
+    --hig-bg-primary: #000000;
+    --hig-bg-secondary: #1c1c1e;
+    --hig-bg-tertiary: #2c2c2e;
+
+    --hig-label-primary: rgba(255, 255, 255, 0.92);
+    --hig-label-secondary: rgba(235, 235, 245, 0.6);
+    --hig-label-tertiary: rgba(235, 235, 245, 0.3);
+    --hig-label-quaternary: rgba(235, 235, 245, 0.18);
+
+    --hig-blue: #0a84ff;
+    --hig-green: #30d158;
+    --hig-red: #ff453a;
+    --hig-yellow: #ffd60a;
+
+    --hig-fill-secondary: rgba(120, 120, 128, 0.32);
+    --hig-fill-tertiary: rgba(118, 118, 128, 0.24);
+    --hig-separator: rgba(84, 84, 88, 0.65);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .hig-page {
+    --hig-separator: currentColor;
+    --hig-label-secondary: rgba(60, 60, 67, 0.85);
+  }
+
+  :root[data-tema="dark"] .hig-page {
+    --hig-label-secondary: rgba(235, 235, 245, 0.85);
+  }
+}
+
+/* ---------- tipografia ---------- */
+
+.hig-large-title {
+  margin: 0;
+  font-size: clamp(1.75rem, 1.6rem + 0.6vw, 2.125rem);
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+
+.hig-title-3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  line-height: 1.25;
+}
+
+.hig-headline {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.hig-body {
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.hig-subheadline {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  letter-spacing: -0.1px;
+  line-height: 1.35;
+}
+
+.hig-footnote {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.hig-section-title {
+  margin: 0 0 8px;
+  padding-inline: 20px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--hig-label-secondary);
+}
+
+/* ---------- estructura de pagina ---------- */
+
+.hig-page-header {
+  padding-top: 24px;
+}
+
+.hig-section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- hero: banner + tarjeta de material superpuesta ---------- */
+
+.hig-hero {
+  position: relative;
+}
+
+.hig-hero-banner {
+  height: 140px;
+  border-radius: 20px;
+  background: linear-gradient(
+    135deg,
+    oklch(60% 0.15 var(--hig-hue, 250)),
+    oklch(42% 0.16 calc(var(--hig-hue, 250) + 40))
+  );
+}
+
+.hig-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: -40px 16px 0;
+  padding: 16px 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  box-shadow: var(--hig-shadow-2);
+}
+
+:root[data-tema="dark"] .hig-hero-card {
+  background: rgba(30, 30, 30, 0.72);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema]) .hig-hero-card {
+    background: rgba(30, 30, 30, 0.72);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .hig-hero-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--hig-bg-secondary);
+  }
+}
+
+.hig-avatar {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  background: oklch(58% 0.16 var(--hig-hue, 250));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  box-shadow: var(--hig-shadow-1);
+}
+
+:root[data-tema="dark"] .hig-avatar {
+  border-color: rgba(44, 44, 46, 0.9);
+}
+
+.hig-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.hig-hero-info .hig-title-3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hig-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--hig-fill-secondary);
+  color: var(--hig-label-secondary);
+}
+
+.hig-badge--admin {
+  background: color-mix(in oklab, var(--hig-blue) 16%, transparent);
+  color: var(--hig-blue);
+}
+
+/* ---------- tarjetas agrupadas / listas estilo table-view ---------- */
+
+.hig-card {
+  border-radius: 16px;
+  background: var(--hig-bg-secondary);
+  box-shadow: var(--hig-shadow-1);
+  overflow: hidden;
+}
+
+.hig-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hig-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 12px 16px;
+}
+
+.hig-row:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--hig-separator);
+}
+
+.hig-row--item:not(:last-child)::after {
+  left: 74px;
+}
+
+.hig-row-label {
+  font-size: 1.0625rem;
+  color: var(--hig-label-primary);
+}
+
+.hig-row-value {
+  margin-inline-start: auto;
+  font-size: 1.0625rem;
+  color: var(--hig-label-secondary);
+  text-align: right;
+  word-break: break-word;
+}
+
+/* fila de accion (link con estado de disclosure) */
+a.hig-row--action {
+  color: var(--hig-blue);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+a.hig-row--action:hover {
+  background: var(--hig-fill-tertiary);
+}
+
+.hig-row-action-label {
+  font-size: 1.0625rem;
+  font-weight: 400;
+}
+
+.hig-chevron {
+  margin-inline-start: auto;
+  width: 18px;
+  height: 18px;
+  color: var(--hig-label-tertiary);
+  flex-shrink: 0;
+}
+
+a.hig-row--action .hig-chevron {
+  color: var(--hig-blue);
+}
+
+/* filas con poster (historial / calificaciones) */
+.hig-row-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.hig-row-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hig-row-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--hig-label-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hig-row-meta {
+  font-size: 0.8125rem;
+  color: var(--hig-label-secondary);
+}
+
+.hig-row-estrellas {
+  display: inline-flex;
+  gap: 2px;
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+
+.hig-estrella-icono {
+  width: 14px;
+  height: 14px;
+}
+
+.hig-estrella-icono-relleno {
+  fill: var(--hig-yellow);
+}
+
+.hig-estrella-icono-contorno {
+  fill: none;
+  stroke: var(--hig-label-tertiary);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a.hig-row--action,
+  .hig-row-link {
+    transition: background-color 0.15s ease;
+  }
+}
+
+.hig-row-link:hover,
+.hig-row-link:focus-visible {
+  background: var(--hig-fill-tertiary);
+}
+
+/* ---------- estado vacio ---------- */
+
+.hig-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 24px;
+  text-align: center;
+  border-radius: 16px;
+  background: var(--hig-bg-secondary);
+  box-shadow: var(--hig-shadow-1);
+}
+
+.hig-empty-icon {
+  width: 36px;
+  height: 36px;
+  fill: none;
+  stroke: var(--hig-label-tertiary);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  color: var(--hig-label-tertiary);
+  margin-bottom: 4px;
+}
+
+.hig-empty-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--hig-label-primary);
+}
+
+.hig-empty-subtitle {
+  margin: 0;
+  max-width: 320px;
+  font-size: 0.8125rem;
+  color: var(--hig-label-secondary);
+}
+
+.hig-empty-cta {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: var(--hig-blue);
+  color: #fff;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hig-empty-cta {
+    transition: opacity 0.15s ease;
+  }
+}
+
+.hig-empty-cta:hover {
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hig-page *,
+  .hig-page *::before,
+  .hig-page *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

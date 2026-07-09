@@ -5,7 +5,6 @@
 .env
 .env.testing
 
-
 # PHPUnit
 .phpunit.result.cache
 .phpunit.cache/
@@ -14,6 +13,12 @@
 *.log
 /logs/
 /cache/
+/storage/
+
+.php-cs-fixer.cache
+
+# Imágenes descargadas de TMDB
+public/assets/images/posters/admin/
 
 
 

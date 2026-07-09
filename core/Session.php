@@ -15,28 +15,15 @@ class Session
             return;
         }
 
-        $lifetime = (int)($_ENV['SESSION_LIFETIME'] ?? 3600);
-        $isSeguro = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-          || (($_SERVER['SERVER_PORT'] ?? null) == 443);
-
-        session_set_cookie_params([
-          'lifetime' => 0,
-          'path' => '/',
-          'domain' => '',
-          'secure' => $isSeguro,
-          'httponly' => true,
-          'samesite' => 'Strict',
-        ]);
+        self::configurarCookie();
 
         session_name('CINESESSID');
         session_start();
         self::$started = true;
 
-        if (isset($_SESSION['_last_activity'])) {
-            if (time() - $_SESSION['_last_activity'] > $lifetime) {
-                self::destruir();
-                return;
-            }
+        if (self::haExpirado()) {
+            self::destruir();
+            return;
         }
 
         $_SESSION['_last_activity'] = time();
@@ -47,13 +34,24 @@ class Session
         session_regenerate_id(true);
     }
 
+    /**
+     * Suelta el lock del archivo de sesion sin perder los datos ya leidos en
+     * memoria. Llamar antes de operaciones largas (ej. peticiones HTTP a
+     * servicios externos) para no bloquear otras peticiones concurrentes del
+     * mismo usuario, que de otro modo esperan este lock hasta agotar
+     * max_execution_time.
+     */
+    public static function liberarBloqueo(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+    }
+
     public static function destruir(): void
     {
         $_SESSION = [];
-        if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 3600, $params['path']);
-        }
+        self::eliminarCookieSesion();
         session_destroy();
         self::$started = false;
     }
@@ -73,18 +71,64 @@ class Session
         return isset($_SESSION[$clave]);
     }
 
-    public static function eliminar(string $clave): void
-    {
-        unset($_SESSION[$clave]);
-    }
-
     public static function generarCsrf(): string
     {
-        return (new \App\Services\ManejadorCsrf())->generarTokenCsrf();
+        if (!empty($_SESSION['_csrf_token'])) {
+            return (string) $_SESSION['_csrf_token'];
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $_SESSION['_csrf_token'] = $token;
+        return $token;
     }
 
     public static function validarCsrf(string $token): bool
     {
-        return (new \App\Services\ManejadorCsrf())->validarTokenCsrf($token);
+        return hash_equals((string) ($_SESSION['_csrf_token'] ?? ''), $token);
+    }
+
+    /** Valida el CSRF del POST actual o corta la ejecucion con un 403. */
+    public static function exigirCsrfOFallar(): void
+    {
+        if (self::validarCsrf($_POST['_csrf'] ?? '')) {
+            return;
+        }
+
+        http_response_code(403);
+        require ROOT . '/views/errors/403.php';
+        exit;
+    }
+
+    private static function configurarCookie(): void
+    {
+        $esSeguro = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (($_SERVER['SERVER_PORT'] ?? null) == 443);
+
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => $esSeguro,
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ]);
+    }
+
+    private static function haExpirado(): bool
+    {
+        $lifetime = (int) ($_ENV['SESSION_LIFETIME'] ?? 3600);
+        $ultimaActividad = $_SESSION['_last_activity'] ?? null;
+
+        return is_int($ultimaActividad) && (time() - $ultimaActividad > $lifetime);
+    }
+
+    private static function eliminarCookieSesion(): void
+    {
+        if (!ini_get('session.use_cookies')) {
+            return;
+        }
+
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 3600, $params['path']);
     }
 }

@@ -1,0 +1,99 @@
+/* tokens.css */
+/* variables compartidas que usan los componentes (componentes.css) y el
+   layout de cada pagina. cargar siempre despues de base.css y antes de
+   cualquier otro archivo que use estas variables. */
+
+:root {
+	/* escala de poster: 4 tamaños con nombre semantico, no arbitrarios.
+	   cada uno cubre un caso real que ya existia en el proyecto:
+	   xs  -> lista compacta (historial, calificaciones en /perfil)
+	   sm  -> feed vertical (recomendaciones)
+	   md  -> grid de catalogo y shelf de home
+	   lg  -> header de detalle de pelicula/serie */
+	--poster-w-xs: 42px;
+	--poster-w-sm: 88px;
+	--poster-w-md: 160px;
+	--poster-w-lg: 130px;
+
+	--poster-radio-sm: 4px;
+	--poster-radio-md: 8px;
+	--poster-radio-lg: 10px;
+
+	/* proporcion de poster de pelicula/serie, estandar TMDB y la industria */
+	--poster-ratio: 2 / 3;
+
+	/* espaciado comun entre secciones/tarjetas */
+	--espacio-xs: 0.4rem;
+	--espacio-sm: 0.6rem;
+	--espacio-md: 1rem;
+	--espacio-lg: 1.5rem;
+	--espacio-xl: 2rem;
+
+	/* azul de marca, repetido antes literal en componentes/catalogo/perfil/admin */
+	--color-primario: oklch(55% 0.18 250);
+	--color-primario-hover: oklch(48% 0.18 250);
+	--color-primario-claro: oklch(75% 0.15 250);
+	--color-anillo-foco: oklch(70% 0.15 250);
+
+	/* grises de borde, mismo valor en admin-dashboard/admin-layout/perfil/componentes */
+	--borde-color: oklch(60% 0 0 / 18%);
+	--borde-color-fuerte: oklch(60% 0 0 / 30%);
+	--borde-color-sutil: oklch(60% 0 0 / 8%);
+
+	/* superficie oscura fija (dropdown/dialog), independiente del tema claro/oscuro de --bg */
+	--color-superficie-oscura: oklch(18% 0.03 231);
+
+	/* dorado de estrella/calificacion, mismo valor repetido en detalle.css y admin-dashboard.css */
+	--color-estrella: oklch(75% 0.18 80);
+	/* contorno de estrella vacia (solo display, no interactiva), mismo valor repetido en perfil.css y detalle.css */
+	--color-estrella-contorno: oklch(60% 0 0 / 35%);
+
+	/* opacidad de texto atenuado en estados vacios, mismo valor repetido en
+	   catalogo.css/admin-dashboard.css (perfil.css usaba 0.65, se unifica) */
+	--opacidad-vacio: 0.6;
+
+	/* colores de aviso (ok/error/warning), mismo valor repetido en perfil.css y admin-layout.css */
+	--color-ok-bg: oklch(85% 0.12 145 / 25%);
+	--color-ok-texto: oklch(35% 0.12 145);
+	--color-ok-texto-dark: oklch(85% 0.12 145);
+	--color-error-bg: oklch(80% 0.15 25 / 25%);
+	--color-error-texto: oklch(35% 0.15 25);
+	--color-error-texto-dark: oklch(85% 0.15 25);
+	--color-warning-bg: oklch(88% 0.12 80 / 30%);
+	--color-warning-texto: oklch(38% 0.12 80);
+	--color-warning-texto-dark: oklch(82% 0.12 80);
+
+	/* input de formulario, repetido igual en admin-forms.css (campo normal y form inline TMDB) */
+	--borde-color-input: oklch(60% 0 0 / 28%);
+	--fondo-input: oklch(60% 0 0 / 4%);
+	--anillo-primario: oklch(55% 0.18 250 / 12%);
+}
+
+/* tablet: md y lg crecen, xs y sm se quedan igual (no necesitan crecer) */
+@media (min-width: 601px) {
+	:root {
+		--poster-w-md: 180px;
+		--poster-w-lg: 170px;
+	}
+}
+
+/* desktop */
+@media (min-width: 1024px) {
+	:root {
+		--poster-w-md: 200px;
+		--poster-w-lg: 210px;
+	}
+}
+
+/* mismo fallback que --bg/--texto en base.css: si el usuario no eligio tema
+   explicitamente (sin data-tema) pero el sistema esta en oscuro, los avisos
+   ok/error/warning deben usar su variante de texto oscura tambien. sin esto
+   el texto quedaba con la luminosidad clara (pensada para --bg claro) sobre
+   un --bg oscuro, dando texto verde oscuro sobre fondo verde oscuro */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-tema]) {
+		--color-ok-texto: oklch(85% 0.12 145);
+		--color-error-texto: oklch(85% 0.15 25);
+		--color-warning-texto: oklch(82% 0.12 80);
+	}
+}

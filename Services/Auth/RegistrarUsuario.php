@@ -7,14 +7,13 @@ namespace App\Services\Auth;
 use App\Models\User;
 use App\Models\UserRepo;
 use App\Models\IntentosLoginRepo;
-use App\Services\SessionManager;
+use App\Core\Session;
 
 class RegistrarUsuario
 {
     public function __construct(
         private UserRepo $usuarios,
         private IntentosLoginRepo $intentos,
-        private SessionManager $session,
     ) {
     }
 
@@ -42,12 +41,12 @@ class RegistrarUsuario
 
         $this->intentos->registrarEvento('REGISTRO', $ip, $uuid, ['email' => $email]);
 
-        $this->session->regenerar();
-        $this->session->establecer('user_id', $uuid);
-        $this->session->establecer('user_role', 'user');
-        $this->session->establecer('username', $username);
+        Session::regenerar();
+        Session::establecer('user_id', $uuid);
+        Session::establecer('user_role', 'user');
+        Session::establecer('username', $username);
 
-        return new ResultadoRegistro(success: true, redirectUrl: '/home');
+        return new ResultadoRegistro(success: true, redirectUrl: '/onboarding');
     }
 
     /** @return array<int, string> */
@@ -60,6 +59,8 @@ class RegistrarUsuario
         }
         if (strlen($password) < 8) {
             $errores[] = 'La contraseña debe tener al menos 8 caracteres.';
+        } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$/', $password)) {
+            $errores[] = 'La contraseña debe incluir mayúscula, minúscula, número y símbolo.';
         }
         if ($password !== $confirm) {
             $errores[] = 'Las contraseñas no coinciden.';

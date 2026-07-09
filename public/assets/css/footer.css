@@ -53,17 +53,6 @@
 	color: var(--texto);
 }
 
-.footer-social a {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.5rem;
-	color: oklch(from var(--texto) calc(l - 0.2) c h);
-}
-
-.footer-social a:hover {
-	color: var(--texto);
-}
-
 .footer-bottom {
 	border-top: 1px solid oklch(50% 0 0 / 0.1);
 	padding-block: 1.5rem;
