@@ -164,6 +164,13 @@
 	border-color: oklch(55% 0.18 25);
 }
 
+.auth-hint {
+	display: block;
+	margin-top: 0.4rem;
+	font-size: var(--text-sm);
+	color: oklch(from var(--texto) calc(l - 0.3) c h);
+}
+
 .auth-checkbox {
 	display: flex;
 	align-items: center;

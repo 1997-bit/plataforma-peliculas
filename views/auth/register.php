@@ -77,6 +77,8 @@
 								autocomplete="new-password"
 								required
 								minlength="8"
+								pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}"
+								title="Debe tener al menos 8 caracteres, con mayúscula, minúscula, número y símbolo."
 							/>
 							<button type="button" class="auth-toggle-ojo" aria-label="Mostrar u ocultar contraseña">
 								<svg class="icono-ojo-abierto" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true">
@@ -87,6 +89,7 @@
 								</svg>
 							</button>
 						</div>
+						<small class="auth-hint">Mín. 8 caracteres, con mayúscula, minúscula, número y símbolo.</small>
 					</div>
 
 					<div class="auth-campo">

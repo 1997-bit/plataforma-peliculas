@@ -59,6 +59,8 @@ class RegistrarUsuario
         }
         if (strlen($password) < 8) {
             $errores[] = 'La contraseña debe tener al menos 8 caracteres.';
+        } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$/', $password)) {
+            $errores[] = 'La contraseña debe incluir mayúscula, minúscula, número y símbolo.';
         }
         if ($password !== $confirm) {
             $errores[] = 'Las contraseñas no coinciden.';
